@@ -64,6 +64,9 @@ const hostMapGetUrls = {
   'xvideos.com': {
     getUrls: getXvideosUrls,
   },
+  'xnxx.com': {
+    getUrls: getXvideosUrls,
+  },
 };
 
 export default hostMapGetUrls;
