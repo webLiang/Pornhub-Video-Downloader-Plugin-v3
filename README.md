@@ -26,4 +26,8 @@ url地址栏打开 chrome://extensions/
 
 下载crx后拖入浏览器即可。
 
-v1.0.3增加 xnxx.com 支持
+### v1.0.3增加 xnxx.com 支持
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=webLiang/Pornhub-Video-Downloader-Plugin-v3&type=Date)](https://star-history.com/#webLiang/Pornhub-Video-Downloader-Plugin-v3&Date)
