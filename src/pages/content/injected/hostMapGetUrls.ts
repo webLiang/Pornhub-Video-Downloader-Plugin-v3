@@ -5,7 +5,7 @@ const injectScript = (filePath, tag) => {
   script.setAttribute('type', 'text/javascript');
   script.setAttribute('src', filePath);
   script.setAttribute('id', 'inject');
-  node.appendChild(script);
+  node?.appendChild(script);
   return script;
 };
 
@@ -57,6 +57,27 @@ const getXvideosUrls = () =>
     window.addEventListener('message', handleXvMessage);
     const script = injectScript(chrome.runtime.getURL('js/get-xv-info.js'), 'body');
   });
+let xHMp4Infos;
+const getXhamsterUrls = () =>
+  new Promise(resolve2 => {
+    if (xHMp4Infos) {
+      resolve2(xHMp4Infos);
+      return;
+    }
+
+    const script = injectScript(chrome.runtime.getURL('js/get-xH-info.js'), 'body');
+
+    const handleXvMessage = async event => {
+      console.log('🚀 ~ handleXvMessage ~ event:', event);
+      if (event.data.type === 'main-get-xv-info') {
+        xHMp4Infos = event.data.data;
+        resolve2(xHMp4Infos);
+        window.removeEventListener('message', handleXvMessage);
+        script.remove();
+      }
+    };
+    window.addEventListener('message', handleXvMessage);
+  });
 const hostMapGetUrls = {
   'pornhub.com': {
     getUrls: getPornhubUrls,
@@ -66,6 +87,9 @@ const hostMapGetUrls = {
   },
   'xnxx.com': {
     getUrls: getXvideosUrls,
+  },
+  'xhamster.com': {
+    getUrls: getXhamsterUrls,
   },
 };
 
