@@ -26,7 +26,17 @@ url地址栏打开 chrome://extensions/
 
 下载crx后拖入浏览器即可。
 
+## 支持网站列表
+
+* pornhub.com
+* xvideos.com
+* xnxx.com
+* xhamster.com
+
 ### v1.0.3增加 xnxx.com 支持
+
+### v1.0.4增加 xhamster.com支持
+
 
 ## Star History
 
