@@ -1,3 +1,4 @@
+import { Parser } from 'm3u8-parser';
 let pornMp4Infos;
 const injectScript = (filePath, tag) => {
   const node = document.getElementsByTagName(tag)[0];
@@ -41,6 +42,7 @@ const getPornhubUrls = () =>
 let xvideosMp4Infos;
 const getXvideosUrls = () =>
   new Promise(resolve2 => {
+    console.log('getXvideosUrls');
     if (xvideosMp4Infos) {
       resolve2(xvideosMp4Infos);
       return;
@@ -48,14 +50,41 @@ const getXvideosUrls = () =>
     const handleXvMessage = async event => {
       console.log('🚀 ~ handleXvMessage ~ event:', event);
       if (event.data.type === 'main-get-xv-info') {
-        xvideosMp4Infos = event.data.data;
+        const mp4list = event.data.data;
+        const m3u8List = [];
+        if (event.data.hls) {
+          console.log('🚀 ~ handleXvMessage ~ event.data.hls:', event.data.hls);
+          const urlHLS = event.data.hls.url;
+          const hls = await (await fetch(urlHLS)).text();
+          const parser = new Parser();
+          parser.push(hls);
+          parser.end();
+          const playlists = parser.manifest.playlists;
+          playlists.sort((a, b) => {
+            return a.attributes.BANDWIDTH - b.attributes.BANDWIDTH;
+          });
+
+          for (const item of playlists) {
+            const obj = {
+              quality: item.attributes.NAME,
+              videoUrl: urlHLS.replace('hls.m3u8', item.uri),
+              // video_title: urlTitle,
+              format: 'm3u8',
+            };
+            m3u8List.push(obj);
+          }
+          console.log('🚀 ~ playlists.sort ~ playlists:', playlists, m3u8List);
+        }
+        console.log(33444444, xvideosMp4Infos, m3u8List, mp4list);
+        xvideosMp4Infos = mp4list.concat(m3u8List);
         resolve2(xvideosMp4Infos);
         window.removeEventListener('message', handleXvMessage);
-        script.remove();
+        // script.remove();
       }
     };
     window.addEventListener('message', handleXvMessage);
     const script = injectScript(chrome.runtime.getURL('js/get-xv-info.js'), 'body');
+    script.remove();
   });
 let xHMp4Infos;
 const getXhamsterUrls = () =>
@@ -69,7 +98,7 @@ const getXhamsterUrls = () =>
 
     const handleXvMessage = async event => {
       console.log('🚀 ~ handleXvMessage ~ event:', event);
-      if (event.data.type === 'main-get-xv-info') {
+      if (event.data.type === 'main-get-xh-info') {
         xHMp4Infos = event.data.data;
         resolve2(xHMp4Infos);
         window.removeEventListener('message', handleXvMessage);

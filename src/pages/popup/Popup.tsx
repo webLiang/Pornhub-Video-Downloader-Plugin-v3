@@ -5,9 +5,10 @@ import '@pages/popup/Popup.css';
 type VideoInfo = {
   videoUrl: string;
   quality: string;
-  format: 'mp4' | 'webm';
+  format: 'mp4' | 'webm' | 'm3u8';
   title: string;
 };
+const manifestData = chrome.runtime.getManifest();
 const Popup = () => {
   const [videoInfos, setvideoInfos] = useState<Array<VideoInfo>>([]);
   useEffect(() => {
@@ -22,6 +23,12 @@ const Popup = () => {
     };
   }, []);
   const onDownload = (videoInfo: VideoInfo) => () => {
+    if (videoInfo.format === 'm3u8') {
+      let url = 'https://blog.luckly-mjw.cn/tool-show/m3u8-downloader/index.html';
+      url += `?source=${decodeURIComponent(videoInfo.videoUrl)}`;
+      window.open(url);
+      return;
+    }
     chrome.downloads.download({
       url: videoInfo.videoUrl,
       filename: `${videoInfo.title}.${videoInfo.format}`,
@@ -35,12 +42,19 @@ const Popup = () => {
     <div className="App" style={{}}>
       {videoInfos.length > 0 && <img src={logo} className="App-logo" alt="logo" />}
       <div>
-        <h2>视频下载插件</h2>
+        <h2>视频下载插件 ---当前版本{manifestData.version}</h2>
       </div>
       <div>
         Author By:{' '}
         <a rel="noreferrer" href="https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3" target="_blank">
           webLiang
+        </a>
+        <br />
+        <a
+          rel="noreferrer"
+          href="https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3/releases"
+          target="_blank">
+          获取最新版本
         </a>
       </div>
       <div className="box">
@@ -51,7 +65,10 @@ const Popup = () => {
               return (
                 <li key={item.videoUrl}>
                   <label>
-                    清晰度：<span> {item.quality}</span>{' '}
+                    清晰度：<span style={{ display: 'inline-block', width: '60px' }}> {item.quality}</span>
+                  </label>
+                  <label>
+                    类型： <span style={{ display: 'inline-block', width: '40px' }}> {item.format}</span>
                   </label>
                   <button className="button down" onClick={onDownload(item)}>
                     下载
