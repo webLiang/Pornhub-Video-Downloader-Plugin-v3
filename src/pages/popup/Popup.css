@@ -1,3 +1,7 @@
+html,
+body {
+  width: 450px;
+}
 .App {
   position: absolute;
   top: 0;
@@ -37,22 +41,24 @@
 
 ul {
   list-style: none;
-  width: 300px;
+  width: 100%;
   display: flex;
   flex-wrap: wrap;
   align-content: space-around;
+  padding: 5px;
 }
 
 ul li {
-  width: 450px;
+  width: 100%;
   height: 40px;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
+  align-items: center;
 }
 
-ul li label {
-  margin-left: -25px;
-}
+/* ul li label {
+  margin-left: -5px;
+} */
 
 ul li span {
   color: cornflowerblue;
@@ -220,7 +226,7 @@ dialog {
   border-color: #faecd8;
   color: #e6a23c;
   top: 150px;
-  width: 250px;
+  /* width: 250px; */
   border-radius: 10px;
   text-align: center;
   border-width: 1px;
