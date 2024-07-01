@@ -11,12 +11,25 @@ type VideoInfo = {
 const manifestData = chrome.runtime.getManifest();
 const Popup = () => {
   const [videoInfos, setvideoInfos] = useState<Array<VideoInfo>>([]);
+  const [remoteVersion, setRemoteVersion] = useState('0.0.0');
   useEffect(() => {
     sendMessageToContentScript({ command: 'get_video_info' }, function (response) {
       console.log('🚀 ~ response:', response);
       setvideoInfos(response);
       // console.log('Popup', response);
     });
+
+    function fetchVersion() {
+      fetch('https://raw.githubusercontent.com/webLiang/Pornhub-Video-Downloader-Plugin-v3/master/package.json')
+        .then(response => response.json())
+        .then(data => {
+          const version = data.version;
+          setRemoteVersion(version);
+          console.log('Version updated:', version, data);
+        })
+        .catch(error => console.error('Error fetching version:', error));
+    }
+    fetchVersion();
     // Trigger your effect
     return () => {
       // Optional: Any cleanup code
@@ -42,7 +55,10 @@ const Popup = () => {
     <div className="App" style={{}}>
       {videoInfos.length > 0 && <img src={logo} className="App-logo" alt="logo" />}
       <div>
-        <h2>视频下载插件 ---当前版本{manifestData.version}</h2>
+        <h2>视频下载插件</h2>
+        <h3>
+          当前版本：{manifestData.version} --- 远程版本：{remoteVersion}
+        </h3>
       </div>
       <div>
         Author By:{' '}
