@@ -53,7 +53,7 @@ const Popup = () => {
   };
   return (
     <div className="App" style={{}}>
-      {videoInfos.length > 0 && <img src={logo} className="App-logo" alt="logo" />}
+      {videoInfos?.length > 0 && <img src={logo} className="App-logo" alt="logo" />}
       <div>
         <h2>视频下载插件</h2>
         <h3>
@@ -75,8 +75,7 @@ const Popup = () => {
       </div>
       <div className="box">
         <ul>
-          {videoInfos &&
-            videoInfos.length > 0 &&
+          {videoInfos?.length > 0 &&
             videoInfos.map(item => {
               return (
                 <li key={item.videoUrl}>
