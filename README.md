@@ -39,6 +39,7 @@ url地址栏打开 chrome://extensions/
 
 ### v1.0.5 xvideos.com，xnxx.com 支持1080p,m3u8借助三方服务页下载 ui优化
 ### v1.0.7 其他网站pop报错不显示远程版本号
+### v1.0.8 自动化crx流程
 
 ## Star History
 
