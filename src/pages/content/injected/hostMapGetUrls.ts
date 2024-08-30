@@ -1,11 +1,13 @@
 import { Parser } from 'm3u8-parser';
+let cacheDate;
 let pornMp4Infos;
-const injectScript = (filePath, tag) => {
+const injectScript = (filePath, tag, datapath = '') => {
   const node = document.getElementsByTagName(tag)[0];
   const script = document.createElement('script');
   script.setAttribute('type', 'text/javascript');
   script.setAttribute('src', filePath);
-  script.setAttribute('id', 'inject');
+  script.setAttribute('id', 'main-inject-js');
+  script.setAttribute('data-path', datapath);
   node?.appendChild(script);
   return script;
 };
@@ -107,6 +109,33 @@ const getXhamsterUrls = () =>
     };
     window.addEventListener('message', handleXvMessage);
   });
+
+const getRedtube = () =>
+  new Promise(resolve => {
+    if (cacheDate) {
+      resolve(cacheDate);
+      return;
+    }
+    const script = injectScript(
+      chrome.runtime.getURL('js/get-main-data.js'),
+      'body',
+      'page_params.generalVideoConfig.mainRoll.mediaDefinition',
+    );
+
+    const handleMainDataMessage = async event => {
+      if (event.data.type === 'main-window-data') {
+        const mainData = event.data.data;
+        const getMp4Url = mainData?.[1].videoUrl;
+
+        const mp4List = await (await fetch(getMp4Url)).json();
+        cacheDate = mp4List;
+        resolve(cacheDate);
+        window.removeEventListener('message', handleMainDataMessage);
+        script.remove();
+      }
+    };
+    window.addEventListener('message', handleMainDataMessage);
+  });
 const hostMapGetUrls = {
   'pornhub.com': {
     getUrls: getPornhubUrls,
@@ -119,6 +148,9 @@ const hostMapGetUrls = {
   },
   'xhamster.com': {
     getUrls: getXhamsterUrls,
+  },
+  'redtube.com': {
+    getUrls: getRedtube,
   },
 };
 

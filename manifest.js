@@ -42,10 +42,12 @@ const manifest = {
       // KEY for cache invalidation
       css: ['assets/css/contentStyle<KEY>.chunk.css'],
     },
-    // {
-    //   matches: ['http://*/*', 'https://*/*', '<all_urls>'],
-    //   js: ['src/pages/contentUI/index.js'],
-    // },
+    {
+      run_at: 'document_start',
+      matches: ['https://*.redtube.com/*'],
+      js: ['src/pages/injectedMain/index.js'],
+      world: 'MAIN',
+    },
   ],
   // devtools_page: 'src/pages/devtools/index.html',
   web_accessible_resources: [
