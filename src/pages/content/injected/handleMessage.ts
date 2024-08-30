@@ -1,10 +1,9 @@
 // import exampleThemeStorage from '@src/shared/storages/exampleThemeStorage';
 import hostMapGetUrls from './hostMapGetUrls';
-import { getTopDomain } from './utils';
+import { curTopDomain } from '@src/shared/utils';
 import refreshOnUpdate from 'virtual:reload-on-update-in-view';
 
 refreshOnUpdate('pages/content/injected/toggleTheme');
-const curTopDomain = getTopDomain();
 // cache
 hostMapGetUrls[curTopDomain]?.getUrls();
 

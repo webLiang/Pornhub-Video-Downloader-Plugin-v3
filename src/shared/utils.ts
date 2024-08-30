@@ -7,3 +7,5 @@ export function getTopDomain() {
 
   return topDomain;
 }
+
+export const curTopDomain = getTopDomain();
