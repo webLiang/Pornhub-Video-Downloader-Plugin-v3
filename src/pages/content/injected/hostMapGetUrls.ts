@@ -143,11 +143,26 @@ const hostMapGetUrls = {
   'xvideos.com': {
     getUrls: getXvideosUrls,
   },
+  'xvv1deos.com': {
+    getUrls: getXvideosUrls,
+  },
+  'xnxx.es': {
+    getUrl: getXvideosUrls,
+  },
   'xnxx.com': {
     getUrls: getXvideosUrls,
   },
   'xhamster.com': {
     getUrls: getXhamsterUrls,
+  },
+  'xhamster42.desi': {
+    getUrl: getXhamsterUrls,
+  },
+  'xhamster1.desi': {
+    getUrl: getXhamsterUrls,
+  },
+  'xhamster.desi': {
+    getUrl: getXhamsterUrls,
   },
   'redtube.com': {
     getUrls: getRedtube,
