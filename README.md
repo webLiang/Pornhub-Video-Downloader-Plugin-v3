@@ -42,6 +42,8 @@ url地址栏打开 chrome://extensions/
 ### v1.0.7 其他网站pop报错不显示远程版本号
 ### v1.0.8 自动化crx流程
 ### v1.0.8 支持redtube.com 
+### v1.0.8 同内容域名支持 xvv1deos.com xnxx.es xhamster42.desi  xhamster1.desi
+### todo https://spankbang.com/
 
 ## Star History
 
