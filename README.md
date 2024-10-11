@@ -31,7 +31,11 @@ url地址栏打开 chrome://extensions/
 * pornhub.com
 * xvideos.com
 * xnxx.com
+* xvv1deos.com 
+* xnxx.es 
 * xhamster.com
+* xhamster42.desi  
+* xhamster1.desi
 * redtube.com
 
 ### v1.0.3增加 xnxx.com 支持
@@ -41,8 +45,9 @@ url地址栏打开 chrome://extensions/
 ### v1.0.5 xvideos.com，xnxx.com 支持1080p,m3u8借助三方服务页下载 ui优化
 ### v1.0.7 其他网站pop报错不显示远程版本号
 ### v1.0.8 自动化crx流程
-### v1.0.8 支持redtube.com 
-### v1.0.8 同内容域名支持 xvv1deos.com xnxx.es xhamster42.desi  xhamster1.desi
+### v1.0.9 支持redtube.com 
+### v1.0.10 同内容域名支持 xvv1deos.com xnxx.es xhamster42.desi  xhamster1.desi
+### v1.0.11 下载文件名优化
 ### todo https://spankbang.com/
 
 ## Star History

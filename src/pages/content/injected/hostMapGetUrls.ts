@@ -11,8 +11,7 @@ const injectScript = (filePath, tag, datapath = '') => {
   node?.appendChild(script);
   return script;
 };
-
-const title = document.title.replace(/[\\\\/:*?\\"<>\s|.]/g, '');
+const title = document.title.replace(/[\\\\/:*?\\"<>|.-]+/g, '');
 const getPornhubUrls = () =>
   new Promise(resolve2 => {
     if (pornMp4Infos) {
@@ -27,9 +26,10 @@ const getPornhubUrls = () =>
         if (mp4UrlInfo) {
           const mp4InfoList = (await fetch(mp4UrlInfo.videoUrl).then(res => res.json()))?.map(val => ({
             ...val,
-            title: title,
+            title:
+              (document.querySelector<HTMLAnchorElement>('div.userInfoContainer > a')?.innerText || '') + '--' + title,
           }));
-          console.log('🚀 ~ handleMessage ~ mp4InfoList:', mp4InfoList);
+          // console.log('🚀 ~ handleMessage ~ mp4InfoList:', mp4InfoList);
           pornMp4Infos = mp4InfoList;
           resolve2(mp4InfoList);
           window.removeEventListener('message', handleMessage);
@@ -51,8 +51,13 @@ const getXvideosUrls = () =>
     }
     const handleXvMessage = async event => {
       console.log('🚀 ~ handleXvMessage ~ event:', event);
+      const uploaderTxt = document.querySelector<HTMLAnchorElement>('li.main-uploader a span.name')?.innerText;
+      const fileName = (uploaderTxt || '').trim() + '--' + title;
       if (event.data.type === 'main-get-xv-info') {
-        const mp4list = event.data.data;
+        const mp4list = event.data.data?.map(val => ({
+          ...val,
+          title: fileName,
+        }));
         const m3u8List = [];
         if (event.data.hls) {
           console.log('🚀 ~ handleXvMessage ~ event.data.hls:', event.data.hls);
@@ -72,6 +77,7 @@ const getXvideosUrls = () =>
               videoUrl: urlHLS.replace('hls.m3u8', item.uri),
               // video_title: urlTitle,
               format: 'm3u8',
+              title: fileName,
             };
             m3u8List.push(obj);
           }
@@ -101,7 +107,10 @@ const getXhamsterUrls = () =>
     const handleXvMessage = async event => {
       console.log('🚀 ~ handleXvMessage ~ event:', event);
       if (event.data.type === 'main-get-xh-info') {
-        xHMp4Infos = event.data.data;
+        xHMp4Infos = event.data.data?.map(val => ({
+          ...val,
+          title,
+        }));
         resolve2(xHMp4Infos);
         window.removeEventListener('message', handleXvMessage);
         script.remove();
@@ -124,7 +133,10 @@ const getRedtube = () =>
 
     const handleMainDataMessage = async event => {
       if (event.data.type === 'main-window-data') {
-        const mainData = event.data.data;
+        const mainData = event.data.data?.map(val => ({
+          ...val,
+          title,
+        }));
         const getMp4Url = mainData?.[1].videoUrl;
 
         const mp4List = await (await fetch(getMp4Url)).json();
