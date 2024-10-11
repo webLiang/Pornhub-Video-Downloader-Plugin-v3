@@ -48,6 +48,7 @@ url地址栏打开 chrome://extensions/
 ### v1.0.9 支持redtube.com 
 ### v1.0.10 同内容域名支持 xvv1deos.com xnxx.es xhamster42.desi  xhamster1.desi
 ### v1.0.11 下载文件名优化
+### v1.0.12 下载文件名pc站优化
 ### todo https://spankbang.com/
 
 ## Star History
