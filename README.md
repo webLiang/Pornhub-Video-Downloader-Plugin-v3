@@ -5,6 +5,10 @@ Pornhub视频下载Chrome插件
 2024v2即将不支持
 故有此仓库
 
+## 移动端可以安装插件的浏览器推荐
+
+https://www.quetta.net/ ---- 可安装插件，内置视频 
+
 ### 求star   欢迎MR一起维护
 
 ### 打包模板地址 https://github.com/webLiang/chrome-extension-boilerplate-react-vite
