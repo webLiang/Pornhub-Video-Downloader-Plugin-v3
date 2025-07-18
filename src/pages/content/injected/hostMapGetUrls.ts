@@ -22,6 +22,12 @@ const getPornhubUrls = () =>
       if (event.data.type === 'get-ph-flashvars') {
         console.log('recived message:', event.data);
         const mp4UrlInfo = event.data.data.find(val => val.format === 'mp4');
+        const m3u8UrlInfo = event.data?.data
+          ?.filter(val => val.format === 'hls')
+          .map(val => ({
+            ...val,
+            format: 'm3u8',
+          }));
         const usr =
           document.querySelector('.video-actions-container .usernameBadgesWrapper a')?.innerHTML ||
           document.querySelector<HTMLAnchorElement>('userInfoContainer > a')?.innerText ||
@@ -32,8 +38,8 @@ const getPornhubUrls = () =>
             title: usr + '--' + title,
           }));
           // console.log('🚀 ~ handleMessage ~ mp4InfoList:', mp4InfoList);
-          pornMp4Infos = mp4InfoList;
-          resolve2(mp4InfoList);
+          pornMp4Infos = mp4InfoList.concat(m3u8UrlInfo ? m3u8UrlInfo : []);
+          resolve2(pornMp4Infos);
           window.removeEventListener('message', handleMessage);
           script.remove();
         }
