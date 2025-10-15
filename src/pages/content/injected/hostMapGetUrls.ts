@@ -21,8 +21,9 @@ const getPornhubUrls = () =>
     const handleMessage = async event => {
       if (event.data.type === 'get-ph-flashvars') {
         console.log('recived message:', event.data);
-        const mp4UrlInfo = event.data.data.find(val => val.format === 'mp4');
-        const m3u8UrlInfo = event.data?.data
+        const { data, video_title } = event.data;
+        const mp4UrlInfo = data.find(val => val.format === 'mp4');
+        const m3u8UrlInfo = data
           ?.filter(val => val.format === 'hls')
           .map(val => ({
             ...val,
@@ -35,7 +36,7 @@ const getPornhubUrls = () =>
         if (mp4UrlInfo) {
           const mp4InfoList = (await fetch(mp4UrlInfo.videoUrl).then(res => res.json()))?.map(val => ({
             ...val,
-            title: usr + '--' + title,
+            title: usr + '--' + video_title,
           }));
           // console.log('🚀 ~ handleMessage ~ mp4InfoList:', mp4InfoList);
           pornMp4Infos = mp4InfoList.concat(m3u8UrlInfo ? m3u8UrlInfo : []);
@@ -158,6 +159,12 @@ const getRedtube = () =>
   });
 const hostMapGetUrls = {
   'pornhub.com': {
+    getUrls: getPornhubUrls,
+  },
+  'pornhubpremium.com': {
+    getUrls: getPornhubUrls,
+  },
+  'pornhub.org': {
     getUrls: getPornhubUrls,
   },
   'xvideos.com': {
