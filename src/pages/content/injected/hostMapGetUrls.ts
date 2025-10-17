@@ -34,15 +34,21 @@ const getPornhubUrls = () =>
           document.querySelector<HTMLAnchorElement>('userInfoContainer > a')?.innerText ||
           '';
         if (mp4UrlInfo) {
-          const mp4InfoList = (await fetch(mp4UrlInfo.videoUrl).then(res => res.json()))?.map(val => ({
-            ...val,
-            title: usr + '--' + video_title,
-          }));
-          // console.log('🚀 ~ handleMessage ~ mp4InfoList:', mp4InfoList);
-          pornMp4Infos = mp4InfoList.concat(m3u8UrlInfo ? m3u8UrlInfo : []);
-          resolve2(pornMp4Infos);
-          window.removeEventListener('message', handleMessage);
-          script.remove();
+          try {
+            const response = await fetch(mp4UrlInfo.videoUrl);
+            const mp4InfoList = (await response.json()).map(val => ({
+              ...val,
+              title: usr + '--' + video_title,
+            }));
+            pornMp4Infos = mp4InfoList.concat(m3u8UrlInfo ? m3u8UrlInfo : []);
+            resolve2(pornMp4Infos);
+          } catch (error) {
+            console.error('Failed to fetch MP4 info:', error);
+            resolve2([]); // Resolve with an empty array or handle differently
+          } finally {
+            window.removeEventListener('message', handleMessage);
+            script.remove();
+          }
         }
       }
     };
