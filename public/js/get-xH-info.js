@@ -1,10 +1,9 @@
 (function () {
-  const mp4Urls = window.initials.xplayerSettings.sources.standard.h264;
-  console.log('🚀 ~ mp4Urls:', mp4Urls);
+  // const mp4Urls = window.initials.xplayerSettings.sources.standard.h264;
+  const hlsUrl = window.xplayer.core.sourceController.chromecastSource;
   window.postMessage({
     type: 'main-get-xh-info',
-    data: mp4Urls.map(item => {
-      return { videoUrl: item.url, quality: item.quality, format: 'mp4' };
-    }),
+    // data: hlsUrl,
+    hls: { url: hlsUrl, format: 'm3u8' },
   });
 })();

@@ -53,6 +53,7 @@ url地址栏打开 chrome://extensions/
 ### v1.0.10 同内容域名支持 xvv1deos.com xnxx.es xhamster42.desi  xhamster1.desi
 ### v1.0.11 下载文件名优化
 ### v1.0.12 下载文件名pc站优化
+### v1.0.15 修复xvideos.com 规则
 ### todo https://spankbang.com/
 
 ## Star History
