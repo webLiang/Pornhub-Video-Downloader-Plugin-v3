@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from 'preact/hooks';
 import logo from '@assets/img/logo.svg';
 import '@pages/popup/Popup.css';
@@ -21,7 +22,7 @@ const Popup = () => {
   // M3U8 下载相关状态
   const [m3u8Url, setM3u8Url] = useState('');
   const [m3u8FileName, setM3u8FileName] = useState('');
-  const [isGetMP4, setIsGetMP4] = useState(false);
+  const [isGetMP4] = useState(false);
   const [downloadState, setDownloadState] = useState<M3U8DownloadState>(
     m3u8DownloadStorage.getSnapshot() || {
       isDownloading: false,
@@ -137,7 +138,7 @@ const Popup = () => {
       unsubscribe();
       chrome.runtime.onMessage.removeListener(messageListener);
     };
-  }, [showError, showSuccess]);
+  }, []);
   const onDownload = (videoInfo: VideoInfo) => () => {
     if (videoInfo.format === 'm3u8') {
       // 使用新的 M3U8 下载功能
@@ -378,7 +379,7 @@ const Popup = () => {
             className="m3u8-input"
           />
         </div>
-        <div className="m3u8-input-group">
+        {/* <div className="m3u8-input-group">
           <label>
             <input
               type="checkbox"
@@ -388,7 +389,7 @@ const Popup = () => {
             />
             转换为 MP4 格式
           </label>
-        </div>
+        </div> */}
         <div className="m3u8-button-group">
           {!downloadState.isDownloading ? (
             <>
