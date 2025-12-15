@@ -247,3 +247,299 @@ dialog {
     transform: rotate(360deg);
   }
 }
+
+/* M3U8 下载区域样式 */
+.m3u8-download-section {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.m3u8-download-section h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.m3u8-input-group {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.m3u8-input-group label {
+  margin-bottom: 5px;
+  font-size: 13px;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.m3u8-input {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.m3u8-input:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+.m3u8-button-group {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.button.cancel {
+  background-color: #dc3545;
+}
+
+.button.cancel:hover {
+  background-color: #c82333;
+}
+
+.m3u8-progress-section {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #dee2e6;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #666;
+}
+
+.progress-info .error-count {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background-color: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #28a745, #20c997);
+  transition: width 0.3s ease;
+  border-radius: 10px;
+}
+
+.m3u8-error {
+  margin-top: 10px;
+  padding: 8px;
+  background-color: #f8d7da;
+  color: #721c24;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid #f5c6cb;
+}
+
+.progress-info .completed-time {
+  color: #28a745;
+  font-size: 11px;
+}
+
+.completed-message {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #d4edda;
+  border-radius: 4px;
+  border: 1px solid #c3e6cb;
+}
+
+.success-message {
+  color: #155724;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.button.clear {
+  background-color: #6c757d;
+  font-size: 12px;
+  padding: 0.5em 1em;
+  height: auto;
+  line-height: normal;
+}
+
+.button.clear:hover {
+  background-color: #5a6268;
+}
+
+/* 文件下载进度相关样式 */
+.progress-info .file-download-progress {
+  color: #007bff;
+  font-weight: 500;
+}
+
+.progress-info .file-download-loading {
+  color: #007bff;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.file-download-indicator {
+  margin-top: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, #e7f3ff 0%, #d6ebff 100%);
+  border-radius: 8px;
+  border: 1px solid #b3d9ff;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+}
+
+.file-download-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #0056b3;
+  font-weight: 500;
+}
+
+.file-download-icon {
+  font-size: 16px;
+  animation: bounce 1.5s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.file-download-text {
+  flex: 1;
+  text-align: left;
+}
+
+.file-download-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #e9ecef;
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.file-download-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #007bff 0%, #0056b3 50%, #004085 100%);
+  border-radius: 5px;
+  transition: width 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 123, 255, 0.3);
+}
+
+.file-download-bar-fill.file-download-animated {
+  background: linear-gradient(
+    90deg,
+    #007bff 0%,
+    #0056b3 25%,
+    #007bff 50%,
+    #0056b3 75%,
+    #007bff 100%
+  );
+  background-size: 200% 100%;
+  animation: progress-wave 1.5s ease-in-out infinite;
+}
+
+@keyframes progress-wave {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* 简化版文件下载加载动画 */
+.file-download-indicator.simple {
+  margin-top: 12px;
+  padding: 10px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #f1f5ff;
+  border: 1px solid #cbd5ff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 123, 255, 0.08);
+}
+
+.file-download-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #d6e4ff;
+  border-top-color: #4c6fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.file-download-text {
+  font-size: 13px;
+  color: #1f3b82;
+  font-weight: 500;
+}
+
+.file-download-shimmer {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}

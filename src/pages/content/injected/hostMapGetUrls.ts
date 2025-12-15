@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Parser } from 'm3u8-parser';
 
 // Cache object
@@ -114,6 +115,37 @@ const getPornhubUrls = createMessageHandler({
         format: 'm3u8',
       }));
 
+    // Fetch m3u8 content and extract real video URLs
+    const m3u8CtnInfo = await Promise.all(
+      m3u8UrlInfo.map(val =>
+        fetch(val.videoUrl)
+          .then(result => result.text())
+          .catch(e => ''),
+      ),
+    );
+    console.log('🚀 ~ handler:getPornhubUrls ~ m3u8CtnInfo:', m3u8CtnInfo);
+
+    // Replace videoUrl with the URL extracted from m3u8 content
+    const m3u8UrlInfoWithRealUrls = m3u8UrlInfo.map((val: any, index: number) => {
+      const m3u8Content = m3u8CtnInfo[index];
+      if (!m3u8Content) return val;
+
+      // Extract URL from m3u8 content (find lines that are URLs, not comments)
+      const lines = m3u8Content.split('\n').filter((line: string) => line.trim() && !line.startsWith('#'));
+      const realUrl = lines[0]?.trim();
+
+      if (realUrl) {
+        // Handle relative URLs
+        const baseUrl = val.videoUrl.substring(0, val.videoUrl.lastIndexOf('/') + 1);
+        const fullUrl = realUrl.startsWith('http') ? realUrl : baseUrl + realUrl;
+        return {
+          ...val,
+          videoUrl: fullUrl,
+        };
+      }
+      return val;
+    });
+    console.log('🚀 ~ handler:getPornhubUrls ~ m3u8UrlInfoWithRealUrls:', m3u8UrlInfoWithRealUrls);
     const usr =
       document.querySelector('.video-actions-container .usernameBadgesWrapper a')?.innerHTML ||
       document.querySelector<HTMLAnchorElement>('userInfoContainer > a')?.innerText ||
@@ -125,7 +157,7 @@ const getPornhubUrls = createMessageHandler({
         title: usr + '--' + title,
       }));
 
-      const result = mp4InfoList.concat(m3u8UrlInfo || []);
+      const result = mp4InfoList.concat(m3u8UrlInfoWithRealUrls || []);
       cache.pornhub = result;
       resolve(result);
     }
