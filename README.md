@@ -1,67 +1,101 @@
-# Pornhub-Video-Downloader
+# Pornhub-Video-Downloader 视频多分辨率下载
 
-Pornhub视频下载Chrome插件
-老仓库作者2年不更新 https://github.com/zgao264/Pornhub-Video-Downloader-Plugin
-2024v2即将不支持
-故有此仓库
+Chrome 插件，支持 Pornhub 等站点视频**多分辨率下载**。因[原仓库](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin)长期未更新且 2024 Manifest V2 即将弃用，故维护此仓库。
 
-## 移动端可以安装插件的浏览器推荐
+---
 
-https://www.quetta.net/ ---- 可安装插件，内置视频 
+## 1. 多分辨率下载 + 插件截图
 
-### 求star   欢迎MR一起维护
+- 支持在支持的站点上选择**多种清晰度**（如 720p、1080p 等）下载视频。
+- 通过向视频页注入 JS 获取真实流地址并提取下载链接。
 
-### 打包模板地址 https://github.com/webLiang/chrome-extension-boilerplate-react-vite
+<p align="center">
+  <img src="./images/ScreenShot_2026-01-30_115236_135.png" alt="插件截图" width="480" />
+</p>
 
-通过向Pornhub视频页面注入JS获取视频接口信息，提取链接下载。
+---
 
-### 下载地址 下载zip
+## 2. 移动端可安装插件的浏览器（重点）
 
-[Download Pornhub-Video-Downloader-Plugin.zip](https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3/releases)
+在手机/平板上如需使用本插件，请使用**支持安装扩展**的浏览器，推荐：
 
-### 如果是Chrome (谷歌)浏览器，下载zip后解压加载
+| 平台 | 推荐 |
+|------|------|
+| **移动端** | **[Quetta](https://www.quetta.net/)** — 支持安装 Chrome 扩展，内置视频能力 |
 
-本地加载插件的方法：
+> 移动端访问地址（请收藏）：  
+> **https://www.quetta.net/**
 
-url地址栏打开 chrome://extensions/
-![image](./public/usage.png)
+<p align="center">
+  <img src="./images/vC9a0X1ijXbch5Nqw4EvBAPjg.avif" alt="Quetta 移动端浏览器" width="360" />
+</p>
 
-### chrome内核的浏览器（例如360,360极速这类浏览器）
+---
 
-下载crx后拖入浏览器即可。
+## 下载与安装
 
-## 支持网站列表
+- **下载 ZIP**：[Releases 下载 Pornhub-Video-Downloader-Plugin.zip](https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3/releases)
 
-* pornhub.com
-* xvideos.com
-* xnxx.com
-* xvv1deos.com 
-* xnxx.es 
-* xhamster.com
-* xhamster42.desi  
-* xhamster1.desi
-* redtube.com
+### Chrome / 谷歌浏览器
 
-### v1.0.3增加 xnxx.com 支持
+1. 地址栏打开：`chrome://extensions/`
+2. 开启「开发者模式」
+3. 点击「加载已解压的扩展程序」，选择解压后的插件目录
 
-### v1.0.4增加 xhamster.com支持
+<p align="center">
+  <img src="./images/usage.png" alt="Chrome 加载扩展" width="480" />
+</p>
 
-### v1.0.5 xvideos.com，xnxx.com 支持1080p,m3u8借助三方服务页下载 ui优化
-### v1.0.7 其他网站pop报错不显示远程版本号
-### v1.0.8 自动化crx流程
-### v1.0.9 支持redtube.com 
-### v1.0.10 同内容域名支持 xvv1deos.com xnxx.es xhamster42.desi  xhamster1.desi
-### v1.0.11 下载文件名优化
-### v1.0.12 下载文件名pc站优化
-### v1.0.15 修复xvideos.com 规则
-### todo https://spankbang.com/
+### 其他 Chromium 内核浏览器（如 360、360 极速等）
+
+- 下载 **.crx** 后拖入浏览器即可安装。
+
+---
+
+## 支持网站
+
+| 站点 |
+|------|
+| pornhub.com |
+| xvideos.com |
+| xnxx.com · xnxx.es |
+| xvv1deos.com |
+| xhamster.com · xhamster42.desi · xhamster1.desi |
+| redtube.com |
+
+---
+
+## 开发与贡献
+
+- 打包模板：[chrome-extension-boilerplate-react-vite](https://github.com/webLiang/chrome-extension-boilerplate-react-vite)
+- 欢迎 **Star** 与 **MR** 一起维护。
+
+---
+
+## 更新记录
+
+| 版本 | 说明 |
+|------|------|
+| v1.0.3 | 支持 xnxx.com |
+| v1.0.4 | 支持 xhamster.com |
+| v1.0.5 | xvideos/xnxx 支持 1080p、m3u8，UI 优化 |
+| v1.0.7 | 其他站点 pop 报错时不误显示远程版本号 |
+| v1.0.8 | 自动化 crx 打包 |
+| v1.0.9 | 支持 redtube.com |
+| v1.0.10 | 同内容多域名：xvv1deos.com、xnxx.es、xhamster42.desi、xhamster1.desi |
+| v1.0.11 | 下载文件名优化 |
+| v1.0.12 | PC 站下载文件名优化 |
+| v1.0.15 | 修复 xvideos.com 规则 |
+| todo | [spankbang.com](https://spankbang.com/) 计划支持 |
+
+---
 
 ## Star History
 
 <a href="https://star-history.com/#webLiang/Pornhub-Video-Downloader-Plugin-v3&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=webLiang/Pornhub-Video-Downloader-Plugin-v3&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=webLiang/Pornhub-Video-Downloader-Plugin-v3&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=webLiang/Pornhub-Video-Downloader-Plugin-v3&type=Date" />
- </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=webLiang/Pornhub-Video-Downloader-Plugin-v3&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=webLiang/Pornhub-Video-Downloader-Plugin-v3&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=webLiang/Pornhub-Video-Downloader-Plugin-v3&type=Date" />
+  </picture>
 </a>
