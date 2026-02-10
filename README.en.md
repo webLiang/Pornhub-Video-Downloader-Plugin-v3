@@ -86,6 +86,7 @@ To use this extension on **phones or tablets**, you need a browser that supports
 | v1.0.11 | Download filename improvements |
 | v1.0.12 | PC site download filename improvements |
 | v1.0.15 | Fix xvideos.com rules |
+| v1.0.17 xvideos 修复
 | todo | [spankbang.com](https://spankbang.com/) planned |
 
 ---
