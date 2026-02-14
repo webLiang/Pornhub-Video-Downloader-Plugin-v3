@@ -86,6 +86,7 @@ Chrome 插件，支持 Pornhub 等站点视频**多分辨率下载**。因[原�
 | v1.0.11 | 下载文件名优化 |
 | v1.0.12 | PC 站下载文件名优化 |
 | v1.0.15 | 修复 xvideos.com 规则 |
+| v1.0.18 | 修复 ph 支持下载|
 | todo | [spankbang.com](https://spankbang.com/) 计划支持 |
 
 ---
