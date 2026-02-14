@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import reloadOnUpdate from 'virtual:reload-on-update-in-background-script';
 import 'webextension-polyfill';
-import M3U8Downloader from './utils/m3u8-downloader-core';
+import M3U8Downloader from './utils/dist/m3u8-downloader-core.obf';
+import MP4Downloader from './utils/dist/mp4-downloader.obf';
 import m3u8DownloadStorage from '@src/shared/storages/m3u8DownloadStorage';
+import downloadHistoryStorage from '@src/shared/storages/downloadHistoryStorage';
 
 reloadOnUpdate('pages/background');
 
@@ -16,6 +18,7 @@ console.log('background loaded');
 
 // 下载器实例管理
 let downloaderInstance: any = null;
+let mp4DownloaderInstance: MP4Downloader | null = null;
 
 // 获取当前下载状态
 async function getDownloadState() {
@@ -38,17 +41,60 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse(state);
     });
     return true; // 保持消息通道打开以支持异步响应
+  } else if (message.type === 'mp4-download-start') {
+    handleMP4DownloadStart(message, sendResponse);
+    return true;
+  } else if (message.type === 'mp4-download-cancel') {
+    handleMP4DownloadCancel(sendResponse);
+    return true;
+  } else if (message.type === 'open-downloads-folder') {
+    chrome.downloads.showDefaultFolder();
+    sendResponse({ success: true });
+    return false;
   }
 
   return false;
 });
 
 /**
+ * Get the active tab's URL for constructing Origin/Referer headers.
+ * Background service worker has reliable access to chrome.tabs.query.
+ */
+async function getActiveTabUrl(): Promise<string | undefined> {
+  try {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    return tabs[0]?.url || undefined;
+  } catch (e) {
+    console.warn('[background] Failed to get active tab URL:', e);
+    return undefined;
+  }
+}
+
+/**
+ * Build Origin & Referer headers from a page URL.
+ * Returns undefined if the URL is invalid.
+ */
+function buildHeaders(pageUrl?: string): Record<string, string> | undefined {
+  if (!pageUrl) return undefined;
+  try {
+    const u = new URL(pageUrl);
+    return { Origin: u.origin, Referer: pageUrl };
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * 处理 M3U8 下载开始请求
  */
 async function handleM3U8DownloadStart(message: any, sendResponse: (response?: any) => void) {
   try {
-    const { url, fileName, isGetMP4 } = message;
+    const { url, fileName, isGetMP4, headers: popupHeaders } = message;
+
+    // Build headers: prefer popup-provided, fallback to active tab URL
+    const tabUrl = await getActiveTabUrl();
+    const headers = popupHeaders || buildHeaders(tabUrl);
+    console.log('[background] Download headers:', headers, '| tabUrl:', tabUrl);
 
     if (!url) {
       try {
@@ -139,6 +185,9 @@ async function handleM3U8DownloadStart(message: any, sendResponse: (response?: a
       onComplete: (data: any) => {
         m3u8DownloadStorage.markCompleted(data.fileName);
 
+        // Save to download history (persistent)
+        downloadHistoryStorage.addRecord(data.fileName, url);
+
         // 发送完成消息到 popup
         chrome.runtime
           .sendMessage({
@@ -178,10 +227,11 @@ async function handleM3U8DownloadStart(message: any, sendResponse: (response?: a
       error: undefined,
     });
 
-    // 开始下载
+    // 开始下载（pass custom headers like Origin/Referer to every segment fetch）
     downloaderInstance.start(url, {
       isGetMP4: isGetMP4 || false,
       fileName: fileName || '',
+      headers: headers || undefined,
     });
 
     try {
@@ -250,13 +300,127 @@ async function handleM3U8DownloadCancel(sendResponse: (response?: any) => void) 
   }
 }
 
-// chrome.action.onClicked.addListener(tab => {
-//   // Do something when popup is opened
-//   console.log('Popup opened on tab:', tab);
-// });
+// ---------------------------------------------------------------------------
+// MP4 direct download (fetch + DNR + OPFS, same pipeline as m3u8)
+// ---------------------------------------------------------------------------
 
-// chrome.action.onClicked.addListener(tab => {
-//   // 打开 popup 页面时触发的逻辑
-//   // 可以在此处执行你的操作
-//   console.log('Popup opened');
-// });
+async function handleMP4DownloadStart(message: any, sendResponse: (response?: any) => void) {
+  try {
+    const { url, fileName, headers: popupHeaders } = message;
+
+    const tabUrl = await getActiveTabUrl();
+    const headers = popupHeaders || buildHeaders(tabUrl);
+
+    if (!url) {
+      sendResponse({ success: false, error: 'URL 不能为空' });
+      return;
+    }
+
+    // Destroy any existing MP4 downloader
+    if (mp4DownloaderInstance) {
+      mp4DownloaderInstance.destroy();
+      mp4DownloaderInstance = null;
+    }
+
+    // Also check m3u8 downloader is not running
+    const m3u8State = await getDownloadState();
+    if (downloaderInstance && m3u8State.isDownloading) {
+      sendResponse({ success: false, error: '已有下载任务在进行中' });
+      return;
+    }
+
+    mp4DownloaderInstance = new MP4Downloader();
+
+    // Reuse m3u8DownloadStorage to track progress (same UI)
+    await m3u8DownloadStorage.set({
+      isDownloading: true,
+      progress: 0,
+      fileName: fileName || '',
+      errorNum: 0,
+      finishNum: 0,
+      targetSegment: 1,
+      error: undefined,
+      url,
+      isGetMP4: true,
+      completedAt: undefined,
+    });
+
+    mp4DownloaderInstance.start({
+      url,
+      fileName: fileName || 'video',
+      headers,
+      onProgress: data => {
+        const progress = data.progress >= 0 ? data.progress : 0;
+        m3u8DownloadStorage.updateProgress({
+          progress,
+          finishNum: data.isFileDownloading ? 1 : 0,
+          targetSegment: 1,
+          isFileDownloading: data.isFileDownloading,
+          fileDownloadProgress: data.isFileDownloading ? data.progress : undefined,
+        });
+
+        chrome.runtime
+          .sendMessage({
+            type: 'm3u8-download-progress',
+            progress,
+            finishNum: data.isFileDownloading ? 1 : 0,
+            errorNum: 0,
+            targetSegment: 1,
+            fileDownloadProgress: data.isFileDownloading ? data.progress : undefined,
+            isFileDownloading: data.isFileDownloading,
+          })
+          .catch(() => {});
+      },
+      onComplete: data => {
+        m3u8DownloadStorage.markCompleted(data.fileName);
+        downloadHistoryStorage.addRecord(data.fileName, url);
+
+        chrome.runtime
+          .sendMessage({
+            type: 'm3u8-download-complete',
+            fileName: data.fileName,
+          })
+          .catch(() => {});
+
+        mp4DownloaderInstance = null;
+      },
+      onError: error => {
+        m3u8DownloadStorage.markError(error);
+
+        chrome.runtime
+          .sendMessage({
+            type: 'm3u8-download-error',
+            error,
+          })
+          .catch(() => {});
+
+        mp4DownloaderInstance = null;
+      },
+    });
+
+    sendResponse({ success: true, message: 'MP4 下载已开始' });
+  } catch (error: any) {
+    console.error('[background] MP4 download start error:', error);
+    m3u8DownloadStorage.updateProgress({ isDownloading: false });
+    sendResponse({ success: false, error: error.message || '下载启动失败' });
+  }
+}
+
+async function handleMP4DownloadCancel(sendResponse: (response?: any) => void) {
+  try {
+    if (mp4DownloaderInstance) {
+      mp4DownloaderInstance.destroy();
+      mp4DownloaderInstance = null;
+    }
+
+    await m3u8DownloadStorage.updateProgress({
+      isDownloading: false,
+      progress: 0,
+    });
+
+    sendResponse({ success: true, message: 'MP4 下载已取消' });
+  } catch (error: any) {
+    console.error('[background] MP4 download cancel error:', error);
+    sendResponse({ success: false, error: error.message || '取消失败' });
+  }
+}

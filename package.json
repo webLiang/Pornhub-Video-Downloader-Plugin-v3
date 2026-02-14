@@ -1,6 +1,6 @@
 {
   "name": "pornhub-video-downloader-plugin-v3",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Pornhub视频xvideos视频下载。 ",
   "license": "MIT",
   "repository": {
@@ -8,7 +8,8 @@
     "url": "https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3"
   },
   "scripts": {
-    "build": "tsc --noEmit && vite build",
+    "build:core": "node scripts/build-obfuscated.mjs",
+    "build": "pnpm build:core && tsc --noEmit && vite build",
     "build:firefox": "tsc --noEmit && cross-env __FIREFOX__=true vite build",
     "build:watch": "cross-env __DEV__=true vite build -w --mode development",
     "build:firefox:watch": "cross-env __DEV__=true __FIREFOX__=true vite build -w --mode development",
@@ -49,6 +50,7 @@
     "@vitejs/plugin-react": "4.2.0",
     "chokidar": "3.5.3",
     "cross-env": "7.0.3",
+    "esbuild": "~0.19.5",
     "eslint": "8.56.0",
     "eslint-config-airbnb-typescript": "17.1.0",
     "eslint-config-prettier": "9.0.0",
@@ -59,6 +61,7 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "fs-extra": "11.1.1",
     "husky": "8.0.3",
+    "javascript-obfuscator": "^5.3.0",
     "jsdom": "^22.1.0",
     "lint-staged": "15.2.0",
     "magic-string": "^0.30.6",

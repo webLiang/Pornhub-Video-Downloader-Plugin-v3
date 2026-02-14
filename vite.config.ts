@@ -11,6 +11,24 @@ const pagesDir = resolve(srcDir, 'pages');
 const isDev = process.env.__DEV__ === 'true';
 const isProduction = !isDev;
 
+// In dev mode, swap obfuscated imports back to source .ts for debugging
+const coreAlias = isDev
+  ? {
+      [resolve(pagesDir, 'background', 'utils', 'dist', 'm3u8-downloader-core.obf')]: resolve(
+        pagesDir,
+        'background',
+        'utils',
+        'm3u8-downloader-core.ts',
+      ),
+      [resolve(pagesDir, 'background', 'utils', 'dist', 'mp4-downloader.obf')]: resolve(
+        pagesDir,
+        'background',
+        'utils',
+        'mp4-downloader.ts',
+      ),
+    }
+  : {};
+
 export default defineConfig({
   resolve: {
     alias: {
@@ -18,6 +36,7 @@ export default defineConfig({
       '@src': srcDir,
       '@assets': resolve(srcDir, 'assets'),
       '@pages': pagesDir,
+      ...coreAlias,
     },
   },
   plugins: [...getPlugins(isDev), preact()],

@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from 'preact/hooks';
-import logo from '@assets/img/logo.svg';
+import iconLogo from '/icon-128.png';
 import '@pages/popup/Popup.css';
 import m3u8DownloadStorage, { type M3U8DownloadState } from '@src/shared/storages/m3u8DownloadStorage';
+import downloadHistoryStorage, { type DownloadRecord } from '@src/shared/storages/downloadHistoryStorage';
 import { ToastContainer, useToast } from '@pages/popup/components/Toast';
 
 type VideoInfo = {
@@ -34,10 +35,30 @@ const Popup = () => {
     },
   );
   const m3u8SectionRef = useRef<HTMLDivElement | null>(null);
+  const [currentTabUrl, setCurrentTabUrl] = useState('');
+  const [downloadHistory, setDownloadHistory] = useState<DownloadRecord[]>([]);
 
   const scrollToM3u8Section = () => {
     if (m3u8SectionRef.current) {
       m3u8SectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  /**
+   * Build Origin & Referer headers from the current tab URL.
+   * Used to attach correct headers to every m3u8 segment fetch request.
+   */
+  const buildM3u8Headers = (tabUrl?: string): Record<string, string> | undefined => {
+    const url = tabUrl || currentTabUrl;
+    if (!url) return undefined;
+    try {
+      const u = new URL(url);
+      return {
+        Origin: u.origin,
+        Referer: url,
+      };
+    } catch {
+      return undefined;
     }
   };
 
@@ -84,6 +105,13 @@ const Popup = () => {
       }
     });
 
+    // Get current tab URL for Origin/Referer headers
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+      if (tabs[0]?.url) {
+        setCurrentTabUrl(tabs[0].url);
+      }
+    });
+
     sendMessageToContentScript({ command: 'get_video_info' }, function (response) {
       console.log('🚀 ~ response:', response);
       setvideoInfos(response);
@@ -108,6 +136,13 @@ const Popup = () => {
       if (currentState) {
         setDownloadState(currentState);
       }
+    });
+
+    // Load download history & subscribe
+    downloadHistoryStorage.get().then(state => setDownloadHistory(state.records));
+    const unsubHistory = downloadHistoryStorage.subscribe(() => {
+      const snap = downloadHistoryStorage.getSnapshot();
+      if (snap) setDownloadHistory(snap.records);
     });
 
     // 监听来自 background 的消息（进度更新、完成、错误等）
@@ -136,6 +171,7 @@ const Popup = () => {
     // Trigger your effect
     return () => {
       unsubscribe();
+      unsubHistory();
       chrome.runtime.onMessage.removeListener(messageListener);
     };
   }, []);
@@ -154,13 +190,14 @@ const Popup = () => {
       // 定位到 M3U8 下载区域
       scrollToM3u8Section();
 
-      // 直接执行下载
+      // 直接执行下载（attach Origin & Referer from current tab）
       chrome.runtime
         .sendMessage({
           type: 'm3u8-download-start',
           url: videoInfo.videoUrl,
           fileName: videoInfo.title || undefined,
           isGetMP4: false,
+          headers: buildM3u8Headers(),
         })
         .then(response => {
           if (response && !response.success) {
@@ -187,10 +224,32 @@ const Popup = () => {
         });
       return;
     }
-    chrome.downloads.download({
-      url: videoInfo.videoUrl,
-      filename: `${videoInfo.title}.${videoInfo.format}`,
-    });
+    // MP4 / WebM: also go through extension pipeline (DNR headers + OPFS + chrome.downloads)
+    if (downloadState.isDownloading) {
+      showWarning('已有下载任务在进行中');
+      return;
+    }
+
+    scrollToM3u8Section();
+
+    chrome.runtime
+      .sendMessage({
+        type: 'mp4-download-start',
+        url: videoInfo.videoUrl,
+        fileName: videoInfo.title || 'video',
+        headers: buildM3u8Headers(),
+      })
+      .then(response => {
+        if (response && !response.success) {
+          showError('启动下载失败: ' + (response.error || '未知错误'));
+        } else {
+          showInfo(`${videoInfo.format.toUpperCase()} 下载已开始`);
+        }
+      })
+      .catch(error => {
+        console.error('发送消息失败:', error);
+        showError('启动下载失败: ' + (error.message || '无法连接到 background script'));
+      });
   };
 
   const onCopy = (videoInfo: VideoInfo) => () => {
@@ -209,13 +268,14 @@ const Popup = () => {
       return;
     }
 
-    // 发送开始下载消息到 background
+    // 发送开始下载消息到 background（attach Origin & Referer from current tab）
     chrome.runtime
       .sendMessage({
         type: 'm3u8-download-start',
         url: m3u8Url.trim(),
         fileName: m3u8FileName.trim() || undefined,
         isGetMP4: isGetMP4,
+        headers: buildM3u8Headers(),
       })
       .then(response => {
         if (response && !response.success) {
@@ -246,29 +306,18 @@ const Popup = () => {
       return;
     }
 
-    // 发送取消下载消息到 background
-    chrome.runtime
-      .sendMessage({ type: 'm3u8-download-cancel' })
-      .then(response => {
-        if (response && response.success) {
-          m3u8DownloadStorage.updateProgress({
-            isDownloading: false,
-          });
-          showInfo('下载已取消');
-        } else {
-          // 即使取消失败，也强制清空本地状态（可能是状态不同步）
-          m3u8DownloadStorage.updateProgress({
-            isDownloading: false,
-          });
-          showWarning('取消下载失败，已强制清空状态: ' + (response?.error || '未知错误'));
-        }
+    // Cancel both m3u8 and mp4 downloaders (only the active one matters)
+    Promise.allSettled([
+      chrome.runtime.sendMessage({ type: 'm3u8-download-cancel' }),
+      chrome.runtime.sendMessage({ type: 'mp4-download-cancel' }),
+    ])
+      .then(() => {
+        m3u8DownloadStorage.updateProgress({ isDownloading: false });
+        showInfo('下载已取消');
       })
       .catch(error => {
         console.error('发送消息失败:', error);
-        // 即使消息发送失败，也强制清空本地状态
-        m3u8DownloadStorage.updateProgress({
-          isDownloading: false,
-        });
+        m3u8DownloadStorage.updateProgress({ isDownloading: false });
         showWarning('取消下载请求发送失败，已清空本地状态');
       });
   };
@@ -276,23 +325,16 @@ const Popup = () => {
   // 强制重置下载状态（用于异常情况）
   const handleForceReset = () => {
     if (confirm('确定要强制重置下载状态吗？这将清空所有下载信息。')) {
-      console.log('88888----handleForceReset');
-      // 先尝试取消下载
-      chrome.runtime
-        .sendMessage({ type: 'm3u8-download-cancel' })
-        .then(() => {
-          console.log('99999----chrome.runtime.sendMessage');
-        })
-        .catch(error => {
-          console.warn('取消下载消息发送失败（忽略）:', error);
-        })
-        .finally(() => {
-          // 无论取消是否成功，都强制重置状态
-          m3u8DownloadStorage.reset();
-          setM3u8Url('');
-          setM3u8FileName('');
-          showInfo('状态已强制重置');
-        });
+      // Cancel both m3u8 and mp4 downloaders
+      Promise.allSettled([
+        chrome.runtime.sendMessage({ type: 'm3u8-download-cancel' }),
+        chrome.runtime.sendMessage({ type: 'mp4-download-cancel' }),
+      ]).finally(() => {
+        m3u8DownloadStorage.reset();
+        setM3u8Url('');
+        setM3u8FileName('');
+        showInfo('状态已强制重置');
+      });
     }
   };
 
@@ -303,28 +345,52 @@ const Popup = () => {
     setM3u8FileName('');
   };
 
+  // Open the browser downloads folder
+  const handleOpenFolder = () => {
+    chrome.runtime.sendMessage({ type: 'open-downloads-folder' });
+  };
+
+  // Remove a single history item
+  const handleRemoveHistory = (id: string) => {
+    downloadHistoryStorage.removeRecord(id);
+  };
+
+  // Clear all history
+  const handleClearHistory = () => {
+    downloadHistoryStorage.clearAll();
+  };
+
   return (
     <div className="App" style={{}}>
       <ToastContainer toasts={toasts} onRemove={removeToast} />
-      {videoInfos?.length > 0 && <img src={logo} className="App-logo" alt="logo" />}
-      <div>
-        <h2>视频下载插件</h2>
-        <h3>
-          当前版本：{manifestData.version} --- 远程版本：{remoteVersion}
-        </h3>
-      </div>
-      <div>
-        Author By:{' '}
-        <a rel="noreferrer" href="https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3" target="_blank">
-          webLiang
-        </a>
-        <br />
-        <a
-          rel="noreferrer"
-          href="https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3/releases"
-          target="_blank">
-          获取最新版本
-        </a>
+      <div className="popup-header-bar">
+        <img src={iconLogo} className="popup-header-logo" alt="logo" />
+        <div className="popup-header-info">
+          <span className="popup-header-title">Video Downloader</span>
+          <span className="popup-header-meta">
+            v{manifestData.version}
+            <span className="popup-header-dot">·</span>
+            <a
+              className="popup-header-author"
+              rel="noreferrer"
+              href="https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3"
+              target="_blank">
+              webLiang
+            </a>
+            {remoteVersion !== '0.0.0' && remoteVersion !== manifestData.version && (
+              <>
+                <span className="popup-header-dot">·</span>
+                <a
+                  className="popup-header-update"
+                  rel="noreferrer"
+                  href="https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3/releases"
+                  target="_blank">
+                  New {remoteVersion}
+                </a>
+              </>
+            )}
+          </span>
+        </div>
       </div>
       <div className="box">
         <ul>
@@ -438,17 +504,54 @@ const Popup = () => {
             </div>
 
             {downloadState.progress === 100 && !downloadState.isDownloading && (
-              <div className="completed-message">
-                <div className="success-message">✓ Completed: {downloadState.fileName || 'Unknown file'}</div>
-                <button className="button clear" onClick={handleClearCompleted} style={{ marginTop: '10px' }}>
-                  Clear
-                </button>
+              <div className="completed-message-compact">
+                <span className="success-text" title={downloadState.fileName || 'Unknown file'}>
+                  ✓ {downloadState.fileName || 'Unknown file'}
+                </span>
+                <div className="completed-actions">
+                  <button className="btn-icon" onClick={handleOpenFolder} title="打开下载文件夹">
+                    📂
+                  </button>
+                  <button className="btn-icon" onClick={handleClearCompleted} title="清除">
+                    ✕
+                  </button>
+                </div>
               </div>
             )}
           </div>
         )}
         {downloadState.error && <div className="m3u8-error">{downloadState.error}</div>}
       </div>
+
+      {/* Download History */}
+      {downloadHistory.length > 0 && (
+        <div className="download-history">
+          <div className="history-header">
+            <span className="history-title">下载记录 ({downloadHistory.length})</span>
+            <button className="btn-text" onClick={handleClearHistory}>
+              清空
+            </button>
+          </div>
+          <ul className="history-list">
+            {downloadHistory.map(record => (
+              <li key={record.id} className="history-item">
+                <span className="history-filename" title={record.fileName}>
+                  {record.fileName}
+                </span>
+                <span className="history-time">{new Date(record.completedAt).toLocaleDateString()}</span>
+                <div className="history-actions">
+                  <button className="btn-icon-sm" onClick={handleOpenFolder} title="打开文件夹">
+                    📂
+                  </button>
+                  <button className="btn-icon-sm" onClick={() => handleRemoveHistory(record.id)} title="删除记录">
+                    ✕
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
