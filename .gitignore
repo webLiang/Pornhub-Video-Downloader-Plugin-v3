@@ -16,3 +16,7 @@
 utils/reload/*.js
 utils/reload/injections/*.js
 public/manifest.json
+
+# Core downloader sources – only obfuscated builds are committed
+src/pages/background/utils/m3u8-downloader-core.ts
+src/pages/background/utils/mp4-downloader.ts

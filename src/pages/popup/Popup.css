@@ -14,15 +14,68 @@ body {
   background-color: #fff;
 }
 
-.App-logo {
-  height: 15vmin;
-  pointer-events: none;
+/* Compact header bar */
+.popup-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #eee;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.popup-header-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.popup-header-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 0;
+}
+
+.popup-header-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.2;
+}
+
+.popup-header-meta {
+  font-size: 11px;
+  color: #999;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.popup-header-dot {
+  color: #ccc;
+}
+
+.popup-header-author {
+  color: #666;
+  text-decoration: none;
+}
+
+.popup-header-author:hover {
+  color: #333;
+  text-decoration: underline;
+}
+
+.popup-header-update {
+  color: #f90;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.popup-header-update:hover {
+  text-decoration: underline;
 }
 
 .App-header {
@@ -239,14 +292,6 @@ dialog {
     opacity: 1;
   }
 }
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 /* M3U8 下载区域样式 */
 .m3u8-download-section {
@@ -356,19 +401,55 @@ dialog {
   font-size: 11px;
 }
 
-.completed-message {
-  margin-top: 10px;
-  padding: 10px;
+/* Compact completed row */
+.completed-message-compact {
+  margin-top: 8px;
+  padding: 6px 10px;
   background-color: #d4edda;
-  border-radius: 4px;
+  border-radius: 6px;
   border: 1px solid #c3e6cb;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.success-message {
+.completed-message-compact .success-text {
+  flex: 1;
+  min-width: 0;
   color: #155724;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.completed-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Icon button (medium) */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  transition: background 0.15s;
+}
+
+.btn-icon:hover {
+  background: rgba(0, 0, 0, 0.12);
 }
 
 .button.clear {
@@ -542,4 +623,107 @@ dialog {
   100% {
     left: 100%;
   }
+}
+
+/* ====== Download History ====== */
+.download-history {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.history-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.btn-text:hover {
+  color: #dc3545;
+  text-decoration: underline;
+}
+
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  border-bottom: 1px solid #f0f0f0;
+  height: auto !important;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-filename {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  color: #333 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.history-time {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: #aaa !important;
+}
+
+.history-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* Icon button (small, for history list) */
+.btn-icon-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  padding: 0;
+  color: #999;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-icon-sm:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #333;
 }
