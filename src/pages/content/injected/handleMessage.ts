@@ -16,7 +16,11 @@ async function handleMessage() {
     if (message.command === 'get_video_info') {
       (async function () {
         const videoUrls = await hostMapGetUrls[curTopDomain]?.getUrls();
-        sendResponse(videoUrls);
+        const pageTitle = document.title || '';
+        sendResponse({
+          pageTitle,
+          videoInfos: videoUrls || [],
+        });
       })();
     }
     return true;

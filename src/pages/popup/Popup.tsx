@@ -22,7 +22,7 @@ const Popup = () => {
 
   // M3U8 下载相关状态
   const [m3u8Url, setM3u8Url] = useState('');
-  const [m3u8FileName, setM3u8FileName] = useState('');
+  const [fileName, setFileName] = useState('');
   const [isGetMP4] = useState(false);
   const [downloadState, setDownloadState] = useState<M3U8DownloadState>(
     m3u8DownloadStorage.getSnapshot() || {
@@ -37,6 +37,12 @@ const Popup = () => {
   const m3u8SectionRef = useRef<HTMLDivElement | null>(null);
   const [currentTabUrl, setCurrentTabUrl] = useState('');
   const [downloadHistory, setDownloadHistory] = useState<DownloadRecord[]>([]);
+  const [pageTitle, setPageTitle] = useState('');
+  const [currentTabTitle, setCurrentTabTitle] = useState('');
+  const getPageTitle = () => videoInfos[0]?.title || pageTitle || currentTabTitle || '';
+  const [isEditingFileName, setIsEditingFileName] = useState(false);
+  const fileNameEditableRef = useRef<HTMLDivElement | null>(null);
+  const displayFileName = fileName || getPageTitle() || '';
 
   const scrollToM3u8Section = () => {
     if (m3u8SectionRef.current) {
@@ -72,7 +78,7 @@ const Popup = () => {
         setM3u8Url(savedState.url);
       }
       if (savedState.fileName && !savedState.completedAt) {
-        setM3u8FileName(savedState.fileName);
+        setFileName(savedState.fileName);
       }
       // if (savedState.isGetMP4 !== undefined) {
       //   setIsGetMP4(savedState.isGetMP4);
@@ -105,17 +111,27 @@ const Popup = () => {
       }
     });
 
-    // Get current tab URL for Origin/Referer headers
+    // Get current tab URL & title for headers 和默认文件名
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-      if (tabs[0]?.url) {
-        setCurrentTabUrl(tabs[0].url);
+      const activeTab = tabs[0];
+      if (activeTab?.url) {
+        setCurrentTabUrl(activeTab.url);
+      }
+      if (activeTab?.title) {
+        setCurrentTabTitle(activeTab.title);
       }
     });
 
     sendMessageToContentScript({ command: 'get_video_info' }, function (response) {
       console.log('🚀 ~ response:', response);
-      setvideoInfos(response);
-      // console.log('Popup', response);
+      if (response) {
+        if (response.pageTitle) {
+          setPageTitle(response.pageTitle);
+        }
+        if (Array.isArray(response.videoInfos)) {
+          setvideoInfos(response.videoInfos);
+        }
+      }
     });
 
     function fetchVersion() {
@@ -184,9 +200,11 @@ const Popup = () => {
         return;
       }
 
+      const finalFileName = (fileName || getPageTitle() || 'video').trim();
+
       // 设置 M3U8 URL 和文件名
       setM3u8Url(videoInfo.videoUrl);
-      setM3u8FileName(videoInfo.title || '');
+      setFileName(finalFileName);
       // 定位到 M3U8 下载区域
       scrollToM3u8Section();
 
@@ -195,7 +213,7 @@ const Popup = () => {
         .sendMessage({
           type: 'm3u8-download-start',
           url: videoInfo.videoUrl,
-          fileName: videoInfo.title || undefined,
+          fileName: finalFileName || undefined,
           isGetMP4: false,
           headers: buildM3u8Headers(),
         })
@@ -206,7 +224,7 @@ const Popup = () => {
             m3u8DownloadStorage.set({
               isDownloading: true,
               progress: 0,
-              fileName: videoInfo.title || '',
+              fileName: finalFileName,
               errorNum: 0,
               finishNum: 0,
               targetSegment: 0,
@@ -268,12 +286,15 @@ const Popup = () => {
       return;
     }
 
+    const fallbackName = (fileName || getPageTitle() || 'video').trim();
+    setFileName(fallbackName);
+
     // 发送开始下载消息到 background（attach Origin & Referer from current tab）
     chrome.runtime
       .sendMessage({
         type: 'm3u8-download-start',
         url: m3u8Url.trim(),
-        fileName: m3u8FileName.trim() || undefined,
+        fileName: fallbackName || undefined,
         isGetMP4: isGetMP4,
         headers: buildM3u8Headers(),
       })
@@ -284,7 +305,7 @@ const Popup = () => {
           m3u8DownloadStorage.set({
             isDownloading: true,
             progress: 0,
-            fileName: m3u8FileName.trim() || '',
+            fileName: fallbackName || '',
             errorNum: 0,
             finishNum: 0,
             targetSegment: 0,
@@ -332,7 +353,7 @@ const Popup = () => {
       ]).finally(() => {
         m3u8DownloadStorage.reset();
         setM3u8Url('');
-        setM3u8FileName('');
+        setFileName('');
         showInfo('状态已强制重置');
       });
     }
@@ -342,7 +363,28 @@ const Popup = () => {
   const handleClearCompleted = () => {
     m3u8DownloadStorage.reset();
     setM3u8Url('');
-    setM3u8FileName('');
+    setFileName('');
+  };
+
+  const handleFileNameFocus = () => {
+    if (downloadState.isDownloading) return;
+    setIsEditingFileName(true);
+  };
+
+  const handleFileNameBlur = () => {
+    setIsEditingFileName(false);
+    if (downloadState.isDownloading) return;
+    const value = fileNameEditableRef.current?.innerText || '';
+    setFileName(value.trim());
+  };
+
+  // 打开单条历史记录对应的下载文件（使用 chrome.downloads API）
+  const handleOpenHistoryItem = (record: DownloadRecord) => {
+    chrome.runtime.sendMessage({
+      type: 'open-download-item',
+      url: record.url,
+      fileName: record.fileName,
+    });
   };
 
   // Open the browser downloads folder
@@ -393,6 +435,22 @@ const Popup = () => {
         </div>
       </div>
       <div className="box">
+        {videoInfos?.length > 0 && (
+          <div className="m3u8-filename-row">
+            <span className="m3u8-filename-label">文件名 (可选):</span>
+            <div
+              ref={fileNameEditableRef}
+              className={`m3u8-filename-display${isEditingFileName ? ' editing' : ''}${
+                downloadState.isDownloading ? ' disabled' : ''
+              }`}
+              contentEditable={!downloadState.isDownloading}
+              onFocus={handleFileNameFocus}
+              onBlur={handleFileNameBlur}
+              data-placeholder="留空则自动生成">
+              {displayFileName}
+            </div>
+          </div>
+        )}
         <ul>
           {videoInfos?.length > 0 &&
             videoInfos.map(item => {
@@ -417,7 +475,7 @@ const Popup = () => {
       </div>
       {/* M3U8 下载区域 */}
       <div className="m3u8-download-section" ref={m3u8SectionRef}>
-        <h3>M3U8 下载</h3>
+        {/* <h3>M3U8 下载</h3>
         <div className="m3u8-input-group">
           <div className="test-link">
             测试链接:https://upyun.luckly-mjw.cn/Assets/media-source/example/media/index.m3u8
@@ -432,19 +490,7 @@ const Popup = () => {
             disabled={downloadState.isDownloading}
             className="m3u8-input"
           />
-        </div>
-        <div className="m3u8-input-group">
-          <label htmlFor="m3u8-filename">文件名 (可选):</label>
-          <input
-            id="m3u8-filename"
-            type="text"
-            value={m3u8FileName}
-            onChange={e => setM3u8FileName((e.target as HTMLInputElement).value)}
-            placeholder="留空则自动生成"
-            disabled={downloadState.isDownloading}
-            className="m3u8-input"
-          />
-        </div>
+        </div> */}
         {/* <div className="m3u8-input-group">
           <label>
             <input
@@ -540,7 +586,7 @@ const Popup = () => {
                 </span>
                 <span className="history-time">{new Date(record.completedAt).toLocaleDateString()}</span>
                 <div className="history-actions">
-                  <button className="btn-icon-sm" onClick={handleOpenFolder} title="打开文件夹">
+                  <button className="btn-icon-sm" onClick={() => handleOpenHistoryItem(record)} title="打开文件">
                     📂
                   </button>
                   <button className="btn-icon-sm" onClick={() => handleRemoveHistory(record.id)} title="删除记录">

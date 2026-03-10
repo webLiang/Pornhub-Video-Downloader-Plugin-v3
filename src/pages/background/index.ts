@@ -51,6 +51,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.downloads.showDefaultFolder();
     sendResponse({ success: true });
     return false;
+  } else if (message.type === 'open-download-item') {
+    openDownloadItem(message, sendResponse);
+    return true;
   }
 
   return false;
@@ -422,5 +425,31 @@ async function handleMP4DownloadCancel(sendResponse: (response?: any) => void) {
   } catch (error: any) {
     console.error('[background] MP4 download cancel error:', error);
     sendResponse({ success: false, error: error.message || '取消失败' });
+  }
+}
+
+async function openDownloadItem(message: any, sendResponse: (response?: any) => void) {
+  try {
+    const { url, fileName } = message;
+    let items: chrome.downloads.DownloadItem[] = [];
+
+    if (url) {
+      items = await chrome.downloads.search({ url });
+    }
+
+    if (!items.length && fileName) {
+      items = await chrome.downloads.search({ query: [fileName] });
+    }
+
+    if (!items.length) {
+      sendResponse({ success: false, error: '未找到对应的下载记录' });
+      return;
+    }
+
+    chrome.downloads.show(items[0].id);
+    sendResponse({ success: true });
+  } catch (error: any) {
+    console.error('[background] openDownloadItem error:', error);
+    sendResponse({ success: false, error: error?.message || '打开下载记录失败' });
   }
 }
