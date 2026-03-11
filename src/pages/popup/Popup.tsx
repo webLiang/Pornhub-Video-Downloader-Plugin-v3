@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import iconLogo from '/icon-128.png';
 import '@pages/popup/Popup.css';
 import downloadHistoryStorage, { type DownloadRecord } from '@src/shared/storages/downloadHistoryStorage';
@@ -33,7 +33,49 @@ const Popup = () => {
   const [isEditingFileName, setIsEditingFileName] = useState(false);
   const fileNameEditableRef = useRef<HTMLDivElement | null>(null);
   const displayFileName = fileName || getPageTitle() || '';
-  const isAnyDownloading = queueTasks.some(t => t.status === 'downloading');
+  const hasUserEditedFileNameRef = useRef(false);
+
+  const sanitizeDownloadFileName = (rawName: string, fallback = 'video') => {
+    // Remove characters that are illegal in Windows/Chrome download filenames
+    // Also trim, collapse spaces, and remove trailing dots/spaces which can break downloads
+    const input = (rawName || '').replace(/\s+/g, ' ').trim();
+
+    // eslint(no-control-regex): avoid control char ranges in regex; strip them by charCode instead
+    let noControl = '';
+    for (let i = 0; i < input.length; i++) {
+      const code = input.charCodeAt(i);
+      if (code >= 32) noControl += input[i];
+    }
+
+    const withoutIllegal = noControl.replace(/[<>:"/\\|?*]/g, '_');
+    const noTrailing = withoutIllegal.replace(/[.\s]+$/g, '').trim();
+    const normalized = noTrailing.replace(/_+/g, '_').trim();
+
+    const safe = normalized || fallback;
+    const MAX_LEN = 120;
+    if (safe.length <= MAX_LEN) return safe;
+    return (
+      safe
+        .slice(0, MAX_LEN)
+        .replace(/[.\s]+$/g, '')
+        .trim() || fallback
+    );
+  };
+
+  const setDefaultFileName = (nextName: string) => {
+    const next = sanitizeDownloadFileName(nextName, '');
+    if (!next) return;
+    if (hasUserEditedFileNameRef.current) return;
+    if (isEditingFileName) return;
+
+    setFileName(prev => (prev === next ? prev : next));
+
+    // contentEditable 不一定会随着 state 更新显示，这里同步一次 DOM
+    const el = fileNameEditableRef.current;
+    if (el && el.innerText !== next) {
+      el.innerText = next;
+    }
+  };
 
   const scrollToM3u8Section = () => {
     if (m3u8SectionRef.current) {
@@ -73,19 +115,36 @@ const Popup = () => {
       }
       if (activeTab?.title) {
         setCurrentTabTitle(activeTab.title);
+        // 每次打开 popup：先用 tab 标题作为默认文件名（后面 content script 返回 pageTitle 会再刷新一次）
+        hasUserEditedFileNameRef.current = false;
+        setDefaultFileName(activeTab.title);
       }
+      console.log('🚀 ~ activeTab:', activeTab, activeTab.title);
     });
 
     sendMessageToContentScript({ command: 'get_video_info' }, function (response) {
-      console.log('🚀 ~ response:', response);
-      if (response) {
-        if (response.pageTitle) {
-          setPageTitle(response.pageTitle);
+      if (!response) return;
+      if (response.pageTitle) setPageTitle(response.pageTitle);
+      if (Array.isArray(response.videoInfos)) setvideoInfos(response.videoInfos);
+
+      // Only overwrite default filename when response title matches current tab (avoid wrong title from sidebar/recommended)
+      chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+        const tabTitle = (tabs[0]?.title || '').trim();
+        const pageTitle = (response.pageTitle || '').trim();
+        const firstVideoTitle = (response.videoInfos?.[0]?.title || '').trim();
+
+        const pageMatchesTab = pageTitle && tabTitle && (tabTitle.includes(pageTitle) || pageTitle.includes(tabTitle));
+        const firstMatchesTab =
+          firstVideoTitle && tabTitle && (tabTitle.includes(firstVideoTitle) || firstVideoTitle.includes(tabTitle));
+
+        if (pageMatchesTab && pageTitle) {
+          setDefaultFileName(pageTitle);
+        } else if (firstMatchesTab && firstVideoTitle) {
+          setDefaultFileName(firstVideoTitle);
+        } else if (tabTitle) {
+          setDefaultFileName(tabTitle);
         }
-        if (Array.isArray(response.videoInfos)) {
-          setvideoInfos(response.videoInfos);
-        }
-      }
+      });
     });
 
     function fetchVersion() {
@@ -131,8 +190,20 @@ const Popup = () => {
       chrome.runtime.onMessage.removeListener(messageListener);
     };
   }, []);
+
+  // Sync contentEditable DOM from displayFileName so title from get_video_info actually shows (React does not update contentEditable children)
+  useLayoutEffect(() => {
+    if (isEditingFileName) return;
+    if (hasUserEditedFileNameRef.current) return;
+    const next = (displayFileName || '').trim();
+    const el = fileNameEditableRef.current;
+    if (!el) return;
+    if (el.innerText !== next) {
+      el.innerText = next;
+    }
+  }, [displayFileName, isEditingFileName]);
   const onDownload = (videoInfo: VideoInfo) => () => {
-    const finalFileName = (fileName || getPageTitle() || videoInfo.title || 'video').trim();
+    const finalFileName = sanitizeDownloadFileName(fileName || getPageTitle() || videoInfo.title || 'video', 'video');
     setFileName(finalFileName);
     scrollToM3u8Section();
 
@@ -205,15 +276,14 @@ const Popup = () => {
   };
 
   const handleFileNameFocus = () => {
-    if (isAnyDownloading) return;
     setIsEditingFileName(true);
   };
 
   const handleFileNameBlur = () => {
     setIsEditingFileName(false);
-    if (isAnyDownloading) return;
     const value = fileNameEditableRef.current?.innerText || '';
-    setFileName(value.trim());
+    setFileName(sanitizeDownloadFileName(value, ''));
+    hasUserEditedFileNameRef.current = true;
   };
 
   // 打开单条历史记录对应的下载文件（使用 chrome.downloads API）
@@ -239,7 +309,7 @@ const Popup = () => {
   const handleClearHistory = () => {
     downloadHistoryStorage.clearAll();
   };
-
+  console.log(3333, displayFileName);
   return (
     <div className="App" style={{}}>
       <ToastContainer toasts={toasts} onRemove={removeToast} />
@@ -278,10 +348,8 @@ const Popup = () => {
             <span className="m3u8-filename-label">文件名 (可选):</span>
             <div
               ref={fileNameEditableRef}
-              className={`m3u8-filename-display${isEditingFileName ? ' editing' : ''}${
-                isAnyDownloading ? ' disabled' : ''
-              }`}
-              contentEditable={!isAnyDownloading}
+              className={`m3u8-filename-display${isEditingFileName ? ' editing' : ''}${''}`}
+              contentEditable={true}
               onFocus={handleFileNameFocus}
               onBlur={handleFileNameBlur}
               data-placeholder="留空则自动生成">
