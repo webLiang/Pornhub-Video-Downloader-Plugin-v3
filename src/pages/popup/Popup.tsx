@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import iconLogo from '/icon-128.png';
 import '@pages/popup/Popup.css';
-import m3u8DownloadStorage, { type M3U8DownloadState } from '@src/shared/storages/m3u8DownloadStorage';
 import downloadHistoryStorage, { type DownloadRecord } from '@src/shared/storages/downloadHistoryStorage';
+import downloadQueueStorage, { type DownloadTask } from '@src/shared/storages/downloadQueueStorage';
 import { ToastContainer, useToast } from '@pages/popup/components/Toast';
 
 type VideoInfo = {
@@ -21,19 +21,9 @@ const Popup = () => {
   const { toasts, showSuccess, showError, showInfo, showWarning, removeToast } = useToast();
 
   // M3U8 下载相关状态
-  const [m3u8Url, setM3u8Url] = useState('');
   const [fileName, setFileName] = useState('');
-  const [isGetMP4] = useState(false);
-  const [downloadState, setDownloadState] = useState<M3U8DownloadState>(
-    m3u8DownloadStorage.getSnapshot() || {
-      isDownloading: false,
-      progress: 0,
-      fileName: '',
-      errorNum: 0,
-      finishNum: 0,
-      targetSegment: 0,
-    },
-  );
+  // const [isGetMP4] = useState(false);
+  const [queueTasks, setQueueTasks] = useState<DownloadTask[]>(downloadQueueStorage.getSnapshot()?.tasks || []);
   const m3u8SectionRef = useRef<HTMLDivElement | null>(null);
   const [currentTabUrl, setCurrentTabUrl] = useState('');
   const [downloadHistory, setDownloadHistory] = useState<DownloadRecord[]>([]);
@@ -43,6 +33,7 @@ const Popup = () => {
   const [isEditingFileName, setIsEditingFileName] = useState(false);
   const fileNameEditableRef = useRef<HTMLDivElement | null>(null);
   const displayFileName = fileName || getPageTitle() || '';
+  const isAnyDownloading = queueTasks.some(t => t.status === 'downloading');
 
   const scrollToM3u8Section = () => {
     if (m3u8SectionRef.current) {
@@ -69,46 +60,9 @@ const Popup = () => {
   };
 
   useEffect(() => {
-    // 初始化时从 storage 加载状态
-    m3u8DownloadStorage.get().then(savedState => {
-      setDownloadState(savedState);
-
-      // 恢复输入框的值
-      if (savedState.url) {
-        setM3u8Url(savedState.url);
-      }
-      if (savedState.fileName && !savedState.completedAt) {
-        setFileName(savedState.fileName);
-      }
-      // if (savedState.isGetMP4 !== undefined) {
-      //   setIsGetMP4(savedState.isGetMP4);
-      // }
-
-      // 如果正在下载，查询 background 的当前状态
-      if (savedState.isDownloading) {
-        // 使用 Promise 方式发送消息，避免 lastError 问题
-        // 添加延迟，确保 background script 已加载
-        setTimeout(() => {
-          chrome.runtime
-            .sendMessage({ type: 'm3u8-download-status' })
-            .then(response => {
-              if (response && !response.error) {
-                m3u8DownloadStorage.updateProgress({
-                  ...response,
-                  url: savedState.url,
-                  isGetMP4: savedState.isGetMP4,
-                });
-              } else if (response?.error) {
-                console.warn('[Popup] Background 返回错误:', response.error);
-              }
-            })
-            .catch(error => {
-              // background script 可能还未加载或已休眠，忽略错误
-              // 状态会通过 storage 的订阅机制自动同步
-              console.warn('[Popup] 无法连接到 background script，使用本地状态:', error.message || error);
-            });
-        }, 100); // 延迟 100ms，确保 background script 已唤醒
-      }
+    // 初始化队列（等待队列也会从本地 storage 恢复）
+    downloadQueueStorage.get().then(state => {
+      setQueueTasks(state.tasks || []);
     });
 
     // Get current tab URL & title for headers 和默认文件名
@@ -146,12 +100,10 @@ const Popup = () => {
     }
     fetchVersion();
 
-    // 订阅 storage 变化（liveUpdate 会自动同步）
-    const unsubscribe = m3u8DownloadStorage.subscribe(() => {
-      const currentState = m3u8DownloadStorage.getSnapshot();
-      if (currentState) {
-        setDownloadState(currentState);
-      }
+    // 订阅队列 storage 变化（liveUpdate 会自动同步）
+    const unsubQueue = downloadQueueStorage.subscribe(() => {
+      const snap = downloadQueueStorage.getSnapshot();
+      if (snap) setQueueTasks(snap.tasks || []);
     });
 
     // Load download history & subscribe
@@ -161,24 +113,12 @@ const Popup = () => {
       if (snap) setDownloadHistory(snap.records);
     });
 
-    // 监听来自 background 的消息（进度更新、完成、错误等）
+    // 监听来自 background 的消息（完成、错误等）
     const messageListener = (message: any) => {
-      if (message.type === 'm3u8-download-progress') {
-        m3u8DownloadStorage.updateProgress({
-          progress: message.progress,
-          finishNum: message.finishNum,
-          errorNum: message.errorNum,
-          targetSegment: message.targetSegment,
-          fileDownloadProgress: message.fileDownloadProgress,
-          isFileDownloading: message.isFileDownloading,
-        });
-      } else if (message.type === 'm3u8-download-complete') {
-        const fileName = message.fileName || '未知文件名';
-        m3u8DownloadStorage.markCompleted(fileName);
-        showSuccess(`下载完成！文件名: ${fileName}`);
-      } else if (message.type === 'm3u8-download-error') {
-        m3u8DownloadStorage.markError(message.error);
-        showError(`下载失败: ${message.error}`);
+      if (message.type === 'download-task-complete') {
+        showSuccess(`下载完成！文件名: ${message.fileName || '未知文件名'}`);
+      } else if (message.type === 'download-task-error') {
+        showError(`下载失败: ${message.error || '未知错误'}`);
       }
     };
 
@@ -186,87 +126,34 @@ const Popup = () => {
 
     // Trigger your effect
     return () => {
-      unsubscribe();
+      unsubQueue();
       unsubHistory();
       chrome.runtime.onMessage.removeListener(messageListener);
     };
   }, []);
   const onDownload = (videoInfo: VideoInfo) => () => {
-    if (videoInfo.format === 'm3u8') {
-      // 使用新的 M3U8 下载功能
-      // 检查是否已有下载任务在进行中
-      if (downloadState.isDownloading) {
-        showWarning('已有下载任务在进行中');
-        return;
-      }
-
-      const finalFileName = (fileName || getPageTitle() || 'video').trim();
-
-      // 设置 M3U8 URL 和文件名
-      setM3u8Url(videoInfo.videoUrl);
-      setFileName(finalFileName);
-      // 定位到 M3U8 下载区域
-      scrollToM3u8Section();
-
-      // 直接执行下载（attach Origin & Referer from current tab）
-      chrome.runtime
-        .sendMessage({
-          type: 'm3u8-download-start',
-          url: videoInfo.videoUrl,
-          fileName: finalFileName || undefined,
-          isGetMP4: false,
-          headers: buildM3u8Headers(),
-        })
-        .then(response => {
-          if (response && !response.success) {
-            showError('启动下载失败: ' + (response.error || '未知错误'));
-          } else {
-            m3u8DownloadStorage.set({
-              isDownloading: true,
-              progress: 0,
-              fileName: finalFileName,
-              errorNum: 0,
-              finishNum: 0,
-              targetSegment: 0,
-              error: undefined,
-              url: videoInfo.videoUrl,
-              isGetMP4: false,
-              completedAt: undefined,
-            });
-            showInfo('M3U8 下载已开始');
-          }
-        })
-        .catch(error => {
-          console.error('发送消息失败:', error);
-          showError('启动下载失败: ' + (error.message || '无法连接到 background script'));
-        });
-      return;
-    }
-    // MP4 / WebM: also go through extension pipeline (DNR headers + OPFS + chrome.downloads)
-    if (downloadState.isDownloading) {
-      showWarning('已有下载任务在进行中');
-      return;
-    }
-
+    const finalFileName = (fileName || getPageTitle() || videoInfo.title || 'video').trim();
+    setFileName(finalFileName);
     scrollToM3u8Section();
 
     chrome.runtime
       .sendMessage({
-        type: 'mp4-download-start',
+        type: 'download-queue-enqueue',
         url: videoInfo.videoUrl,
-        fileName: videoInfo.title || 'video',
+        fileName: finalFileName || undefined,
+        format: videoInfo.format,
         headers: buildM3u8Headers(),
       })
       .then(response => {
         if (response && !response.success) {
-          showError('启动下载失败: ' + (response.error || '未知错误'));
+          showError('入队失败: ' + (response.error || '未知错误'));
         } else {
-          showInfo(`${videoInfo.format.toUpperCase()} 下载已开始`);
+          showInfo('已加入下载队列');
         }
       })
       .catch(error => {
         console.error('发送消息失败:', error);
-        showError('启动下载失败: ' + (error.message || '无法连接到 background script'));
+        showError('入队失败: ' + (error.message || '无法连接到 background script'));
       });
   };
 
@@ -274,106 +161,57 @@ const Popup = () => {
     navigator.clipboard.writeText(videoInfo.videoUrl);
   };
 
-  // M3U8 下载相关方法
-  const handleStartDownload = () => {
-    if (!m3u8Url.trim()) {
-      showWarning('请输入 M3U8 链接');
-      return;
-    }
+  // // M3U8 下载相关方法
+  // const handleStartDownload = () => {
+  //   if (!m3u8Url.trim()) {
+  //     showWarning('请输入 M3U8 链接');
+  //     return;
+  //   }
 
-    if (downloadState.isDownloading) {
-      showWarning('已有下载任务在进行中');
-      return;
-    }
+  //   const fallbackName = (fileName || getPageTitle() || 'video').trim();
+  //   setFileName(fallbackName);
 
-    const fallbackName = (fileName || getPageTitle() || 'video').trim();
-    setFileName(fallbackName);
+  //   // 入队（attach Origin & Referer from current tab）
+  //   chrome.runtime
+  //     .sendMessage({
+  //       type: 'download-queue-enqueue',
+  //       url: m3u8Url.trim(),
+  //       fileName: fallbackName || undefined,
+  //       format: 'm3u8',
+  //       headers: buildM3u8Headers(),
+  //     })
+  //     .then(response => {
+  //       if (response && !response.success) {
+  //         showError('入队失败: ' + (response.error || '未知错误'));
+  //       } else {
+  //         showInfo('已加入下载队列');
+  //       }
+  //     })
+  //     .catch(error => {
+  //       console.error('发送消息失败:', error);
+  //       showError('入队失败: ' + (error.message || '无法连接到 background script'));
+  //     });
+  // };
 
-    // 发送开始下载消息到 background（attach Origin & Referer from current tab）
+  const handleCancelTask = (taskId: string) => {
     chrome.runtime
-      .sendMessage({
-        type: 'm3u8-download-start',
-        url: m3u8Url.trim(),
-        fileName: fallbackName || undefined,
-        isGetMP4: isGetMP4,
-        headers: buildM3u8Headers(),
-      })
-      .then(response => {
-        if (response && !response.success) {
-          showError('启动下载失败: ' + (response.error || '未知错误'));
-        } else {
-          m3u8DownloadStorage.set({
-            isDownloading: true,
-            progress: 0,
-            fileName: fallbackName || '',
-            errorNum: 0,
-            finishNum: 0,
-            targetSegment: 0,
-            error: undefined,
-            url: m3u8Url.trim(),
-            isGetMP4: isGetMP4,
-            completedAt: undefined,
-          });
-        }
-      })
-      .catch(error => {
-        console.error('发送消息失败:', error);
-        showError('启动下载失败: ' + (error.message || '无法连接到 background script'));
-      });
-  };
-
-  const handleCancelDownload = () => {
-    if (!downloadState.isDownloading) {
-      return;
-    }
-
-    // Cancel both m3u8 and mp4 downloaders (only the active one matters)
-    Promise.allSettled([
-      chrome.runtime.sendMessage({ type: 'm3u8-download-cancel' }),
-      chrome.runtime.sendMessage({ type: 'mp4-download-cancel' }),
-    ])
+      .sendMessage({ type: 'download-queue-cancel', taskId })
       .then(() => {
-        m3u8DownloadStorage.updateProgress({ isDownloading: false });
-        showInfo('下载已取消');
+        showInfo('任务已取消/移除');
       })
-      .catch(error => {
-        console.error('发送消息失败:', error);
-        m3u8DownloadStorage.updateProgress({ isDownloading: false });
-        showWarning('取消下载请求发送失败，已清空本地状态');
+      .catch(e => {
+        showWarning('取消失败: ' + (e?.message || '未知错误'));
       });
-  };
-
-  // 强制重置下载状态（用于异常情况）
-  const handleForceReset = () => {
-    if (confirm('确定要强制重置下载状态吗？这将清空所有下载信息。')) {
-      // Cancel both m3u8 and mp4 downloaders
-      Promise.allSettled([
-        chrome.runtime.sendMessage({ type: 'm3u8-download-cancel' }),
-        chrome.runtime.sendMessage({ type: 'mp4-download-cancel' }),
-      ]).finally(() => {
-        m3u8DownloadStorage.reset();
-        setM3u8Url('');
-        setFileName('');
-        showInfo('状态已强制重置');
-      });
-    }
-  };
-
-  // 清除已完成的状态
-  const handleClearCompleted = () => {
-    m3u8DownloadStorage.reset();
-    setM3u8Url('');
-    setFileName('');
   };
 
   const handleFileNameFocus = () => {
-    if (downloadState.isDownloading) return;
+    if (isAnyDownloading) return;
     setIsEditingFileName(true);
   };
 
   const handleFileNameBlur = () => {
     setIsEditingFileName(false);
-    if (downloadState.isDownloading) return;
+    if (isAnyDownloading) return;
     const value = fileNameEditableRef.current?.innerText || '';
     setFileName(value.trim());
   };
@@ -441,9 +279,9 @@ const Popup = () => {
             <div
               ref={fileNameEditableRef}
               className={`m3u8-filename-display${isEditingFileName ? ' editing' : ''}${
-                downloadState.isDownloading ? ' disabled' : ''
+                isAnyDownloading ? ' disabled' : ''
               }`}
-              contentEditable={!downloadState.isDownloading}
+              contentEditable={!isAnyDownloading}
               onFocus={handleFileNameFocus}
               onBlur={handleFileNameBlur}
               data-placeholder="留空则自动生成">
@@ -464,7 +302,7 @@ const Popup = () => {
                   </label>
                   <button className="button down" onClick={onDownload(item)}>
                     下载
-                  </button>{' '}
+                  </button>
                   <button className="button copy" onClick={onCopy(item)}>
                     复制
                   </button>
@@ -474,100 +312,98 @@ const Popup = () => {
         </ul>
       </div>
       {/* M3U8 下载区域 */}
-      <div className="m3u8-download-section" ref={m3u8SectionRef}>
-        {/* <h3>M3U8 下载</h3>
-        <div className="m3u8-input-group">
-          <div className="test-link">
-            测试链接:https://upyun.luckly-mjw.cn/Assets/media-source/example/media/index.m3u8
+      {queueTasks.length > 0 && (
+        <div className="m3u8-download-section" ref={m3u8SectionRef}>
+          <div className="queue-header">
+            <span className="queue-title">
+              下载队列（同时最多 6 个）
+              <span className="queue-meta">
+                {queueTasks.filter(t => t.status === 'downloading').length} 下载中 /{' '}
+                {queueTasks.filter(t => t.status === 'queued').length} 等待
+              </span>
+            </span>
+            <div className="queue-actions">
+              <button
+                className="btn-text"
+                onClick={() => chrome.runtime.sendMessage({ type: 'download-queue-clear-queued' })}
+                title="清空等待队列">
+                清空等待
+              </button>
+              <button
+                className="btn-text"
+                onClick={() => chrome.runtime.sendMessage({ type: 'download-queue-clear-errors' })}
+                title="清空错误任务">
+                清空错误
+              </button>
+              <button className="btn-text" onClick={handleOpenFolder} title="打开下载文件夹">
+                打开目录
+              </button>
+            </div>
           </div>
-          <label htmlFor="m3u8-url">M3U8 链接:</label>
-          <input
-            id="m3u8-url"
-            type="text"
-            value={m3u8Url}
-            onChange={e => setM3u8Url((e.target as HTMLInputElement).value)}
-            placeholder="请输入 M3U8 链接"
-            disabled={downloadState.isDownloading}
-            className="m3u8-input"
-          />
-        </div> */}
-        {/* <div className="m3u8-input-group">
-          <label>
-            <input
-              type="checkbox"
-              checked={isGetMP4}
-              onChange={e => setIsGetMP4((e.target as HTMLInputElement).checked)}
-              disabled={downloadState.isDownloading}
-            />
-            转换为 MP4 格式
-          </label>
-        </div> */}
-        <div className="m3u8-button-group">
-          {!downloadState.isDownloading ? (
-            <>
-              <button className="button down" onClick={handleStartDownload}>
-                {downloadState.progress === 100 ? '重新下载' : '开始下载'}
-              </button>
-              {downloadState.progress > 0 && downloadState.progress < 100 && (
-                <button className="button clear" onClick={handleForceReset} style={{ marginLeft: '10px' }}>
-                  强制重置
-                </button>
-              )}
-            </>
-          ) : (
-            <>
-              <button className="button cancel" onClick={handleCancelDownload}>
-                取消下载
-              </button>
-              <button className="button clear" onClick={handleForceReset} style={{ marginLeft: '10px' }}>
-                强制重置
-              </button>
-            </>
-          )}
-        </div>
-        {(downloadState.isDownloading || downloadState.progress === 100) && (
-          <div className="m3u8-progress-section">
-            {downloadState.isFileDownloading && (
-              <div className="file-download-indicator simple">
-                <div className="file-download-spinner"></div>
-                <span className="file-download-text">Saving...</span>
-              </div>
-            )}
-            <div className="progress-info">
-              <span>进度: {downloadState.progress.toFixed(2)}%</span>
-              {downloadState.isDownloading && !downloadState.isFileDownloading && (
-                <span>
-                  已完成: {downloadState.finishNum} / {downloadState.targetSegment}
-                </span>
-              )}
-              {downloadState.errorNum > 0 && <span className="error-count">错误: {downloadState.errorNum}</span>}
-              {downloadState.progress === 100 && downloadState.completedAt && (
-                <span className="completed-time">完成时间: {new Date(downloadState.completedAt).toLocaleString()}</span>
-              )}
-            </div>
-            <div className="progress-bar">
-              <div className="progress-bar-fill" style={{ width: `${downloadState.progress}%` }} />
-            </div>
 
-            {downloadState.progress === 100 && !downloadState.isDownloading && (
-              <div className="completed-message-compact">
-                <span className="success-text" title={downloadState.fileName || 'Unknown file'}>
-                  ✓ {downloadState.fileName || 'Unknown file'}
-                </span>
-                <div className="completed-actions">
-                  <button className="btn-icon" onClick={handleOpenFolder} title="打开下载文件夹">
-                    📂
-                  </button>
-                  <button className="btn-icon" onClick={handleClearCompleted} title="清除">
-                    ✕
-                  </button>
-                </div>
-              </div>
-            )}
+          <div className="queue-list">
+            {(() => {
+              const queuedTasks = queueTasks
+                .filter(t => t.status === 'queued')
+                .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+              const queuedIndexMap = new Map<string, number>();
+              queuedTasks.forEach((t, idx) => queuedIndexMap.set(t.id, idx + 1));
+
+              return queueTasks.map(task => {
+                const queuedIndex = task.status === 'queued' ? queuedIndexMap.get(task.id) || 0 : 0;
+                return (
+                  <div key={task.id} className={`m3u8-progress-section task-card status-${task.status}`}>
+                    <div className="m3u8-progress-row">
+                      <div className="m3u8-progress-left">
+                        <span className="m3u8-filename-show" title={task.fileName || 'Unknown file'}>
+                          {task.fileName || 'Unknown file'}
+                        </span>
+                        <div className="progress-info inline">
+                          <span>
+                            {task.status === 'queued' ? `等待中${queuedIndex ? `（#${queuedIndex}）` : ''}` : '下载中'}
+                          </span>
+                          <span>进度: {Number.isFinite(task.progress) ? task.progress.toFixed(2) : '0.00'}%</span>
+                          {task.status === 'downloading' && !task.isFileDownloading && (
+                            <span>
+                              已完成: {task.finishNum} / {task.targetSegment}
+                            </span>
+                          )}
+                          {task.errorNum > 0 && <span className="error-count">错误: {task.errorNum}</span>}
+                          {task.status === 'error' && (
+                            <span className="error-count">失败: {task.error || '未知错误'}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="m3u8-progress-actions">
+                        {(task.status === 'queued' || task.status === 'downloading') && (
+                          <button className="btn-sm btn-cancel" onClick={() => handleCancelTask(task.id)}>
+                            取消
+                          </button>
+                        )}
+                        {task.status === 'error' && (
+                          <button className="btn-sm btn-clear" onClick={() => handleCancelTask(task.id)}>
+                            移除
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {task.isFileDownloading && task.status === 'downloading' && (
+                      <div className="file-download-indicator simple">
+                        <div className="file-download-spinner"></div>
+                        <span className="file-download-text">Saving...</span>
+                      </div>
+                    )}
+                    <div className="progress-bar">
+                      <div className="progress-bar-fill" style={{ width: `${task.progress}%` }} />
+                    </div>
+                  </div>
+                );
+              });
+            })()}
           </div>
-        )}
-        {downloadState.error && <div className="m3u8-error">{downloadState.error}</div>}
-      </div>
+        </div>
+      )}
 
       {/* Download History */}
       {downloadHistory.length > 0 && (
