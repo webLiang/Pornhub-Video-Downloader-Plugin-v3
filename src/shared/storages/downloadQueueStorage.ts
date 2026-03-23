@@ -1,6 +1,6 @@
 import { BaseStorage, createStorage, StorageType } from '@src/shared/storages/base';
 
-export type DownloadTaskStatus = 'queued' | 'downloading' | 'error';
+export type DownloadTaskStatus = 'queued' | 'downloading' | 'paused' | 'error';
 
 export type DownloadTaskFormat = 'm3u8' | 'mp4' | 'webm';
 
@@ -27,6 +27,11 @@ export type DownloadTask = {
 
   // used to attach correct headers for fetch requests in background
   headers?: Record<string, string>;
+
+  /** Deterministic OPFS blob name for this task (set on enqueue) */
+  opfsCacheFileName?: string;
+  /** MP4 partial OPFS size for Range resume (bytes written before pause) */
+  cachedBytes?: number;
 };
 
 type DownloadQueueState = {
@@ -54,11 +59,19 @@ function genTaskId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+/** Same naming as video-download-core/opfs-task-cache (stable OPFS name per task). */
+function buildOpfsFileNameForTask(taskId: string, format: DownloadTaskFormat): string {
+  const safe = taskId.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const ext = format === 'm3u8' ? 'ts' : format === 'webm' ? 'webm' : 'mp4';
+  return `vd-ext-${safe}.${ext}`;
+}
+
 const downloadQueueStorage: DownloadQueueStorage = {
   ...storage,
 
   enqueue: async task => {
     const id = genTaskId();
+    const opfsCacheFileName = buildOpfsFileNameForTask(id, task.format);
     await storage.set(state => {
       const next: DownloadTask = {
         id,
@@ -72,6 +85,7 @@ const downloadQueueStorage: DownloadQueueStorage = {
         finishNum: 0,
         targetSegment: task.format === 'm3u8' ? 0 : 1,
         errorNum: 0,
+        opfsCacheFileName,
       };
       return { tasks: [...state.tasks, next] };
     });

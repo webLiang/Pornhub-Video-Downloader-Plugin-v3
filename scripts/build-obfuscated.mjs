@@ -37,6 +37,7 @@ const FILES = [
 const EXTERNAL = ['mux.js'];
 
 // javascript-obfuscator options (medium protection, keep ESM exports working)
+// reservedNames: background/index.ts calls these on downloader instances; obfuscating them breaks runtime.
 const OBFUSCATOR_OPTIONS = {
   compact: true,
   controlFlowFlattening: true,
@@ -45,6 +46,7 @@ const OBFUSCATOR_OPTIONS = {
   deadCodeInjectionThreshold: 0.2,
   identifierNamesGenerator: 'hexadecimal',
   renameGlobals: false, // keep export names intact
+  reservedNames: ['^pauseSoft$', '^resume$', '^destroy$', '^getBytesReceived$', '^start$'],
   rotateStringArray: true,
   selfDefending: false, // Service Worker doesn't support this
   stringArray: true,

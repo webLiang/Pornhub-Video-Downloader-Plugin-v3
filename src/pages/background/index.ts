@@ -3,14 +3,18 @@ import reloadOnUpdate from 'virtual:reload-on-update-in-background-script';
 import 'webextension-polyfill';
 import M3U8Downloader from './utils/dist/m3u8-downloader-core.obf';
 import MP4Downloader from './utils/dist/mp4-downloader.obf';
+import { removeOpfsFileByName } from './utils/video-download-core/opfs-task-cache';
 import m3u8DownloadStorage from '@src/shared/storages/m3u8DownloadStorage';
 import downloadHistoryStorage from '@src/shared/storages/downloadHistoryStorage';
 import downloadQueueStorage, {
   type DownloadTask,
   type DownloadTaskFormat,
 } from '@src/shared/storages/downloadQueueStorage';
+import { registerDownloadFilenameListener } from '@src/shared/utils/downloadFilenameFix';
 
 reloadOnUpdate('pages/background');
+
+registerDownloadFilenameListener();
 
 /**
  * Extension reloading is necessary because the browser automatically caches the css.
@@ -29,6 +33,8 @@ const MAX_ACTIVE_TASKS = 6;
 type ActiveRunner = { kind: 'm3u8'; instance: any } | { kind: 'mp4'; instance: MP4Downloader };
 
 const activeRunners = new Map<string, ActiveRunner>();
+/** Paused tasks keep downloader instances until resume or delete */
+const pausedRunners = new Map<string, ActiveRunner>();
 let scheduling = false;
 
 // 获取当前下载状态
@@ -44,8 +50,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'download-queue-enqueue') {
     handleQueueEnqueue(message, sendResponse);
     return true;
-  } else if (message.type === 'download-queue-cancel') {
-    handleQueueCancel(message, sendResponse);
+  } else if (message.type === 'download-queue-cancel' || message.type === 'download-queue-delete') {
+    handleQueueDelete(message, sendResponse);
+    return true;
+  } else if (message.type === 'download-queue-pause') {
+    handleQueuePause(message, sendResponse);
+    return true;
+  } else if (message.type === 'download-queue-resume') {
+    handleQueueResume(message, sendResponse);
     return true;
   } else if (message.type === 'download-queue-clear-queued') {
     downloadQueueStorage.clearQueued().then(() => sendResponse({ success: true }));
@@ -113,20 +125,29 @@ schedule();
 
 async function cancelAllByKind(kind: ActiveRunner['kind']) {
   const ids = [...activeRunners.entries()].filter(([, r]) => r.kind === kind).map(([id]) => id);
-  await Promise.allSettled(ids.map(id => handleCancelById(id)));
+  await Promise.allSettled(ids.map(id => deleteTaskAndPurge(id)));
 }
 
-async function handleCancelById(taskId: string) {
-  const runner = activeRunners.get(taskId);
+async function deleteTaskAndPurge(taskId: string) {
+  const runner = activeRunners.get(taskId) || pausedRunners.get(taskId);
   if (runner) {
     try {
-      runner.instance.destroy();
+      if (runner.kind === 'm3u8') {
+        (runner.instance as any).destroy(true);
+      } else {
+        runner.instance.destroy(true);
+      }
     } catch {
       // ignore
     }
     activeRunners.delete(taskId);
+    pausedRunners.delete(taskId);
   }
-  // 取消会从队列里移除（等待队列也会自动清除）
+  const state = await downloadQueueStorage.get();
+  const task = state.tasks.find(t => t.id === taskId);
+  if (task?.opfsCacheFileName) {
+    await removeOpfsFileByName(task.opfsCacheFileName);
+  }
   await downloadQueueStorage.removeTask(taskId);
   schedule();
 }
@@ -151,17 +172,122 @@ async function handleQueueEnqueue(message: any, sendResponse: (response?: any) =
   }
 }
 
-async function handleQueueCancel(message: any, sendResponse: (response?: any) => void) {
+async function handleQueueDelete(message: any, sendResponse: (response?: any) => void) {
   try {
     const taskId = message.taskId;
     if (!taskId) {
-      sendResponse({ success: false, error: 'taskId 不能为空' });
+      sendResponse({ success: false, error: 'taskId is required' });
       return;
     }
-    await handleCancelById(taskId);
+    await deleteTaskAndPurge(taskId);
     sendResponse({ success: true });
   } catch (e: any) {
-    sendResponse({ success: false, error: e?.message || '取消失败' });
+    sendResponse({ success: false, error: e?.message || 'delete failed' });
+  }
+}
+
+async function handleQueuePause(message: any, sendResponse: (response?: any) => void) {
+  try {
+    const taskId = message.taskId;
+    if (!taskId) {
+      sendResponse({ success: false, error: 'taskId is required' });
+      return;
+    }
+    const runner = activeRunners.get(taskId);
+    if (!runner) {
+      console.warn('[background] pause: no runner for taskId (Map out of sync?)', taskId, 'active:', [
+        ...activeRunners.keys(),
+      ]);
+      sendResponse({ success: false, error: 'Task is not active (internal runner missing)' });
+      return;
+    }
+    if (runner.kind === 'm3u8') {
+      await (runner.instance as any).pauseSoft();
+    } else {
+      runner.instance.pauseSoft();
+      await new Promise(r => setTimeout(r, 80));
+    }
+    activeRunners.delete(taskId);
+    pausedRunners.set(taskId, runner);
+    const bytes = runner.kind === 'mp4' ? runner.instance.getBytesReceived() : undefined;
+    await downloadQueueStorage.updateTask(taskId, {
+      status: 'paused',
+      cachedBytes: bytes,
+    });
+    sendResponse({ success: true });
+    schedule();
+  } catch (e: any) {
+    sendResponse({ success: false, error: e?.message || 'pause failed' });
+  }
+}
+
+async function handleQueueResume(message: any, sendResponse: (response?: any) => void) {
+  try {
+    const taskId = message.taskId;
+    if (!taskId) {
+      sendResponse({ success: false, error: 'taskId is required' });
+      return;
+    }
+    const state = await downloadQueueStorage.get();
+    const task = state.tasks.find(t => t.id === taskId);
+    if (!task || task.status !== 'paused') {
+      sendResponse({ success: false, error: 'Task is not paused' });
+      return;
+    }
+    const runner = pausedRunners.get(taskId);
+    if (!runner) {
+      sendResponse({ success: false, error: 'Resume unavailable (reload clears in-memory runners)' });
+      return;
+    }
+    pausedRunners.delete(taskId);
+    await downloadQueueStorage.updateTask(taskId, { status: 'downloading', error: undefined });
+    activeRunners.set(taskId, runner);
+
+    if (runner.kind === 'm3u8') {
+      (runner.instance as any).resume();
+    } else {
+      void runner.instance.start({
+        url: task.url,
+        fileName: task.fileName || 'video',
+        headers: task.headers,
+        opfsFileName: task.opfsCacheFileName,
+        resumeFromByte: task.cachedBytes || 0,
+        onProgress: (data: any) => {
+          const progress = data.progress >= 0 ? data.progress : 0;
+          downloadQueueStorage.updateTask(task.id, {
+            progress,
+            finishNum: data.isFileDownloading ? 1 : 0,
+            targetSegment: 1,
+            errorNum: 0,
+            isFileDownloading: data.isFileDownloading,
+            fileDownloadProgress: data.isFileDownloading ? data.progress : undefined,
+            cachedBytes: data.bytesReceived,
+          });
+        },
+        onComplete: (data: any) => {
+          const finalName = data.fileName || task.fileName || 'video';
+          downloadHistoryStorage.addRecord(finalName, task.url);
+          downloadQueueStorage.removeTask(task.id);
+          activeRunners.delete(task.id);
+          pausedRunners.delete(task.id);
+          chrome.runtime
+            .sendMessage({ type: 'download-task-complete', taskId: task.id, fileName: finalName })
+            .catch(() => {});
+          schedule();
+        },
+        onError: (error: string) => {
+          downloadQueueStorage.updateTask(task.id, { status: 'error', error });
+          activeRunners.delete(task.id);
+          pausedRunners.delete(task.id);
+          chrome.runtime.sendMessage({ type: 'download-task-error', taskId: task.id, error }).catch(() => {});
+          schedule();
+        },
+      });
+    }
+    sendResponse({ success: true });
+    schedule();
+  } catch (e: any) {
+    sendResponse({ success: false, error: e?.message || 'resume failed' });
   }
 }
 
@@ -175,7 +301,14 @@ function schedule() {
 
       // background/service worker 可能被重启：storage 里的 downloading 任务会失去 runner
       // 这里把“没有 runner 的 downloading”回退到 queued，避免队列卡死
-      const staleDownloading = tasks.filter(t => t.status === 'downloading' && !activeRunners.has(t.id));
+      const staleDownloading = tasks.filter(
+        t => t.status === 'downloading' && !activeRunners.has(t.id) && !pausedRunners.has(t.id),
+      );
+
+      const taskIds = new Set(tasks.map(t => t.id));
+      for (const id of pausedRunners.keys()) {
+        if (!taskIds.has(id)) pausedRunners.delete(id);
+      }
       if (staleDownloading.length) {
         await Promise.allSettled(
           staleDownloading.map(t =>
@@ -195,13 +328,9 @@ function schedule() {
         .filter(t => t.status === 'queued')
         .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
 
-      // 清理：如果 storage 里已没有 downloading 任务，Map 也要同步释放
-      const downloadingIds = new Set(downloading.map(t => t.id));
-      for (const id of activeRunners.keys()) {
-        if (!downloadingIds.has(id)) {
-          activeRunners.delete(id);
-        }
-      }
+      // 不要根据「当前 storage 里的 downloading 列表」去删 activeRunners。
+      // storage 与内存可能短暂不一致（并发 update），误删会导致 pause/delete 找不到 runner，
+      // 而旧的 M3U8Downloader 仍在跑。runner 应在 onComplete/onError/pause/delete 里显式释放。
 
       let activeCount = downloading.length;
       for (const task of queued) {
@@ -280,6 +409,7 @@ function startM3u8Task(task: DownloadTask) {
     isGetMP4: false,
     fileName: task.fileName || '',
     headers: task.headers || undefined,
+    opfsFileName: task.opfsCacheFileName,
   });
 }
 
@@ -291,6 +421,8 @@ function startMp4Task(task: DownloadTask) {
     url: task.url,
     fileName: task.fileName || 'video',
     headers: task.headers,
+    opfsFileName: task.opfsCacheFileName,
+    resumeFromByte: 0,
     onProgress: (data: any) => {
       const progress = data.progress >= 0 ? data.progress : 0;
       downloadQueueStorage.updateTask(task.id, {
@@ -300,6 +432,7 @@ function startMp4Task(task: DownloadTask) {
         errorNum: 0,
         isFileDownloading: data.isFileDownloading,
         fileDownloadProgress: data.isFileDownloading ? data.progress : undefined,
+        cachedBytes: data.bytesReceived,
       });
     },
     onComplete: (data: any) => {

@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { buildSanitizedDownloadFilenameWithExtension } from '@src/shared/utils/sanitizeDownloadFilename';
+import { setPendingBlobFilename } from '@src/shared/utils/downloadFilenameFix';
+
 /**
  * MP4Downloader – single-file direct download through the extension's
  * background service worker, reusing the same DNR + OPFS + offscreen pipeline
@@ -25,6 +28,10 @@ export interface MP4DownloadOptions {
   onProgress?: (data: MP4ProgressData) => void;
   onComplete?: (data: { fileName: string }) => void;
   onError?: (error: string) => void;
+  /** Stable OPFS file name (from download queue task) */
+  opfsFileName?: string;
+  /** Resume appending after pauseSoft(); requires server Range support */
+  resumeFromByte?: number;
 }
 
 export interface MP4ProgressData {
@@ -52,99 +59,177 @@ export class MP4Downloader {
   private abortController: AbortController | null = null;
   private activeRuleIds: number[] = [];
   private opfsFileName = '';
+  private opfsWritable: FileSystemWritableFileStream | null = null;
   private destroyed = false;
+  private pauseRequested = false;
+  private bytesReceivedTotal = 0;
 
   // ------ public API -------------------------------------------------------
 
+  getBytesReceived(): number {
+    return this.bytesReceivedTotal;
+  }
+
   /**
-   * Start downloading.  Returns a promise that resolves on success or rejects
-   * on error (the same information is also sent via callbacks).
+   * Start downloading (or resume when resumeFromByte > 0).
    */
   async start(opts: MP4DownloadOptions): Promise<void> {
-    const { url, fileName, headers, onProgress, onComplete, onError } = opts;
+    const {
+      url,
+      fileName,
+      headers,
+      onProgress,
+      onComplete,
+      onError,
+      opfsFileName: presetName,
+      resumeFromByte = 0,
+    } = opts;
+
+    this.destroyed = false;
+    this.pauseRequested = false;
 
     try {
-      // 1. Register DNR header rules
       if (headers && Object.keys(headers).length > 0) {
         await this.registerHeaderRules(url, headers);
       }
 
-      // 2. Fetch with streaming
       this.abortController = new AbortController();
-      const response = await fetch(url, { signal: this.abortController.signal });
 
-      if (!response.ok) {
+      const fetchHeaders: Record<string, string> = { ...(headers || {}) };
+      if (resumeFromByte > 0) {
+        fetchHeaders['Range'] = `bytes=${resumeFromByte}-`;
+      }
+
+      const response = await fetch(url, { signal: this.abortController.signal, headers: fetchHeaders });
+
+      if (resumeFromByte > 0) {
+        if (response.status !== 206 && response.status !== 200) {
+          throw new Error(`HTTP ${response.status} ${response.statusText}`);
+        }
+        if (response.status === 200) {
+          throw new Error('Server did not honor Range; cannot resume');
+        }
+      } else if (!response.ok) {
         throw new Error(`HTTP ${response.status} ${response.statusText}`);
       }
 
-      const contentLength = parseInt(response.headers.get('Content-Length') ?? '-1', 10);
+      let totalBytes = -1;
+      const contentRange = response.headers.get('Content-Range');
+      const contentLen = response.headers.get('Content-Length');
+      if (contentRange) {
+        const m = contentRange.match(/\/(\d+)\s*$/);
+        if (m) totalBytes = parseInt(m[1], 10);
+      }
+      if (totalBytes <= 0) {
+        const cl = parseInt(contentLen ?? '-1', 10);
+        if (resumeFromByte > 0 && cl > 0) {
+          totalBytes = resumeFromByte + cl;
+        } else {
+          totalBytes = cl;
+        }
+      }
+
       const reader = response.body?.getReader();
       if (!reader) throw new Error('Response body is not readable');
 
-      // 3. Init OPFS file
       const ext = 'mp4';
-      this.opfsFileName = `mp4-${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${ext}`;
+      this.opfsFileName = presetName || `mp4-${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${ext}`;
       const root = await navigator.storage.getDirectory();
-      const fileHandle = await root.getFileHandle(this.opfsFileName, { create: true });
-      const writable = await fileHandle.createWritable();
+      const fileHandle = await root.getFileHandle(this.opfsFileName, { create: resumeFromByte === 0 });
+      this.opfsWritable = await fileHandle.createWritable({ keepExistingData: resumeFromByte > 0 });
 
-      let bytesReceived = 0;
+      let bytesReceived = resumeFromByte;
+      this.bytesReceivedTotal = bytesReceived;
 
-      // 4. Stream read → OPFS write
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
+      let readingStream = true;
+      while (readingStream) {
         if (this.destroyed) {
-          reader.cancel();
-          await writable.close().catch(() => {});
+          await reader.cancel().catch(() => {});
+          await this.opfsWritable.close().catch(() => {});
+          this.opfsWritable = null;
           this.cleanupOPFS();
+          await this.cleanupHeaderRules();
+          return;
+        }
+        if (this.pauseRequested) {
+          await reader.cancel().catch(() => {});
+          await this.opfsWritable.close().catch(() => {});
+          this.opfsWritable = null;
+          await this.cleanupHeaderRules();
           return;
         }
 
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          readingStream = false;
+          continue;
+        }
 
-        await writable.write(value);
+        await this.opfsWritable.write(value);
         bytesReceived += value.byteLength;
+        this.bytesReceivedTotal = bytesReceived;
 
-        const progress = contentLength > 0 ? Math.min((bytesReceived / contentLength) * 90, 90) : -1;
+        const progress = totalBytes > 0 ? Math.min((bytesReceived / totalBytes) * 90, 90) : -1;
         onProgress?.({
           progress: progress >= 0 ? progress : -1,
           bytesReceived,
-          totalBytes: contentLength,
+          totalBytes: totalBytes > 0 ? totalBytes : -1,
           isFileDownloading: false,
         });
       }
 
-      await writable.close();
+      await this.opfsWritable.close();
+      this.opfsWritable = null;
 
-      // 5. Trigger download via offscreen → blob URL → chrome.downloads
       onProgress?.({
         progress: 92,
         bytesReceived,
-        totalBytes: contentLength,
+        totalBytes: totalBytes > 0 ? totalBytes : bytesReceived,
         isFileDownloading: true,
       });
 
       await this.downloadFromOPFS(this.opfsFileName, fileName, bytesReceived, onProgress);
 
-      // 6. Done
       await this.cleanupHeaderRules();
       onComplete?.({ fileName });
     } catch (err: any) {
       await this.cleanupHeaderRules();
+      if (this.opfsWritable) {
+        await this.opfsWritable.close().catch(() => {});
+        this.opfsWritable = null;
+      }
+      if (this.pauseRequested) {
+        return;
+      }
+      if (this.destroyed) {
+        this.cleanupOPFS();
+        return;
+      }
       this.cleanupOPFS();
-      if (this.destroyed) return; // user-cancelled, don't report error
       const msg = err?.message || String(err);
       onError?.(msg);
     }
   }
 
-  /** Cancel an in-progress download. */
-  destroy(): void {
-    this.destroyed = true;
+  /** Pause without removing OPFS partial file; use start({ ...opts, resumeFromByte: getBytesReceived() }). */
+  pauseSoft(): void {
+    this.pauseRequested = true;
     this.abortController?.abort();
-    this.cleanupHeaderRules();
-    this.cleanupOPFS();
+  }
+
+  /** Remove task and optionally delete OPFS cache. */
+  destroy(purgeOpfs = true): void {
+    this.destroyed = true;
+    this.pauseRequested = false;
+    this.abortController?.abort();
+    void this.cleanupHeaderRules();
+    if (this.opfsWritable) {
+      void this.opfsWritable.close().catch(() => {});
+      this.opfsWritable = null;
+    }
+    if (purgeOpfs) {
+      this.cleanupOPFS();
+    }
   }
 
   // ------ DNR rules --------------------------------------------------------
@@ -271,8 +356,18 @@ export class MP4Downloader {
 
       chrome.downloads.onChanged.addListener(listener);
 
+      const downloadFileName = buildSanitizedDownloadFilenameWithExtension(fullFileName, 'mp4');
+
+      setPendingBlobFilename(blobUrl, downloadFileName);
+
+      console.log('[mp4-dl] chrome.downloads.download', {
+        fullFileName,
+        downloadFileName,
+        blobUrlPreview: (blobUrl || '').slice(0, 96),
+      });
+
       chrome.downloads.download(
-        { url: blobUrl, filename: fullFileName, saveAs: false, conflictAction: 'uniquify' },
+        { url: blobUrl, filename: downloadFileName, saveAs: false, conflictAction: 'uniquify' },
         id => {
           if (chrome.runtime.lastError) {
             this.cleanupOPFSFile(opfsFileName);
