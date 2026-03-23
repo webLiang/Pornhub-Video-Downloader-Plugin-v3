@@ -18,12 +18,14 @@ const coreAlias = isDev
         pagesDir,
         'background',
         'utils',
+        'video-download-core',
         'm3u8-downloader-core.ts',
       ),
       [resolve(pagesDir, 'background', 'utils', 'dist', 'mp4-downloader.obf')]: resolve(
         pagesDir,
         'background',
         'utils',
+        'video-download-core',
         'mp4-downloader.ts',
       ),
     }

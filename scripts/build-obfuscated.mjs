@@ -23,12 +23,14 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const UTILS_DIR = resolve(ROOT, 'src/pages/background/utils');
+// 与独立仓库 git@github.com:webLiang/video-download-core.git 同目录（git subtree）
+const CORE_DIR = resolve(UTILS_DIR, 'video-download-core');
 const OUT_DIR = resolve(UTILS_DIR, 'dist');
 
 // Files to process  { source, outputName }
 const FILES = [
-  { source: resolve(UTILS_DIR, 'm3u8-downloader-core.ts'), outputName: 'm3u8-downloader-core.obf.js' },
-  { source: resolve(UTILS_DIR, 'mp4-downloader.ts'), outputName: 'mp4-downloader.obf.js' },
+  { source: resolve(CORE_DIR, 'm3u8-downloader-core.ts'), outputName: 'm3u8-downloader-core.obf.js' },
+  { source: resolve(CORE_DIR, 'mp4-downloader.ts'), outputName: 'mp4-downloader.obf.js' },
 ];
 
 // External packages – keep as import statements, Vite will resolve them
