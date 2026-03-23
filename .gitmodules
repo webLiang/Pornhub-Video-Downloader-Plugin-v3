@@ -1,0 +1,3 @@
+[submodule "src/pages/background/utils/video-download-core"]
+	path = src/pages/background/utils/video-download-core
+	url = git@github.com:webLiang/video-download-core.git
