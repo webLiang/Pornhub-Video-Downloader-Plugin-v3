@@ -18,4 +18,4 @@ utils/reload/injections/*.js
 public/manifest.json
 
 .cursor
-# video-download-core sources are tracked (synced with github.com/webLiang/video-download-core via subtree); build output stays under utils/dist
+# video-download-core：主仓库用 git submodule 指向 github.com/webLiang/video-download-core；混淆产物在 src/pages/background/utils/dist

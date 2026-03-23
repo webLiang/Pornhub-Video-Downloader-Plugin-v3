@@ -24,8 +24,11 @@
     "prettier": "prettier . --write",
     "prepare": "husky install",
     "build:crx": "pnpm build && node utils/create-crx.cjs",
+    "video-core:init": "git submodule update --init --recursive",
     "video-core:pull": "bash scripts/video-core-pull.sh",
-    "video-core:push": "git subtree split --prefix=src/pages/background/utils/video-download-core -b video-core-split && git push video-core video-core-split:main && git branch -D video-core-split"
+    "video-core:push": "git -C src/pages/background/utils/video-download-core push origin main",
+    "video-core:push-subtree-once": "git subtree split --prefix=src/pages/background/utils/video-download-core -b video-core-split && git push video-core video-core-split:main && git branch -D video-core-split",
+    "video-core:migrate-submodule": "bash scripts/migrate-video-core-to-submodule.sh"
   },
   "type": "module",
   "dependencies": {
