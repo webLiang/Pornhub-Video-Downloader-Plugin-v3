@@ -1,23 +1,14 @@
 #!/usr/bin/env bash
-# git subtree pull needs a clean working tree; stash local changes first, then pop after pull.
-set -e
-PREFIX="src/pages/background/utils/video-download-core"
-REMOTE="video-core"
-BRANCH="main"
+# 拉取子模块：初始化（若未 clone）并在子仓库内 pull main
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SUB_PATH="src/pages/background/utils/video-download-core"
+cd "$ROOT"
 
-STASHED=0
-if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
-  echo "Working tree dirty; stashing before subtree pull…"
-  git stash push -u -m "video-core:pull (auto-stash)"
-  STASHED=1
+if [ ! -f .gitmodules ] || ! grep -q "video-download-core" .gitmodules 2>/dev/null; then
+  echo "尚未配置 submodule。请先执行: bash scripts/migrate-video-core-to-submodule.sh"
+  exit 1
 fi
 
-git subtree pull --prefix="$PREFIX" "$REMOTE" "$BRANCH" --squash
-
-if [ "$STASHED" -eq 1 ]; then
-  echo "Restoring stash with git stash pop…"
-  if ! git stash pop; then
-    echo "stash pop conflict; resolve manually (git status), then git stash drop when done"
-    exit 1
-  fi
-fi
+git submodule update --init --recursive "$SUB_PATH"
+git -C "$SUB_PATH" pull origin main
