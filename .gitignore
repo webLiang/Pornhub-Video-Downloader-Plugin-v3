@@ -17,4 +17,5 @@ utils/reload/*.js
 utils/reload/injections/*.js
 public/manifest.json
 
-# video-download-core 源码已纳入版本控制（与 github.com/webLiang/video-download-core  subtree 同步），构建产物仍在 utils/dist
+.cursor
+# video-download-core sources are tracked (synced with github.com/webLiang/video-download-core via subtree); build output stays under utils/dist

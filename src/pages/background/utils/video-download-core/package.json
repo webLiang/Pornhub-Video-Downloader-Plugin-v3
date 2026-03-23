@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "M3U8 / MP4 下载核心（扩展 background 用），与 Pornhub-Video-Downloader-Plugin-v3 通过 git subtree 同步",
+  "description": "M3U8/MP4 downloader core for extension background; synced with Pornhub-Video-Downloader-Plugin-v3 via git subtree",
   "dependencies": {
     "mux.js": "^6.3.0"
   }
