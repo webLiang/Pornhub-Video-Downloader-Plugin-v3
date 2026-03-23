@@ -23,7 +23,9 @@
     "lint:fix": "pnpm lint --fix",
     "prettier": "prettier . --write",
     "prepare": "husky install",
-    "build:crx": "pnpm build && node utils/create-crx.cjs"
+    "build:crx": "pnpm build && node utils/create-crx.cjs",
+    "video-core:pull": "bash scripts/video-core-pull.sh",
+    "video-core:push": "git subtree split --prefix=src/pages/background/utils/video-download-core -b video-core-split && git push video-core video-core-split:main && git branch -D video-core-split"
   },
   "type": "module",
   "dependencies": {

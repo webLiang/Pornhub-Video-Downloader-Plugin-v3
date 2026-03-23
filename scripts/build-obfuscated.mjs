@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const UTILS_DIR = resolve(ROOT, 'src/pages/background/utils');
-// 与独立仓库 git@github.com:webLiang/video-download-core.git 同目录（git subtree）
+// Same path as standalone repo git@github.com:webLiang/video-download-core.git (git subtree)
 const CORE_DIR = resolve(UTILS_DIR, 'video-download-core');
 const OUT_DIR = resolve(UTILS_DIR, 'dist');
 
