@@ -3,6 +3,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-nocheck
 import { mp4 } from 'mux.js';
+import { buildSanitizedDownloadFilenameWithExtension } from '@src/shared/utils/sanitizeDownloadFilename';
+import { setPendingBlobFilename } from '@src/shared/utils/downloadFilenameFix';
 
 // TypeScript 类型定义
 interface M3U8DownloaderOptions {
@@ -65,6 +67,8 @@ interface StartOptions {
   streamDownload?: boolean;
   fileName?: string;
   headers?: Record<string, string>; // Custom headers (e.g. Origin, Referer) injected into every fetch request
+  /** Stable OPFS file name for this job (e.g. from download queue task id) */
+  opfsFileName?: string;
 }
 
 class M3U8Downloader {
@@ -110,6 +114,8 @@ class M3U8Downloader {
   private opfsWriteQueue: Map<number, ArrayBuffer> = new Map(); // 写入队列（index -> data）
   private opfsFinalizing: boolean = false; // 是否正在完成 OPFS 写入（防止重复触发）
   private opfsWritingPromise: Promise<void> | null = null; // 当前正在执行的写入 Promise（用于防止并发写入）
+  /** When set in start(), used instead of a random OPFS file name */
+  private opfsOverrideFileName: string = '';
 
   // 内存追踪（调试用）
   private memoryTracker = {
@@ -188,7 +194,12 @@ class M3U8Downloader {
    *   4. Store rule IDs for later cleanup
    */
   private async registerHeaderRules(urls: string[]): Promise<void> {
-    console.log('[M3U8Downloader] registerHeaderRules called, customHeaders:', this.customHeaders, 'urls count:', urls.length);
+    console.log(
+      '[M3U8Downloader] registerHeaderRules called, customHeaders:',
+      this.customHeaders,
+      'urls count:',
+      urls.length,
+    );
 
     if (Object.keys(this.customHeaders).length === 0) {
       console.warn('[M3U8Downloader] registerHeaderRules: customHeaders is empty, skip');
@@ -556,6 +567,24 @@ class M3U8Downloader {
   }
 
   /**
+   * 去掉标题/文件名末尾常见的视频扩展名，再拼 .ts/.mp4，避免出现「xxx.mp4.ts」导致系统只突出显示 .mp4、看起来像没有 .ts」。
+   */
+  private stripKnownVideoExtensionForM3u8Output(name: string): string {
+    const s = (name || '').trim();
+    if (!s) return s;
+    return s.replace(/\.(mp4|m4v|webm|mkv|mov|ts|m3u8)$/i, '');
+  }
+
+  /**
+   * 最终下载用的「纯文件名」（不含扩展名），与 getDocumentTitle / title / beginTime 逻辑一致。
+   */
+  private getDownloadBaseNameWithoutExtension(): string {
+    const fileName = this.title || this.formatTime(this.beginTime || new Date(), 'YYYY_MM_DD hh_mm_ss');
+    const raw = this.getDocumentTitle() !== 'm3u8 downloader' ? this.getDocumentTitle() : fileName;
+    return this.stripKnownVideoExtensionForM3u8Output(raw);
+  }
+
+  /**
    * 重置所有状态（释放内存）
    */
   private reset(): void {
@@ -617,6 +646,7 @@ class M3U8Downloader {
     // 重置 OPFS 相关状态
     this.opfsWriteIndex = 0;
     this.opfsFileName = '';
+    this.opfsOverrideFileName = '';
     this.opfsInitPromise = null;
     this.opfsWriteQueue.clear();
     this.opfsFinalizing = false;
@@ -643,12 +673,14 @@ class M3U8Downloader {
     // 重置状态（释放之前下载的内存）
     this.reset();
 
+    this.opfsOverrideFileName = options.opfsFileName?.trim() || '';
+
     this.url = url;
     this.isGetMP4 = options.isGetMP4 ?? false;
     this.title = options.fileName ?? '';
     this.customHeaders = options.headers ?? {};
     console.log('[M3U8Downloader] start() customHeaders:', this.customHeaders);
-    
+
     // 解析 URL 参数中的 title
     try {
       const urlObj = new URL(url);
@@ -659,8 +691,7 @@ class M3U8Downloader {
 
     // 流式下载初始化
     if (options.streamDownload && this.isSupperStreamWrite) {
-      const fileName = this.title || this.formatTime(new Date(), 'YYYY_MM_DD hh_mm_ss');
-      const finalFileName = this.getDocumentTitle() !== 'm3u8 downloader' ? this.getDocumentTitle() : fileName;
+      const finalFileName = this.getDownloadBaseNameWithoutExtension();
       // 保存最终使用的文件名，用于完成回调
       this.finalFileName = finalFileName;
       const ext = this.isGetMP4 ? 'mp4' : 'ts';
@@ -709,7 +740,8 @@ class M3U8Downloader {
     this.opfsInitPromise = (async () => {
       try {
         const ext = this.isGetMP4 ? 'mp4' : 'ts';
-        this.opfsFileName = `m3u8-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${ext}`;
+        this.opfsFileName =
+          this.opfsOverrideFileName || `m3u8-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${ext}`;
 
         const root = await navigator.storage.getDirectory();
         this.opfsFileHandle = await root.getFileHandle(this.opfsFileName, { create: true });
@@ -727,6 +759,81 @@ class M3U8Downloader {
     })();
 
     return this.opfsInitPromise;
+  }
+
+  /**
+   * 仅拉取 m3u8 文本（续传前刷新带时效的片段 URL，与 getM3U8 解析逻辑一致）
+   */
+  private fetchM3u8TextForResume(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      this.ajax({
+        url: this.url,
+        success: (m3u8Str: ArrayBuffer | string) => {
+          const text = typeof m3u8Str === 'string' ? m3u8Str : new TextDecoder().decode(m3u8Str);
+          resolve(text);
+        },
+        fail: (_status, errorInfo) => {
+          let msg = '无法获取 m3u8';
+          if (errorInfo?.status) {
+            msg = `HTTP ${errorInfo.status}`;
+          } else if (errorInfo?.error) {
+            msg = String(errorInfo.error);
+          }
+          reject(new Error(msg));
+        },
+      });
+    });
+  }
+
+  /**
+   * 续传前重新解析 m3u8：更新 tsUrlList 与 AES（签名过期后旧 URL 会 403）
+   */
+  private async refreshPlaylistUrlsForResume(): Promise<void> {
+    if (!this.tsUrlList.length) {
+      return;
+    }
+
+    const m3u8Text = await this.fetchM3u8TextForResume();
+    const lines = m3u8Text.split('\n');
+    const newTsUrls: string[] = [];
+    lines.forEach(item => {
+      if (/^[^#]/.test(item.trim())) {
+        newTsUrls.push(this.applyURL(item.trim(), this.url));
+      }
+    });
+
+    if (newTsUrls.length === 0) {
+      throw new Error('播放列表为空');
+    }
+
+    if (newTsUrls.length !== this.tsUrlList.length) {
+      throw new Error(`片段数变化(${this.tsUrlList.length}→${newTsUrls.length})，请删除任务后重新下载`);
+    }
+
+    for (let i = 0; i < newTsUrls.length; i++) {
+      this.tsUrlList[i] = newTsUrls[i];
+    }
+
+    if (m3u8Text.includes('#EXT-X-KEY')) {
+      const methodMatch = m3u8Text.match(/(.*METHOD=([^,\s]+))/);
+      const uriMatch = m3u8Text.match(/(.*URI="([^"]+))"/);
+      const ivMatch = m3u8Text.match(/(.*IV=([^,\s]+))/);
+      this.aesConf.method = methodMatch?.[2] ?? '';
+      const rawUri = uriMatch?.[2] ?? '';
+      this.aesConf.uri = rawUri ? this.applyURL(rawUri, this.url) : '';
+      const ivStr = ivMatch?.[2] ?? '';
+      this.aesConf.iv = ivStr ? this.aesConf.stringToBuffer(ivStr) : '';
+    }
+
+    if (Object.keys(this.customHeaders).length > 0) {
+      const allUrls = [...this.tsUrlList];
+      if (this.aesConf.uri) {
+        allUrls.push(this.aesConf.uri);
+      }
+      await this.registerHeaderRules(allUrls);
+    }
+
+    this.log('续传：已刷新 m3u8 片段与密钥 URL');
   }
 
   /**
@@ -1017,6 +1124,12 @@ class M3U8Downloader {
       return;
     }
 
+    // pauseSoft 之后仍可能有已完成的 fetch 进入 dealTS，这里直接丢弃
+    if (this.isPause || !this.downloading) {
+      callback?.();
+      return;
+    }
+
     // 内存追踪：记录接收到的数据
     const fileSize = file.byteLength;
     this.memoryTracker.totalBytesReceived += fileSize;
@@ -1039,6 +1152,11 @@ class M3U8Downloader {
       // 再次检查是否已处理（防止重复处理）
       if (this.finishList[index] && this.finishList[index].status === 'finish') {
         this.warn(`片段 ${index} 已处理（回调中），跳过重复处理`);
+        callback?.();
+        return;
+      }
+
+      if (this.isPause || !this.downloading) {
         callback?.();
         return;
       }
@@ -1165,8 +1283,7 @@ class M3U8Downloader {
       this.mediaFileList[listIndex] = afterData;
       if (this.finishNum === this.rangeDownload.targetSegment) {
         // 所有片段下载完成，合并下载
-        const fileName = this.title || this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss');
-        const finalFileName = this.getDocumentTitle() !== 'm3u8 downloader' ? this.getDocumentTitle() : fileName;
+        const finalFileName = this.getDownloadBaseNameWithoutExtension();
         // 保存最终使用的文件名，用于完成回调
         this.finalFileName = finalFileName;
         // 等待 downloadFile 真正完成（文件下载到本地）后再触发完成回调
@@ -1308,9 +1425,7 @@ class M3U8Downloader {
       // 标记已关闭，避免后续重复 close 触发错误
       this.opfsWritable = null;
 
-      // 获取文件名
-      const fileName = this.title || this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss');
-      const finalFileName = this.getDocumentTitle() !== 'm3u8 downloader' ? this.getDocumentTitle() : fileName;
+      const finalFileName = this.getDownloadBaseNameWithoutExtension();
       this.finalFileName = finalFileName;
 
       // 从 OPFS 创建 Blob URL 并下载
@@ -1333,7 +1448,8 @@ class M3U8Downloader {
    */
   private async downloadFromOPFS(opfsFileName: string, fileName: string): Promise<void> {
     const ext = this.isGetMP4 ? 'mp4' : 'ts';
-    const fullFileName = `${fileName}.${ext}`;
+    const base = this.stripKnownVideoExtensionForM3u8Output(fileName);
+    const fullFileName = `${base}.${ext}`;
     const mimeType = this.isGetMP4 ? 'video/mp4' : 'video/MP2T';
 
     try {
@@ -1380,8 +1496,14 @@ class M3U8Downloader {
     fileSize: number,
   ): Promise<void> {
     const ext = this.isGetMP4 ? 'mp4' : 'ts';
-    const downloadFileName = fullFileName.endsWith(`.${ext}`) ? fullFileName : `${fullFileName}.${ext}`;
+    const downloadFileName = buildSanitizedDownloadFilenameWithExtension(fullFileName, ext);
     const downloadId = `download-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    console.log('[m3u8-dl] startChromeDownload 文件名', {
+      fullFileName,
+      ext,
+      downloadFileName,
+      blobUrlPreview: (blobUrl || '').slice(0, 96),
+    });
 
     return new Promise((resolve, reject) => {
       // 设置超时，避免无限等待
@@ -1456,6 +1578,11 @@ class M3U8Downloader {
       // 注册下载状态监听器
       chrome.downloads.onChanged.addListener(downloadListener);
 
+      setPendingBlobFilename(blobUrl, downloadFileName);
+      console.log('[m3u8-dl] setPendingBlobFilename 文件名3333', {
+        blobUrl,
+        downloadFileName,
+      });
       chrome.downloads.download(
         {
           url: blobUrl,
@@ -1477,6 +1604,16 @@ class M3U8Downloader {
 
           // 立即查询下载项信息以获取 totalBytes
           chrome.downloads.search({ id }, results => {
+            const di = results && results[0];
+            if (di) {
+              console.log(
+                '[m3u8-dl] download 已创建 id=%s filename=%s url=%s finalUrl=%s',
+                id,
+                di.filename,
+                di.url,
+                di.finalUrl,
+              );
+            }
             if (results && results.length > 0 && results[0].totalBytes) {
               fileTotalBytes = results[0].totalBytes;
 
@@ -1515,8 +1652,7 @@ class M3U8Downloader {
    * 回退到数组方式下载（当 OPFS 写入失败时）
    */
   private async fallbackToArrayDownload(): Promise<void> {
-    const fileName = this.title || this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss');
-    const finalFileName = this.getDocumentTitle() !== 'm3u8 downloader' ? this.getDocumentTitle() : fileName;
+    const finalFileName = this.getDownloadBaseNameWithoutExtension();
     this.finalFileName = finalFileName;
 
     this.downloadFile(this.mediaFileList, finalFileName)
@@ -1624,7 +1760,8 @@ class M3U8Downloader {
    */
   private async downloadFile(fileDataList: (ArrayBuffer | null)[], fileName: string): Promise<void> {
     const ext = this.isGetMP4 ? 'mp4' : 'ts';
-    const fullFileName = `${fileName}.${ext}`;
+    const base = this.stripKnownVideoExtensionForM3u8Output(fileName);
+    const fullFileName = `${base}.${ext}`;
     const mimeType = this.isGetMP4 ? 'video/mp4' : 'video/MP2T';
 
     // 在 background 脚本中，使用 OPFS (Origin Private File System) 流式写入，避免大文件占用内存
@@ -1930,8 +2067,7 @@ class M3U8Downloader {
    */
   public forceDownload(): void {
     if (this.mediaFileList.length) {
-      const fileName = this.title || this.formatTime(this.beginTime, 'YYYY_MM_DD hh_mm_ss');
-      const finalFileName = this.getDocumentTitle() !== 'm3u8 downloader' ? this.getDocumentTitle() : fileName;
+      const finalFileName = this.getDownloadBaseNameWithoutExtension();
       this.downloadFile(this.mediaFileList, finalFileName).catch(error => {
         this.error('强制下载时出错:', error);
         this.triggerError('下载失败: ' + (error?.message || String(error)));
@@ -1942,83 +2078,153 @@ class M3U8Downloader {
   }
 
   /**
-   * 销毁下载器
+   * Pause download without deleting the OPFS partial file (resume() later).
    */
-  public destroy(): void {
-    // 停止自动重试
+  public async pauseSoft(): Promise<void> {
     this.stopAutoRetry();
-
-    // Remove declarativeNetRequest rules immediately on destroy
-    this.cleanupHeaderRules();
-
-    // 设置状态为已取消
-    this.downloading = false;
     this.isPause = true;
 
-    // 取消所有正在进行的 fetch 请求
     this.abortControllers.forEach(controller => {
       try {
         controller.abort();
-      } catch (e) {
-        // Ignore abort errors
+      } catch {
+        // ignore
+      }
+    });
+    this.timeoutTimers.forEach(timer => {
+      clearTimeout(timer);
+    });
+    this.timeoutTimers.clear();
+    this.timeoutHandled.clear();
+    this.abortControllers = [];
+
+    for (let i = 0; i < this.finishList.length; i++) {
+      if (this.finishList[i]?.status === 'downloading') {
+        this.finishList[i].status = '';
+      }
+    }
+
+    if (this.opfsInitPromise) {
+      await this.opfsInitPromise.catch(() => {});
+    }
+    if (this.opfsWritingPromise) {
+      await this.opfsWritingPromise.catch(() => {});
+    }
+
+    if (this.opfsWritable) {
+      try {
+        await this.opfsWritable.close();
+      } catch {
+        // ignore
+      }
+      this.opfsWritable = null;
+    }
+
+    this.downloading = false;
+    this.opfsFinalizing = false;
+  }
+
+  /**
+   * Resume after pauseSoft().
+   */
+  public resume(): void {
+    if (!this.url) {
+      return;
+    }
+    if (this.downloading && !this.isPause) {
+      return;
+    }
+    this.isPause = false;
+    this.downloading = true;
+    this.beginTime = this.beginTime || new Date();
+
+    void (async () => {
+      try {
+        await this.refreshPlaylistUrlsForResume();
+      } catch (err: any) {
+        this.error('resume: refresh playlist failed', err);
+        this.triggerError('继续失败：刷新播放列表失败（片段地址可能已过期）' + (err?.message ? ` ${err.message}` : ''));
+        return;
+      }
+
+      const reopen =
+        this.opfsFileHandle && !this.opfsWritable
+          ? (async () => {
+              this.opfsWritable = await this.opfsFileHandle!.createWritable({ keepExistingData: true });
+              this.opfsInitPromise = Promise.resolve();
+            })()
+          : Promise.resolve();
+
+      try {
+        await reopen;
+      } catch (err: any) {
+        this.error('resume OPFS reopen failed:', err);
+        this.triggerError('Resume failed: ' + (err?.message || String(err)));
+        return;
+      }
+
+      if (this.aesConf.uri) {
+        this.getAES();
+      } else {
+        this.downloadTS();
+      }
+    })();
+  }
+
+  /**
+   * Tear down downloader. If purgeOpfs is false, OPFS file is left on disk (used only in special cases).
+   */
+  public destroy(purgeOpfs = true): void {
+    this.stopAutoRetry();
+
+    this.cleanupHeaderRules();
+
+    this.downloading = false;
+    this.isPause = true;
+
+    this.abortControllers.forEach(controller => {
+      try {
+        controller.abort();
+      } catch {
+        // ignore
       }
     });
 
-    // 清除所有超时定时器和标记
     this.timeoutTimers.forEach(timer => {
       clearTimeout(timer);
     });
     this.timeoutTimers.clear();
     this.timeoutHandled.clear();
 
-    // 清空 AbortController 列表
-    this.abortControllers.length = 0;
     this.abortControllers = [];
 
-    // 关闭流式写入器
     if (this.streamWriter) {
       try {
         this.streamWriter.close();
-      } catch (e) {
-        // Ignore close errors
+      } catch {
+        // ignore
       }
       this.streamWriter = null;
     }
 
-    // 清理 OPFS 资源
     if (this.opfsWritable) {
       try {
         this.opfsWritable.close();
-      } catch (e) {
-        // Ignore close errors
+      } catch {
+        // ignore
       }
       this.opfsWritable = null;
     }
 
-    // 清理 OPFS 文件（如果存在）
     const opfsFileToClean = this.opfsFileName;
-    if (opfsFileToClean) {
-      this.cleanupOPFSFile(opfsFileToClean).catch(() => {
-        // Ignore cleanup errors
-      });
+    if (purgeOpfs && opfsFileToClean) {
+      this.cleanupOPFSFile(opfsFileToClean).catch(() => {});
     }
 
     this.opfsFileHandle = null;
 
-    // 重置所有状态并释放内存
     this.reset();
   }
-}
-
-// 导出（支持多种模块系统，兼容 background 脚本）
-if (typeof module !== 'undefined' && module.exports) {
-  (module as any).exports = M3U8Downloader;
-} else if (typeof (globalThis as any).define === 'function' && (globalThis as any).define.amd) {
-  (globalThis as any).define([], () => M3U8Downloader);
-} else {
-  // 在 background 脚本中使用 self 或 globalThis
-  const global = (typeof self !== 'undefined' ? self : globalThis) as any;
-  global.M3U8Downloader = M3U8Downloader;
 }
 
 export default M3U8Downloader;

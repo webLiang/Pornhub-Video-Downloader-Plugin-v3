@@ -17,12 +17,15 @@ interface StartOptions {
   streamDownload?: boolean;
   fileName?: string;
   headers?: Record<string, string>;
+  opfsFileName?: string;
 }
 
 declare class M3U8Downloader {
   constructor(options?: M3U8DownloaderOptions);
   start(url: string, options?: StartOptions): void;
-  destroy(): void;
+  destroy(purgeOpfs?: boolean): void;
+  pauseSoft(): Promise<void>;
+  resume(): void;
   togglePause(): void;
   retry(index: number): void;
 }

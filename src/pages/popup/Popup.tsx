@@ -4,7 +4,11 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import iconLogo from '/icon-128.png';
 import '@pages/popup/Popup.css';
 import downloadHistoryStorage, { type DownloadRecord } from '@src/shared/storages/downloadHistoryStorage';
-import downloadQueueStorage, { type DownloadTask } from '@src/shared/storages/downloadQueueStorage';
+import downloadQueueStorage, {
+  type DownloadTask,
+  type DownloadTaskStatus,
+} from '@src/shared/storages/downloadQueueStorage';
+import { sortVideoInfosByQualityDesc } from '@src/shared/utils/videoInfoSort';
 import { ToastContainer, useToast } from '@pages/popup/components/Toast';
 
 type VideoInfo = {
@@ -125,13 +129,16 @@ const Popup = () => {
     sendMessageToContentScript({ command: 'get_video_info' }, function (response) {
       if (!response) return;
       if (response.pageTitle) setPageTitle(response.pageTitle);
-      if (Array.isArray(response.videoInfos)) setvideoInfos(response.videoInfos);
+      const sortedInfos: VideoInfo[] = Array.isArray(response.videoInfos)
+        ? sortVideoInfosByQualityDesc(response.videoInfos as VideoInfo[])
+        : [];
+      if (sortedInfos.length) setvideoInfos(sortedInfos);
 
       // Only overwrite default filename when response title matches current tab (avoid wrong title from sidebar/recommended)
       chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
         const tabTitle = (tabs[0]?.title || '').trim();
         const pageTitle = (response.pageTitle || '').trim();
-        const firstVideoTitle = (response.videoInfos?.[0]?.title || '').trim();
+        const firstVideoTitle = (sortedInfos[0]?.title || '').trim();
 
         const pageMatchesTab = pageTitle && tabTitle && (tabTitle.includes(pageTitle) || pageTitle.includes(tabTitle));
         const firstMatchesTab =
@@ -202,7 +209,30 @@ const Popup = () => {
       el.innerText = next;
     }
   }, [displayFileName, isEditingFileName]);
+
+  /** 与队列里未结束的任务冲突：同一视频 URL 已排队 / 下载中 / 暂停时不再入队（error 允许重新点） */
+  const findBlockingTaskForUrl = (videoUrl: string): DownloadTask | undefined => {
+    return queueTasks.find(t => {
+      if (t.url !== videoUrl) return false;
+      const s: DownloadTaskStatus = t.status;
+      return s === 'queued' || s === 'downloading' || s === 'paused';
+    });
+  };
+
   const onDownload = (videoInfo: VideoInfo) => () => {
+    const blocking = findBlockingTaskForUrl(videoInfo.videoUrl);
+    if (blocking) {
+      scrollToM3u8Section();
+      if (blocking.status === 'downloading') {
+        showWarning('该清晰度正在下载中，请勿重复点击');
+      } else if (blocking.status === 'queued') {
+        showWarning('该清晰度已在等待队列中');
+      } else {
+        showWarning('该任务已暂停，请在下方队列中恢复或删除后再下载');
+      }
+      return;
+    }
+
     const finalFileName = sanitizeDownloadFileName(fileName || getPageTitle() || videoInfo.title || 'video', 'video');
     setFileName(finalFileName);
     scrollToM3u8Section();
@@ -264,14 +294,50 @@ const Popup = () => {
   //     });
   // };
 
-  const handleCancelTask = (taskId: string) => {
+  /** Delete task and remove OPFS cache for this task */
+  const handleDeleteTask = (taskId: string) => {
     chrome.runtime
-      .sendMessage({ type: 'download-queue-cancel', taskId })
-      .then(() => {
-        showInfo('任务已取消/移除');
+      .sendMessage({ type: 'download-queue-delete', taskId })
+      .then((response: { success?: boolean; error?: string } | undefined) => {
+        if (response && response.success === false) {
+          showError('删除失败: ' + (response.error || '未知错误'));
+          return;
+        }
+        showInfo('已删除任务');
       })
       .catch(e => {
-        showWarning('取消失败: ' + (e?.message || '未知错误'));
+        showWarning('删除失败: ' + (e?.message || '无法连接后台'));
+      });
+  };
+
+  /** Pause: keep OPFS partial data */
+  const handlePauseTask = (taskId: string) => {
+    chrome.runtime
+      .sendMessage({ type: 'download-queue-pause', taskId })
+      .then((response: { success?: boolean; error?: string } | undefined) => {
+        if (response && response.success === false) {
+          showError('暂停失败: ' + (response.error || '未知错误'));
+          return;
+        }
+        showInfo('已暂停');
+      })
+      .catch(e => {
+        showWarning('暂停失败: ' + (e?.message || '无法连接后台'));
+      });
+  };
+
+  const handleResumeTask = (taskId: string) => {
+    chrome.runtime
+      .sendMessage({ type: 'download-queue-resume', taskId })
+      .then((response: { success?: boolean; error?: string } | undefined) => {
+        if (response && response.success === false) {
+          showError('继续失败: ' + (response.error || '未知错误'));
+          return;
+        }
+        showInfo('继续下载');
+      })
+      .catch(e => {
+        showWarning('继续失败: ' + (e?.message || '无法连接后台'));
       });
   };
 
@@ -309,7 +375,6 @@ const Popup = () => {
   const handleClearHistory = () => {
     downloadHistoryStorage.clearAll();
   };
-  console.log(3333, displayFileName);
   return (
     <div className="App" style={{}}>
       <ToastContainer toasts={toasts} onRemove={removeToast} />
@@ -360,6 +425,14 @@ const Popup = () => {
         <ul>
           {videoInfos?.length > 0 &&
             videoInfos.map(item => {
+              const blockingTask = findBlockingTaskForUrl(item.videoUrl);
+              const downloadBusy = Boolean(blockingTask);
+              let downloadLabel = '下载';
+              if (blockingTask) {
+                if (blockingTask.status === 'downloading') downloadLabel = '下载中…';
+                else if (blockingTask.status === 'queued') downloadLabel = '排队中…';
+                else if (blockingTask.status === 'paused') downloadLabel = '已暂停';
+              }
               return (
                 <li key={item.videoUrl}>
                   <label>
@@ -368,8 +441,13 @@ const Popup = () => {
                   <label>
                     类型： <span style={{ display: 'inline-block', width: '40px' }}> {item.format}</span>
                   </label>
-                  <button className="button down" onClick={onDownload(item)}>
-                    下载
+                  <button
+                    type="button"
+                    className="button down video-row-download"
+                    disabled={downloadBusy}
+                    title={downloadBusy ? '该清晰度已在队列中，请勿重复添加' : '加入下载队列'}
+                    onClick={onDownload(item)}>
+                    {downloadLabel}
                   </button>
                   <button className="button copy" onClick={onCopy(item)}>
                     复制
@@ -387,7 +465,8 @@ const Popup = () => {
               下载队列（同时最多 6 个）
               <span className="queue-meta">
                 {queueTasks.filter(t => t.status === 'downloading').length} 下载中 /{' '}
-                {queueTasks.filter(t => t.status === 'queued').length} 等待
+                {queueTasks.filter(t => t.status === 'queued').length} 等待 /{' '}
+                {queueTasks.filter(t => t.status === 'paused').length} 已暂停
               </span>
             </span>
             <div className="queue-actions">
@@ -428,7 +507,11 @@ const Popup = () => {
                         </span>
                         <div className="progress-info inline">
                           <span>
-                            {task.status === 'queued' ? `等待中${queuedIndex ? `（#${queuedIndex}）` : ''}` : '下载中'}
+                            {task.status === 'queued'
+                              ? `等待中${queuedIndex ? `（#${queuedIndex}）` : ''}`
+                              : task.status === 'paused'
+                                ? '已暂停'
+                                : '下载中'}
                           </span>
                           <span>进度: {Number.isFinite(task.progress) ? task.progress.toFixed(2) : '0.00'}%</span>
                           {task.status === 'downloading' && !task.isFileDownloading && (
@@ -443,13 +526,33 @@ const Popup = () => {
                         </div>
                       </div>
                       <div className="m3u8-progress-actions">
-                        {(task.status === 'queued' || task.status === 'downloading') && (
-                          <button className="btn-sm btn-cancel" onClick={() => handleCancelTask(task.id)}>
-                            取消
+                        {task.status === 'queued' && (
+                          <button className="btn-sm btn-cancel" onClick={() => handleDeleteTask(task.id)}>
+                            删除
                           </button>
                         )}
+                        {task.status === 'downloading' && (
+                          <>
+                            <button className="btn-sm btn-secondary" onClick={() => handlePauseTask(task.id)}>
+                              暂停
+                            </button>
+                            <button className="btn-sm btn-cancel" onClick={() => handleDeleteTask(task.id)}>
+                              删除
+                            </button>
+                          </>
+                        )}
+                        {task.status === 'paused' && (
+                          <>
+                            <button className="btn-sm btn-primary" onClick={() => handleResumeTask(task.id)}>
+                              继续
+                            </button>
+                            <button className="btn-sm btn-cancel" onClick={() => handleDeleteTask(task.id)}>
+                              删除
+                            </button>
+                          </>
+                        )}
                         {task.status === 'error' && (
-                          <button className="btn-sm btn-clear" onClick={() => handleCancelTask(task.id)}>
+                          <button className="btn-sm btn-clear" onClick={() => handleDeleteTask(task.id)}>
                             移除
                           </button>
                         )}
