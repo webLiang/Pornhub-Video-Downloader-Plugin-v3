@@ -1,0 +1,254 @@
+{
+  "extensionDescription": {
+    "description": "Extension description",
+    "message": "قم بتنزيل مقاطع الفيديو من Pornhub و Xvideos."
+  },
+  "extensionName": {
+    "description": "Extension name",
+    "message": "Pornhub Video Downloader Plugin v3"
+  },
+
+  "popupTitle": {
+    "description": "Popup page title",
+    "message": "مُنزّل الفيديو"
+  },
+  "popupHeaderTitle": {
+    "description": "Popup header title",
+    "message": "مُنزّل الفيديو"
+  },
+  "popupHeaderNewVersion": {
+    "description": "New version label, with version number substitution",
+    "message": "جديد $1"
+  },
+
+  "popupFilenameLabel": {
+    "description": "Filename label",
+    "message": "اسم الملف (اختياري)"
+  },
+  "popupFilenamePlaceholder": {
+    "description": "Filename placeholder",
+    "message": "اتركه فارغًا للتوليد تلقائيًا"
+  },
+
+  "popupQualityLabel": {
+    "description": "Quality label",
+    "message": "الجودة"
+  },
+  "popupTypeLabel": {
+    "description": "Format label",
+    "message": "النوع"
+  },
+
+  "popupActionDownload": {
+    "description": "Download button label",
+    "message": "تنزيل"
+  },
+  "popupActionDownloading": {
+    "description": "Downloading label",
+    "message": "جارٍ التنزيل…"
+  },
+  "popupActionQueued": {
+    "description": "Queued label",
+    "message": "في قائمة الانتظار…"
+  },
+  "popupActionPaused": {
+    "description": "Paused label",
+    "message": "متوقف مؤقتًا"
+  },
+  "popupActionCopy": {
+    "description": "Copy button label",
+    "message": "نسخ"
+  },
+
+  "popupTooltipAlreadyInQueue": {
+    "description": "Disabled download button tooltip",
+    "message": "هذه الجودة موجودة بالفعل في قائمة الانتظار. يرجى عدم إضافتها مرة أخرى."
+  },
+  "popupTooltipAddToQueue": {
+    "description": "Download button tooltip",
+    "message": "إضافة إلى قائمة التنزيل"
+  },
+
+  "toastDownloadComplete": {
+    "description": "Download complete toast, fileName substitution",
+    "message": "اكتمل التنزيل! اسم الملف: $1"
+  },
+  "toastDownloadFailed": {
+    "description": "Download failed toast, error substitution",
+    "message": "فشل التنزيل: $1"
+  },
+  "toastEnqueueFailed": {
+    "description": "Enqueue failed toast, error substitution",
+    "message": "فشل الإضافة إلى قائمة الانتظار: $1"
+  },
+  "toastEnqueued": {
+    "description": "Enqueued toast",
+    "message": "تمت الإضافة إلى قائمة التنزيل"
+  },
+  "toastDeleteFailed": {
+    "description": "Delete task failed toast, error substitution",
+    "message": "فشل الحذف: $1"
+  },
+  "toastTaskDeleted": {
+    "description": "Task deleted toast",
+    "message": "تم حذف المهمة"
+  },
+  "toastDeleteFailedBackground": {
+    "description": "Delete failed because background is not reachable",
+    "message": "فشل الحذف: تعذر الاتصال بالخدمة في الخلفية"
+  },
+  "toastPauseFailed": {
+    "description": "Pause failed toast, error substitution",
+    "message": "فشل الإيقاف المؤقت: $1"
+  },
+  "toastPaused": {
+    "description": "Paused toast",
+    "message": "متوقف مؤقتًا"
+  },
+  "toastResumeFailed": {
+    "description": "Resume failed toast, error substitution",
+    "message": "فشل الاستئناف: $1"
+  },
+  "toastResuming": {
+    "description": "Resuming toast",
+    "message": "جارٍ استئناف التنزيل"
+  },
+  "toastTaskAlreadyDownloading": {
+    "description": "Task already downloading warning",
+    "message": "هذه الجودة قيد التنزيل بالفعل. يرجى عدم النقر مرة أخرى."
+  },
+  "toastTaskAlreadyQueued": {
+    "description": "Task already queued warning",
+    "message": "هذه الجودة موجودة بالفعل في قائمة الانتظار."
+  },
+  "toastTaskPausedHint": {
+    "description": "Task paused hint warning",
+    "message": "هذه المهمة متوقفة مؤقتًا. يرجى استئنافها أو حذفها من القائمة أدناه قبل التنزيل مرة أخرى."
+  },
+  "toastSendMessageFailed": {
+    "description": "Send message failed, error substitution",
+    "message": "فشل الإضافة إلى قائمة الانتظار: $1"
+  },
+  "toastBackgroundNotReachable": {
+    "description": "Background not reachable message",
+    "message": "تعذر الاتصال بسكربت الخلفية"
+  },
+
+  "queueTitle": {
+    "description": "Queue title",
+    "message": "قائمة التنزيل (بحد أقصى 6 في نفس الوقت)"
+  },
+  "queueMetaDownloading": {
+    "description": "Queue meta: downloading count",
+    "message": "$1 قيد التنزيل"
+  },
+  "queueMetaQueued": {
+    "description": "Queue meta: queued count",
+    "message": "$1 في الانتظار"
+  },
+  "queueMetaPaused": {
+    "description": "Queue meta: paused count",
+    "message": "$1 متوقف مؤقتًا"
+  },
+  "queueActionClearQueued": {
+    "description": "Clear queued action",
+    "message": "مسح الانتظار"
+  },
+  "queueActionClearErrors": {
+    "description": "Clear error tasks action",
+    "message": "مسح الأخطاء"
+  },
+  "queueActionOpenFolder": {
+    "description": "Open downloads folder action",
+    "message": "فتح المجلد"
+  },
+  "queueTooltipClearQueued": {
+    "description": "Clear queued tooltip",
+    "message": "مسح قائمة الانتظار"
+  },
+  "queueTooltipClearErrors": {
+    "description": "Clear errors tooltip",
+    "message": "مسح المهام التي بها أخطاء"
+  },
+  "queueTooltipOpenFolder": {
+    "description": "Open downloads folder tooltip",
+    "message": "فتح مجلد التنزيلات"
+  },
+
+  "taskUnknownFile": {
+    "description": "Unknown file label",
+    "message": "ملف غير معروف"
+  },
+  "taskStatusWaiting": {
+    "description": "Task status waiting (queued), with optional queue index substitution",
+    "message": "في الانتظار$1"
+  },
+  "taskStatusPaused": {
+    "description": "Task status paused",
+    "message": "متوقف مؤقتًا"
+  },
+  "taskStatusDownloading": {
+    "description": "Task status downloading",
+    "message": "قيد التنزيل"
+  },
+  "taskProgress": {
+    "description": "Progress label",
+    "message": "التقدم: $1%"
+  },
+  "taskCompletedSegments": {
+    "description": "Completed segments label, finish/target substitutions",
+    "message": "مكتمل: $1 / $2"
+  },
+  "taskErrorCount": {
+    "description": "Error count label",
+    "message": "الأخطاء: $1"
+  },
+  "taskFailedReason": {
+    "description": "Failed reason label",
+    "message": "فشل: $1"
+  },
+  "taskFailedUnknown": {
+    "description": "Unknown error label",
+    "message": "خطأ غير معروف"
+  },
+
+  "taskActionDelete": {
+    "description": "Delete button label",
+    "message": "حذف"
+  },
+  "taskActionPause": {
+    "description": "Pause button label",
+    "message": "إيقاف مؤقت"
+  },
+  "taskActionResume": {
+    "description": "Resume button label",
+    "message": "استئناف"
+  },
+  "taskActionRemove": {
+    "description": "Remove button label",
+    "message": "إزالة"
+  },
+
+  "fileSaving": {
+    "description": "Saving label",
+    "message": "جارٍ الحفظ…"
+  },
+
+  "historyTitle": {
+    "description": "History title with count substitution",
+    "message": "سجل التنزيلات ($1)"
+  },
+  "historyActionClear": {
+    "description": "Clear history label",
+    "message": "مسح"
+  },
+  "historyTooltipOpenFile": {
+    "description": "Open file tooltip",
+    "message": "فتح الملف"
+  },
+  "historyTooltipDeleteRecord": {
+    "description": "Delete record tooltip",
+    "message": "حذف السجل"
+  }
+}
+

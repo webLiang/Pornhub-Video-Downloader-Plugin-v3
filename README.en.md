@@ -1,5 +1,13 @@
 # Pornhub Video Downloader — Multi-Resolution Download
 
+**Languages**
+
+- **中文**：[README.zh_CN.md](README.zh_CN.md)
+- **English** (current)：[README.md](README.md)
+- **Español**：[README.es.md](README.es.md)
+- **हिन्दी**：[README.hi.md](README.hi.md)
+- **العربية**：[README.ar.md](README.ar.md)
+
 Chrome extension for **multi-resolution video download** on Pornhub and other supported sites. This repo is maintained because the [original project](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) is unmaintained and Manifest V2 will be deprecated in 2024.
 
 ---
