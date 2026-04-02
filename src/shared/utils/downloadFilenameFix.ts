@@ -117,14 +117,16 @@ export function registerDownloadFilenameListener(): void {
       const rawFinal = item.finalUrl;
       const rawUrl = item.url;
 
+      // Chrome requires suggest() to be called exactly once per listener invocation.
       if (!blobRef.startsWith('blob:')) {
+        suggest();
         return;
       }
 
       const wanted = findPendingFilename(item);
       const { byUrl, byUuid } = getPendingMaps();
       if (wanted == null) {
-        console.warn('[downloadFilenameFix] onDeterminingFilename 未命中 pending', {
+        console.warn('[downloadFilenameFix] onDeterminingFilename: no pending entry for blob', {
           blobRef: blobRef.slice(0, 120),
           rawFinalLen: String(rawFinal ?? '').length,
           rawUrlLen: String(rawUrl ?? '').length,
@@ -133,6 +135,7 @@ export function registerDownloadFilenameListener(): void {
           sharedMapUrlSize: byUrl.size,
           sharedMapUuidSize: byUuid.size,
         });
+        suggest();
         return;
       }
 

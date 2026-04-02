@@ -1,0 +1,254 @@
+{
+  "extensionDescription": {
+    "description": "Extension description",
+    "message": "Pornhub और Xvideos से वीडियो डाउनलोड करें।"
+  },
+  "extensionName": {
+    "description": "Extension name",
+    "message": "Pornhub Video Downloader Plugin v3"
+  },
+
+  "popupTitle": {
+    "description": "Popup page title",
+    "message": "वीडियो डाउनलोडर"
+  },
+  "popupHeaderTitle": {
+    "description": "Popup header title",
+    "message": "वीडियो डाउनलोडर"
+  },
+  "popupHeaderNewVersion": {
+    "description": "New version label, with version number substitution",
+    "message": "नया $1"
+  },
+
+  "popupFilenameLabel": {
+    "description": "Filename label",
+    "message": "फ़ाइल नाम (वैकल्पिक)"
+  },
+  "popupFilenamePlaceholder": {
+    "description": "Filename placeholder",
+    "message": "खाली छोड़ें ताकि अपने-आप बन जाए"
+  },
+
+  "popupQualityLabel": {
+    "description": "Quality label",
+    "message": "गुणवत्ता"
+  },
+  "popupTypeLabel": {
+    "description": "Format label",
+    "message": "प्रकार"
+  },
+
+  "popupActionDownload": {
+    "description": "Download button label",
+    "message": "डाउनलोड"
+  },
+  "popupActionDownloading": {
+    "description": "Downloading label",
+    "message": "डाउनलोड हो रहा है…"
+  },
+  "popupActionQueued": {
+    "description": "Queued label",
+    "message": "कतार में…"
+  },
+  "popupActionPaused": {
+    "description": "Paused label",
+    "message": "रुका हुआ"
+  },
+  "popupActionCopy": {
+    "description": "Copy button label",
+    "message": "कॉपी"
+  },
+
+  "popupTooltipAlreadyInQueue": {
+    "description": "Disabled download button tooltip",
+    "message": "यह गुणवत्ता पहले से कतार में है। कृपया दोबारा न जोड़ें।"
+  },
+  "popupTooltipAddToQueue": {
+    "description": "Download button tooltip",
+    "message": "डाउनलोड कतार में जोड़ें"
+  },
+
+  "toastDownloadComplete": {
+    "description": "Download complete toast, fileName substitution",
+    "message": "डाउनलोड पूरा हुआ! फ़ाइल: $1"
+  },
+  "toastDownloadFailed": {
+    "description": "Download failed toast, error substitution",
+    "message": "डाउनलोड विफल: $1"
+  },
+  "toastEnqueueFailed": {
+    "description": "Enqueue failed toast, error substitution",
+    "message": "कतार में जोड़ने में विफल: $1"
+  },
+  "toastEnqueued": {
+    "description": "Enqueued toast",
+    "message": "डाउनलोड कतार में जोड़ दिया गया"
+  },
+  "toastDeleteFailed": {
+    "description": "Delete task failed toast, error substitution",
+    "message": "हटाने में विफल: $1"
+  },
+  "toastTaskDeleted": {
+    "description": "Task deleted toast",
+    "message": "टास्क हटाया गया"
+  },
+  "toastDeleteFailedBackground": {
+    "description": "Delete failed because background is not reachable",
+    "message": "हटाने में विफल: बैकग्राउंड से कनेक्ट नहीं हो रहा"
+  },
+  "toastPauseFailed": {
+    "description": "Pause failed toast, error substitution",
+    "message": "रोकने में विफल: $1"
+  },
+  "toastPaused": {
+    "description": "Paused toast",
+    "message": "रुका हुआ"
+  },
+  "toastResumeFailed": {
+    "description": "Resume failed toast, error substitution",
+    "message": "फिर से शुरू करने में विफल: $1"
+  },
+  "toastResuming": {
+    "description": "Resuming toast",
+    "message": "डाउनलोड फिर से शुरू हो रहा है"
+  },
+  "toastTaskAlreadyDownloading": {
+    "description": "Task already downloading warning",
+    "message": "यह गुणवत्ता पहले से डाउनलोड हो रही है। कृपया दोबारा क्लिक न करें।"
+  },
+  "toastTaskAlreadyQueued": {
+    "description": "Task already queued warning",
+    "message": "यह गुणवत्ता पहले से प्रतीक्षा कतार में है।"
+  },
+  "toastTaskPausedHint": {
+    "description": "Task paused hint warning",
+    "message": "यह टास्क रुका हुआ है। कृपया नीचे की कतार में इसे फिर से शुरू करें या हटाएँ, फिर डाउनलोड करें।"
+  },
+  "toastSendMessageFailed": {
+    "description": "Send message failed, error substitution",
+    "message": "कतार में जोड़ने में विफल: $1"
+  },
+  "toastBackgroundNotReachable": {
+    "description": "Background not reachable message",
+    "message": "बैकग्राउंड स्क्रिप्ट से कनेक्ट नहीं हो रहा"
+  },
+
+  "queueTitle": {
+    "description": "Queue title",
+    "message": "डाउनलोड कतार (एक साथ अधिकतम 6)"
+  },
+  "queueMetaDownloading": {
+    "description": "Queue meta: downloading count",
+    "message": "$1 डाउनलोड हो रहे हैं"
+  },
+  "queueMetaQueued": {
+    "description": "Queue meta: queued count",
+    "message": "$1 प्रतीक्षा में"
+  },
+  "queueMetaPaused": {
+    "description": "Queue meta: paused count",
+    "message": "$1 रुके हुए"
+  },
+  "queueActionClearQueued": {
+    "description": "Clear queued action",
+    "message": "प्रतीक्षा साफ़ करें"
+  },
+  "queueActionClearErrors": {
+    "description": "Clear error tasks action",
+    "message": "त्रुटियाँ साफ़ करें"
+  },
+  "queueActionOpenFolder": {
+    "description": "Open downloads folder action",
+    "message": "फ़ोल्डर खोलें"
+  },
+  "queueTooltipClearQueued": {
+    "description": "Clear queued tooltip",
+    "message": "प्रतीक्षा कतार साफ़ करें"
+  },
+  "queueTooltipClearErrors": {
+    "description": "Clear errors tooltip",
+    "message": "त्रुटि वाले टास्क साफ़ करें"
+  },
+  "queueTooltipOpenFolder": {
+    "description": "Open downloads folder tooltip",
+    "message": "डाउनलोड फ़ोल्डर खोलें"
+  },
+
+  "taskUnknownFile": {
+    "description": "Unknown file label",
+    "message": "अज्ञात फ़ाइल"
+  },
+  "taskStatusWaiting": {
+    "description": "Task status waiting (queued), with optional queue index substitution",
+    "message": "प्रतीक्षा में$1"
+  },
+  "taskStatusPaused": {
+    "description": "Task status paused",
+    "message": "रुका हुआ"
+  },
+  "taskStatusDownloading": {
+    "description": "Task status downloading",
+    "message": "डाउनलोड हो रहा है"
+  },
+  "taskProgress": {
+    "description": "Progress label",
+    "message": "प्रगति: $1%"
+  },
+  "taskCompletedSegments": {
+    "description": "Completed segments label, finish/target substitutions",
+    "message": "पूरा हुआ: $1 / $2"
+  },
+  "taskErrorCount": {
+    "description": "Error count label",
+    "message": "त्रुटियाँ: $1"
+  },
+  "taskFailedReason": {
+    "description": "Failed reason label",
+    "message": "विफल: $1"
+  },
+  "taskFailedUnknown": {
+    "description": "Unknown error label",
+    "message": "अज्ञात त्रुटि"
+  },
+
+  "taskActionDelete": {
+    "description": "Delete button label",
+    "message": "हटाएँ"
+  },
+  "taskActionPause": {
+    "description": "Pause button label",
+    "message": "रोकें"
+  },
+  "taskActionResume": {
+    "description": "Resume button label",
+    "message": "फिर शुरू करें"
+  },
+  "taskActionRemove": {
+    "description": "Remove button label",
+    "message": "हटाएँ"
+  },
+
+  "fileSaving": {
+    "description": "Saving label",
+    "message": "सेव हो रहा है…"
+  },
+
+  "historyTitle": {
+    "description": "History title with count substitution",
+    "message": "डाउनलोड इतिहास ($1)"
+  },
+  "historyActionClear": {
+    "description": "Clear history label",
+    "message": "साफ़ करें"
+  },
+  "historyTooltipOpenFile": {
+    "description": "Open file tooltip",
+    "message": "फ़ाइल खोलें"
+  },
+  "historyTooltipDeleteRecord": {
+    "description": "Delete record tooltip",
+    "message": "रिकॉर्ड हटाएँ"
+  }
+}
+

@@ -10,6 +10,7 @@ import downloadQueueStorage, {
 } from '@src/shared/storages/downloadQueueStorage';
 import { sortVideoInfosByQualityDesc } from '@src/shared/utils/videoInfoSort';
 import { ToastContainer, useToast } from '@pages/popup/components/Toast';
+import { translate } from '@src/chrome/i18n';
 
 type VideoInfo = {
   videoUrl: string;
@@ -182,9 +183,9 @@ const Popup = () => {
     // 监听来自 background 的消息（完成、错误等）
     const messageListener = (message: any) => {
       if (message.type === 'download-task-complete') {
-        showSuccess(`下载完成！文件名: ${message.fileName || '未知文件名'}`);
+        showSuccess(translate('toastDownloadComplete', message.fileName || translate('taskUnknownFile')));
       } else if (message.type === 'download-task-error') {
-        showError(`下载失败: ${message.error || '未知错误'}`);
+        showError(translate('toastDownloadFailed', message.error || translate('taskFailedUnknown')));
       }
     };
 
@@ -224,11 +225,11 @@ const Popup = () => {
     if (blocking) {
       scrollToM3u8Section();
       if (blocking.status === 'downloading') {
-        showWarning('该清晰度正在下载中，请勿重复点击');
+        showWarning(translate('toastTaskAlreadyDownloading'));
       } else if (blocking.status === 'queued') {
-        showWarning('该清晰度已在等待队列中');
+        showWarning(translate('toastTaskAlreadyQueued'));
       } else {
-        showWarning('该任务已暂停，请在下方队列中恢复或删除后再下载');
+        showWarning(translate('toastTaskPausedHint'));
       }
       return;
     }
@@ -247,14 +248,14 @@ const Popup = () => {
       })
       .then(response => {
         if (response && !response.success) {
-          showError('入队失败: ' + (response.error || '未知错误'));
+          showError(translate('toastEnqueueFailed', response.error || translate('taskFailedUnknown')));
         } else {
-          showInfo('已加入下载队列');
+          showInfo(translate('toastEnqueued'));
         }
       })
       .catch(error => {
         console.error('发送消息失败:', error);
-        showError('入队失败: ' + (error.message || '无法连接到 background script'));
+        showError(translate('toastSendMessageFailed', error.message || translate('toastBackgroundNotReachable')));
       });
   };
 
@@ -300,13 +301,13 @@ const Popup = () => {
       .sendMessage({ type: 'download-queue-delete', taskId })
       .then((response: { success?: boolean; error?: string } | undefined) => {
         if (response && response.success === false) {
-          showError('删除失败: ' + (response.error || '未知错误'));
+          showError(translate('toastDeleteFailed', response.error || translate('taskFailedUnknown')));
           return;
         }
-        showInfo('已删除任务');
+        showInfo(translate('toastTaskDeleted'));
       })
       .catch(e => {
-        showWarning('删除失败: ' + (e?.message || '无法连接后台'));
+        showWarning(translate('toastDeleteFailed', e?.message || translate('toastDeleteFailedBackground')));
       });
   };
 
@@ -316,13 +317,13 @@ const Popup = () => {
       .sendMessage({ type: 'download-queue-pause', taskId })
       .then((response: { success?: boolean; error?: string } | undefined) => {
         if (response && response.success === false) {
-          showError('暂停失败: ' + (response.error || '未知错误'));
+          showError(translate('toastPauseFailed', response.error || translate('taskFailedUnknown')));
           return;
         }
-        showInfo('已暂停');
+        showInfo(translate('toastPaused'));
       })
       .catch(e => {
-        showWarning('暂停失败: ' + (e?.message || '无法连接后台'));
+        showWarning(translate('toastPauseFailed', e?.message || translate('toastBackgroundNotReachable')));
       });
   };
 
@@ -331,13 +332,13 @@ const Popup = () => {
       .sendMessage({ type: 'download-queue-resume', taskId })
       .then((response: { success?: boolean; error?: string } | undefined) => {
         if (response && response.success === false) {
-          showError('继续失败: ' + (response.error || '未知错误'));
+          showError(translate('toastResumeFailed', response.error || translate('taskFailedUnknown')));
           return;
         }
-        showInfo('继续下载');
+        showInfo(translate('toastResuming'));
       })
       .catch(e => {
-        showWarning('继续失败: ' + (e?.message || '无法连接后台'));
+        showWarning(translate('toastResumeFailed', e?.message || translate('toastBackgroundNotReachable')));
       });
   };
 
@@ -381,7 +382,7 @@ const Popup = () => {
       <div className="popup-header-bar">
         <img src={iconLogo} className="popup-header-logo" alt="logo" />
         <div className="popup-header-info">
-          <span className="popup-header-title">Video Downloader</span>
+          <span className="popup-header-title">{translate('popupHeaderTitle')}</span>
           <span className="popup-header-meta">
             v{manifestData.version}
             <span className="popup-header-dot">·</span>
@@ -400,7 +401,7 @@ const Popup = () => {
                   rel="noreferrer"
                   href="https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3/releases"
                   target="_blank">
-                  New {remoteVersion}
+                  {translate('popupHeaderNewVersion', remoteVersion)}
                 </a>
               </>
             )}
@@ -410,14 +411,14 @@ const Popup = () => {
       <div className="box">
         {videoInfos?.length > 0 && (
           <div className="m3u8-filename-row">
-            <span className="m3u8-filename-label">文件名 (可选):</span>
+            <span className="m3u8-filename-label">{translate('popupFilenameLabel')}:</span>
             <div
               ref={fileNameEditableRef}
               className={`m3u8-filename-display${isEditingFileName ? ' editing' : ''}${''}`}
               contentEditable={true}
               onFocus={handleFileNameFocus}
               onBlur={handleFileNameBlur}
-              data-placeholder="留空则自动生成">
+              data-placeholder={translate('popupFilenamePlaceholder')}>
               {displayFileName}
             </div>
           </div>
@@ -427,30 +428,32 @@ const Popup = () => {
             videoInfos.map(item => {
               const blockingTask = findBlockingTaskForUrl(item.videoUrl);
               const downloadBusy = Boolean(blockingTask);
-              let downloadLabel = '下载';
+              let downloadLabel = translate('popupActionDownload');
               if (blockingTask) {
-                if (blockingTask.status === 'downloading') downloadLabel = '下载中…';
-                else if (blockingTask.status === 'queued') downloadLabel = '排队中…';
-                else if (blockingTask.status === 'paused') downloadLabel = '已暂停';
+                if (blockingTask.status === 'downloading') downloadLabel = translate('popupActionDownloading');
+                else if (blockingTask.status === 'queued') downloadLabel = translate('popupActionQueued');
+                else if (blockingTask.status === 'paused') downloadLabel = translate('popupActionPaused');
               }
               return (
                 <li key={item.videoUrl}>
                   <label>
-                    清晰度：<span style={{ display: 'inline-block', width: '60px' }}> {item.quality}</span>
+                    {translate('popupQualityLabel')}：
+                    <span style={{ display: 'inline-block', width: '60px' }}> {item.quality}</span>
                   </label>
                   <label>
-                    类型： <span style={{ display: 'inline-block', width: '40px' }}> {item.format}</span>
+                    {translate('popupTypeLabel')}：
+                    <span style={{ display: 'inline-block', width: '40px' }}> {item.format}</span>
                   </label>
                   <button
                     type="button"
                     className="button down video-row-download"
                     disabled={downloadBusy}
-                    title={downloadBusy ? '该清晰度已在队列中，请勿重复添加' : '加入下载队列'}
+                    title={downloadBusy ? translate('popupTooltipAlreadyInQueue') : translate('popupTooltipAddToQueue')}
                     onClick={onDownload(item)}>
                     {downloadLabel}
                   </button>
                   <button className="button copy" onClick={onCopy(item)}>
-                    复制
+                    {translate('popupActionCopy')}
                   </button>
                 </li>
               );
@@ -462,28 +465,28 @@ const Popup = () => {
         <div className="m3u8-download-section" ref={m3u8SectionRef}>
           <div className="queue-header">
             <span className="queue-title">
-              下载队列（同时最多 6 个）
+              {translate('queueTitle')}
               <span className="queue-meta">
-                {queueTasks.filter(t => t.status === 'downloading').length} 下载中 /{' '}
-                {queueTasks.filter(t => t.status === 'queued').length} 等待 /{' '}
-                {queueTasks.filter(t => t.status === 'paused').length} 已暂停
+                {translate('queueMetaDownloading', String(queueTasks.filter(t => t.status === 'downloading').length))} /{' '}
+                {translate('queueMetaQueued', String(queueTasks.filter(t => t.status === 'queued').length))} /{' '}
+                {translate('queueMetaPaused', String(queueTasks.filter(t => t.status === 'paused').length))}
               </span>
             </span>
             <div className="queue-actions">
               <button
                 className="btn-text"
                 onClick={() => chrome.runtime.sendMessage({ type: 'download-queue-clear-queued' })}
-                title="清空等待队列">
-                清空等待
+                title={translate('queueTooltipClearQueued')}>
+                {translate('queueActionClearQueued')}
               </button>
               <button
                 className="btn-text"
                 onClick={() => chrome.runtime.sendMessage({ type: 'download-queue-clear-errors' })}
-                title="清空错误任务">
-                清空错误
+                title={translate('queueTooltipClearErrors')}>
+                {translate('queueActionClearErrors')}
               </button>
-              <button className="btn-text" onClick={handleOpenFolder} title="打开下载文件夹">
-                打开目录
+              <button className="btn-text" onClick={handleOpenFolder} title={translate('queueTooltipOpenFolder')}>
+                {translate('queueActionOpenFolder')}
               </button>
             </div>
           </div>
@@ -498,62 +501,68 @@ const Popup = () => {
 
               return queueTasks.map(task => {
                 const queuedIndex = task.status === 'queued' ? queuedIndexMap.get(task.id) || 0 : 0;
+                const queuedSuffix = queuedIndex ? `（#${queuedIndex}）` : '';
+                const progressText = Number.isFinite(task.progress) ? task.progress.toFixed(2) : '0.00';
                 return (
                   <div key={task.id} className={`m3u8-progress-section task-card status-${task.status}`}>
                     <div className="m3u8-progress-row">
                       <div className="m3u8-progress-left">
-                        <span className="m3u8-filename-show" title={task.fileName || 'Unknown file'}>
-                          {task.fileName || 'Unknown file'}
+                        <span className="m3u8-filename-show" title={task.fileName || translate('taskUnknownFile')}>
+                          {task.fileName || translate('taskUnknownFile')}
                         </span>
                         <div className="progress-info inline">
                           <span>
                             {task.status === 'queued'
-                              ? `等待中${queuedIndex ? `（#${queuedIndex}）` : ''}`
+                              ? translate('taskStatusWaiting', queuedSuffix)
                               : task.status === 'paused'
-                                ? '已暂停'
-                                : '下载中'}
+                                ? translate('taskStatusPaused')
+                                : translate('taskStatusDownloading')}
                           </span>
-                          <span>进度: {Number.isFinite(task.progress) ? task.progress.toFixed(2) : '0.00'}%</span>
+                          <span>{translate('taskProgress', progressText)}</span>
                           {task.status === 'downloading' && !task.isFileDownloading && (
                             <span>
-                              已完成: {task.finishNum} / {task.targetSegment}
+                              {translate('taskCompletedSegments', [String(task.finishNum), String(task.targetSegment)])}
                             </span>
                           )}
-                          {task.errorNum > 0 && <span className="error-count">错误: {task.errorNum}</span>}
+                          {task.errorNum > 0 && (
+                            <span className="error-count">{translate('taskErrorCount', String(task.errorNum))}</span>
+                          )}
                           {task.status === 'error' && (
-                            <span className="error-count">失败: {task.error || '未知错误'}</span>
+                            <span className="error-count">
+                              {translate('taskFailedReason', task.error || translate('taskFailedUnknown'))}
+                            </span>
                           )}
                         </div>
                       </div>
                       <div className="m3u8-progress-actions">
                         {task.status === 'queued' && (
                           <button className="btn-sm btn-cancel" onClick={() => handleDeleteTask(task.id)}>
-                            删除
+                            {translate('taskActionDelete')}
                           </button>
                         )}
                         {task.status === 'downloading' && (
                           <>
                             <button className="btn-sm btn-secondary" onClick={() => handlePauseTask(task.id)}>
-                              暂停
+                              {translate('taskActionPause')}
                             </button>
                             <button className="btn-sm btn-cancel" onClick={() => handleDeleteTask(task.id)}>
-                              删除
+                              {translate('taskActionDelete')}
                             </button>
                           </>
                         )}
                         {task.status === 'paused' && (
                           <>
                             <button className="btn-sm btn-primary" onClick={() => handleResumeTask(task.id)}>
-                              继续
+                              {translate('taskActionResume')}
                             </button>
                             <button className="btn-sm btn-cancel" onClick={() => handleDeleteTask(task.id)}>
-                              删除
+                              {translate('taskActionDelete')}
                             </button>
                           </>
                         )}
                         {task.status === 'error' && (
                           <button className="btn-sm btn-clear" onClick={() => handleDeleteTask(task.id)}>
-                            移除
+                            {translate('taskActionRemove')}
                           </button>
                         )}
                       </div>
@@ -562,7 +571,7 @@ const Popup = () => {
                     {task.isFileDownloading && task.status === 'downloading' && (
                       <div className="file-download-indicator simple">
                         <div className="file-download-spinner"></div>
-                        <span className="file-download-text">Saving...</span>
+                        <span className="file-download-text">{translate('fileSaving')}</span>
                       </div>
                     )}
                     <div className="progress-bar">
@@ -580,9 +589,9 @@ const Popup = () => {
       {downloadHistory.length > 0 && (
         <div className="download-history">
           <div className="history-header">
-            <span className="history-title">下载记录 ({downloadHistory.length})</span>
+            <span className="history-title">{translate('historyTitle', String(downloadHistory.length))}</span>
             <button className="btn-text" onClick={handleClearHistory}>
-              清空
+              {translate('historyActionClear')}
             </button>
           </div>
           <ul className="history-list">
@@ -593,10 +602,16 @@ const Popup = () => {
                 </span>
                 <span className="history-time">{new Date(record.completedAt).toLocaleDateString()}</span>
                 <div className="history-actions">
-                  <button className="btn-icon-sm" onClick={() => handleOpenHistoryItem(record)} title="打开文件">
+                  <button
+                    className="btn-icon-sm"
+                    onClick={() => handleOpenHistoryItem(record)}
+                    title={translate('historyTooltipOpenFile')}>
                     📂
                   </button>
-                  <button className="btn-icon-sm" onClick={() => handleRemoveHistory(record.id)} title="删除记录">
+                  <button
+                    className="btn-icon-sm"
+                    onClick={() => handleRemoveHistory(record.id)}
+                    title={translate('historyTooltipDeleteRecord')}>
                     ✕
                   </button>
                 </div>

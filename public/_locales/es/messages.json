@@ -1,0 +1,254 @@
+{
+  "extensionDescription": {
+    "description": "Extension description",
+    "message": "Descarga videos de Pornhub y Xvideos."
+  },
+  "extensionName": {
+    "description": "Extension name",
+    "message": "Pornhub Video Downloader Plugin v3"
+  },
+
+  "popupTitle": {
+    "description": "Popup page title",
+    "message": "Descargador de videos"
+  },
+  "popupHeaderTitle": {
+    "description": "Popup header title",
+    "message": "Descargador de videos"
+  },
+  "popupHeaderNewVersion": {
+    "description": "New version label, with version number substitution",
+    "message": "Nuevo $1"
+  },
+
+  "popupFilenameLabel": {
+    "description": "Filename label",
+    "message": "Nombre de archivo (opcional)"
+  },
+  "popupFilenamePlaceholder": {
+    "description": "Filename placeholder",
+    "message": "Déjalo vacío para generar automáticamente"
+  },
+
+  "popupQualityLabel": {
+    "description": "Quality label",
+    "message": "Calidad"
+  },
+  "popupTypeLabel": {
+    "description": "Format label",
+    "message": "Tipo"
+  },
+
+  "popupActionDownload": {
+    "description": "Download button label",
+    "message": "Descargar"
+  },
+  "popupActionDownloading": {
+    "description": "Downloading label",
+    "message": "Descargando…"
+  },
+  "popupActionQueued": {
+    "description": "Queued label",
+    "message": "En cola…"
+  },
+  "popupActionPaused": {
+    "description": "Paused label",
+    "message": "En pausa"
+  },
+  "popupActionCopy": {
+    "description": "Copy button label",
+    "message": "Copiar"
+  },
+
+  "popupTooltipAlreadyInQueue": {
+    "description": "Disabled download button tooltip",
+    "message": "Esta calidad ya está en la cola. No la añadas de nuevo."
+  },
+  "popupTooltipAddToQueue": {
+    "description": "Download button tooltip",
+    "message": "Añadir a la cola de descargas"
+  },
+
+  "toastDownloadComplete": {
+    "description": "Download complete toast, fileName substitution",
+    "message": "¡Descarga completada! Archivo: $1"
+  },
+  "toastDownloadFailed": {
+    "description": "Download failed toast, error substitution",
+    "message": "Error de descarga: $1"
+  },
+  "toastEnqueueFailed": {
+    "description": "Enqueue failed toast, error substitution",
+    "message": "No se pudo añadir a la cola: $1"
+  },
+  "toastEnqueued": {
+    "description": "Enqueued toast",
+    "message": "Añadido a la cola de descargas"
+  },
+  "toastDeleteFailed": {
+    "description": "Delete task failed toast, error substitution",
+    "message": "No se pudo eliminar: $1"
+  },
+  "toastTaskDeleted": {
+    "description": "Task deleted toast",
+    "message": "Tarea eliminada"
+  },
+  "toastDeleteFailedBackground": {
+    "description": "Delete failed because background is not reachable",
+    "message": "No se pudo eliminar: no se puede conectar al proceso en segundo plano"
+  },
+  "toastPauseFailed": {
+    "description": "Pause failed toast, error substitution",
+    "message": "No se pudo pausar: $1"
+  },
+  "toastPaused": {
+    "description": "Paused toast",
+    "message": "En pausa"
+  },
+  "toastResumeFailed": {
+    "description": "Resume failed toast, error substitution",
+    "message": "No se pudo reanudar: $1"
+  },
+  "toastResuming": {
+    "description": "Resuming toast",
+    "message": "Reanudando descarga"
+  },
+  "toastTaskAlreadyDownloading": {
+    "description": "Task already downloading warning",
+    "message": "Esta calidad ya se está descargando. No vuelvas a hacer clic."
+  },
+  "toastTaskAlreadyQueued": {
+    "description": "Task already queued warning",
+    "message": "Esta calidad ya está en la cola de espera."
+  },
+  "toastTaskPausedHint": {
+    "description": "Task paused hint warning",
+    "message": "Esta tarea está en pausa. Reanúdala o elimínala en la cola inferior antes de descargar de nuevo."
+  },
+  "toastSendMessageFailed": {
+    "description": "Send message failed, error substitution",
+    "message": "No se pudo añadir a la cola: $1"
+  },
+  "toastBackgroundNotReachable": {
+    "description": "Background not reachable message",
+    "message": "No se puede conectar al script en segundo plano"
+  },
+
+  "queueTitle": {
+    "description": "Queue title",
+    "message": "Cola de descargas (máx. 6 al mismo tiempo)"
+  },
+  "queueMetaDownloading": {
+    "description": "Queue meta: downloading count",
+    "message": "$1 descargando"
+  },
+  "queueMetaQueued": {
+    "description": "Queue meta: queued count",
+    "message": "$1 en espera"
+  },
+  "queueMetaPaused": {
+    "description": "Queue meta: paused count",
+    "message": "$1 en pausa"
+  },
+  "queueActionClearQueued": {
+    "description": "Clear queued action",
+    "message": "Borrar en espera"
+  },
+  "queueActionClearErrors": {
+    "description": "Clear error tasks action",
+    "message": "Borrar errores"
+  },
+  "queueActionOpenFolder": {
+    "description": "Open downloads folder action",
+    "message": "Abrir carpeta"
+  },
+  "queueTooltipClearQueued": {
+    "description": "Clear queued tooltip",
+    "message": "Borrar cola de espera"
+  },
+  "queueTooltipClearErrors": {
+    "description": "Clear errors tooltip",
+    "message": "Borrar tareas con error"
+  },
+  "queueTooltipOpenFolder": {
+    "description": "Open downloads folder tooltip",
+    "message": "Abrir carpeta de descargas"
+  },
+
+  "taskUnknownFile": {
+    "description": "Unknown file label",
+    "message": "Archivo desconocido"
+  },
+  "taskStatusWaiting": {
+    "description": "Task status waiting (queued), with optional queue index substitution",
+    "message": "En espera$1"
+  },
+  "taskStatusPaused": {
+    "description": "Task status paused",
+    "message": "En pausa"
+  },
+  "taskStatusDownloading": {
+    "description": "Task status downloading",
+    "message": "Descargando"
+  },
+  "taskProgress": {
+    "description": "Progress label",
+    "message": "Progreso: $1%"
+  },
+  "taskCompletedSegments": {
+    "description": "Completed segments label, finish/target substitutions",
+    "message": "Completado: $1 / $2"
+  },
+  "taskErrorCount": {
+    "description": "Error count label",
+    "message": "Errores: $1"
+  },
+  "taskFailedReason": {
+    "description": "Failed reason label",
+    "message": "Falló: $1"
+  },
+  "taskFailedUnknown": {
+    "description": "Unknown error label",
+    "message": "Error desconocido"
+  },
+
+  "taskActionDelete": {
+    "description": "Delete button label",
+    "message": "Eliminar"
+  },
+  "taskActionPause": {
+    "description": "Pause button label",
+    "message": "Pausar"
+  },
+  "taskActionResume": {
+    "description": "Resume button label",
+    "message": "Reanudar"
+  },
+  "taskActionRemove": {
+    "description": "Remove button label",
+    "message": "Quitar"
+  },
+
+  "fileSaving": {
+    "description": "Saving label",
+    "message": "Guardando…"
+  },
+
+  "historyTitle": {
+    "description": "History title with count substitution",
+    "message": "Historial de descargas ($1)"
+  },
+  "historyActionClear": {
+    "description": "Clear history label",
+    "message": "Borrar"
+  },
+  "historyTooltipOpenFile": {
+    "description": "Open file tooltip",
+    "message": "Abrir archivo"
+  },
+  "historyTooltipDeleteRecord": {
+    "description": "Delete record tooltip",
+    "message": "Eliminar registro"
+  }
+}
+

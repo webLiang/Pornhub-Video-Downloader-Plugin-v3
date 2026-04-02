@@ -1,0 +1,254 @@
+{
+  "extensionDescription": {
+    "description": "Extension description",
+    "message": "Pornhub视频 xvideos视频下载。"
+  },
+  "extensionName": {
+    "description": "Extension name",
+    "message": "Pornhub Video Downloader Plugin v3"
+  },
+
+  "popupTitle": {
+    "description": "Popup page title",
+    "message": "视频下载器"
+  },
+  "popupHeaderTitle": {
+    "description": "Popup header title",
+    "message": "视频下载器"
+  },
+  "popupHeaderNewVersion": {
+    "description": "New version label, with version number substitution",
+    "message": "新版本 $1"
+  },
+
+  "popupFilenameLabel": {
+    "description": "Filename label",
+    "message": "文件名（可选）"
+  },
+  "popupFilenamePlaceholder": {
+    "description": "Filename placeholder",
+    "message": "留空则自动生成"
+  },
+
+  "popupQualityLabel": {
+    "description": "Quality label",
+    "message": "清晰度"
+  },
+  "popupTypeLabel": {
+    "description": "Format label",
+    "message": "类型"
+  },
+
+  "popupActionDownload": {
+    "description": "Download button label",
+    "message": "下载"
+  },
+  "popupActionDownloading": {
+    "description": "Downloading label",
+    "message": "下载中…"
+  },
+  "popupActionQueued": {
+    "description": "Queued label",
+    "message": "排队中…"
+  },
+  "popupActionPaused": {
+    "description": "Paused label",
+    "message": "已暂停"
+  },
+  "popupActionCopy": {
+    "description": "Copy button label",
+    "message": "复制"
+  },
+
+  "popupTooltipAlreadyInQueue": {
+    "description": "Disabled download button tooltip",
+    "message": "该清晰度已在队列中，请勿重复添加"
+  },
+  "popupTooltipAddToQueue": {
+    "description": "Download button tooltip",
+    "message": "加入下载队列"
+  },
+
+  "toastDownloadComplete": {
+    "description": "Download complete toast, fileName substitution",
+    "message": "下载完成！文件名：$1"
+  },
+  "toastDownloadFailed": {
+    "description": "Download failed toast, error substitution",
+    "message": "下载失败：$1"
+  },
+  "toastEnqueueFailed": {
+    "description": "Enqueue failed toast, error substitution",
+    "message": "入队失败：$1"
+  },
+  "toastEnqueued": {
+    "description": "Enqueued toast",
+    "message": "已加入下载队列"
+  },
+  "toastDeleteFailed": {
+    "description": "Delete task failed toast, error substitution",
+    "message": "删除失败：$1"
+  },
+  "toastTaskDeleted": {
+    "description": "Task deleted toast",
+    "message": "已删除任务"
+  },
+  "toastDeleteFailedBackground": {
+    "description": "Delete failed because background is not reachable",
+    "message": "删除失败：无法连接后台"
+  },
+  "toastPauseFailed": {
+    "description": "Pause failed toast, error substitution",
+    "message": "暂停失败：$1"
+  },
+  "toastPaused": {
+    "description": "Paused toast",
+    "message": "已暂停"
+  },
+  "toastResumeFailed": {
+    "description": "Resume failed toast, error substitution",
+    "message": "继续失败：$1"
+  },
+  "toastResuming": {
+    "description": "Resuming toast",
+    "message": "继续下载"
+  },
+  "toastTaskAlreadyDownloading": {
+    "description": "Task already downloading warning",
+    "message": "该清晰度正在下载中，请勿重复点击"
+  },
+  "toastTaskAlreadyQueued": {
+    "description": "Task already queued warning",
+    "message": "该清晰度已在等待队列中"
+  },
+  "toastTaskPausedHint": {
+    "description": "Task paused hint warning",
+    "message": "该任务已暂停，请在下方队列中恢复或删除后再下载"
+  },
+  "toastSendMessageFailed": {
+    "description": "Send message failed, error substitution",
+    "message": "入队失败：$1"
+  },
+  "toastBackgroundNotReachable": {
+    "description": "Background not reachable message",
+    "message": "无法连接到 background script"
+  },
+
+  "queueTitle": {
+    "description": "Queue title",
+    "message": "下载队列（同时最多 6 个）"
+  },
+  "queueMetaDownloading": {
+    "description": "Queue meta: downloading count",
+    "message": "$1 下载中"
+  },
+  "queueMetaQueued": {
+    "description": "Queue meta: queued count",
+    "message": "$1 等待"
+  },
+  "queueMetaPaused": {
+    "description": "Queue meta: paused count",
+    "message": "$1 已暂停"
+  },
+  "queueActionClearQueued": {
+    "description": "Clear queued action",
+    "message": "清空等待"
+  },
+  "queueActionClearErrors": {
+    "description": "Clear error tasks action",
+    "message": "清空错误"
+  },
+  "queueActionOpenFolder": {
+    "description": "Open downloads folder action",
+    "message": "打开目录"
+  },
+  "queueTooltipClearQueued": {
+    "description": "Clear queued tooltip",
+    "message": "清空等待队列"
+  },
+  "queueTooltipClearErrors": {
+    "description": "Clear errors tooltip",
+    "message": "清空错误任务"
+  },
+  "queueTooltipOpenFolder": {
+    "description": "Open downloads folder tooltip",
+    "message": "打开下载文件夹"
+  },
+
+  "taskUnknownFile": {
+    "description": "Unknown file label",
+    "message": "未知文件"
+  },
+  "taskStatusWaiting": {
+    "description": "Task status waiting (queued)",
+    "message": "等待中$1"
+  },
+  "taskStatusPaused": {
+    "description": "Task status paused",
+    "message": "已暂停"
+  },
+  "taskStatusDownloading": {
+    "description": "Task status downloading",
+    "message": "下载中"
+  },
+  "taskProgress": {
+    "description": "Progress label",
+    "message": "进度：$1%"
+  },
+  "taskCompletedSegments": {
+    "description": "Completed segments label, finish/target substitutions",
+    "message": "已完成：$1 / $2"
+  },
+  "taskErrorCount": {
+    "description": "Error count label",
+    "message": "错误：$1"
+  },
+  "taskFailedReason": {
+    "description": "Failed reason label",
+    "message": "失败：$1"
+  },
+  "taskFailedUnknown": {
+    "description": "Unknown error label",
+    "message": "未知错误"
+  },
+
+  "taskActionDelete": {
+    "description": "Delete button label",
+    "message": "删除"
+  },
+  "taskActionPause": {
+    "description": "Pause button label",
+    "message": "暂停"
+  },
+  "taskActionResume": {
+    "description": "Resume button label",
+    "message": "继续"
+  },
+  "taskActionRemove": {
+    "description": "Remove button label",
+    "message": "移除"
+  },
+
+  "fileSaving": {
+    "description": "Saving label",
+    "message": "保存中…"
+  },
+
+  "historyTitle": {
+    "description": "History title with count substitution",
+    "message": "下载记录（$1）"
+  },
+  "historyActionClear": {
+    "description": "Clear history label",
+    "message": "清空"
+  },
+  "historyTooltipOpenFile": {
+    "description": "Open file tooltip",
+    "message": "打开文件"
+  },
+  "historyTooltipDeleteRecord": {
+    "description": "Delete record tooltip",
+    "message": "删除记录"
+  }
+}
+
