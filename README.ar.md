@@ -10,6 +10,8 @@
 
 إضافة Chrome لتنزيل مقاطع الفيديو بدقات متعددة من Pornhub ومواقع أخرى مدعومة. تتم صيانة هذا المستودع لأن [المشروع الأصلي](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) غير مُحدَّث وManifest V2 قيد الإيقاف.
 
+> **مبني على القالب:** [chrome-extension-boilerplate-react-vite](https://github.com/webLiang/chrome-extension-boilerplate-react-vite) — قالب إضافات Chrome بمعيار Manifest V3 باستخدام React + Vite. تم تطوير هذه الإضافة فوق هذا القالب. نرحّب بـ **Stars** و **Merge Requests**.
+
 ---
 
 ## 1. تنزيل متعدد الدقة + لقطة شاشة
@@ -18,7 +20,7 @@
 - تقوم الإضافة بحقن JS داخل صفحة الفيديو لاستخراج رابط البث الحقيقي وتوليد رابط التنزيل.
 
 <p align="center">
-  <img src="./images/ScreenShot_2026-01-30_115236_135.png" alt="لقطة شاشة للإضافة" width="480" />
+  <img src="./images/ScreenShot_2026-01-30_115236_135.png" alt="لقطة شاشة للإضافة" width="320" />
 </p>
 
 ---
@@ -31,11 +33,19 @@
 |------|---------|
 | **الجوال** | **[Quetta](https://www.quetta.net/)** — يدعم إضافات Chrome ويحتوي على ميزات فيديو مدمجة |
 
-> **رابط الجوال (احفظه):**  
-> **https://www.quetta.net/**
+> **رابط الجوال (احفظه):** **https://www.quetta.net/**  
+> **إضافة تنزيل الفيديو على الكمبيوتر:** **https://www.quetta.net/products/pcextension**
 
 <p align="center">
-  <img src="./images/vC9a0X1ijXbch5Nqw4EvBAPjg.avif" alt="متصفح Quetta للجوال" width="360" />
+  <img src="./images/vC9a0X1ijXbch5Nqw4EvBAPjg.avif" alt="متصفح Quetta للجوال" width="240" />
+</p>
+
+تقدّم Quetta أيضًا إضافة رسمية لتنزيل الفيديو متعددة المنصات — تعمل على **YouTube · Twitter/X · Facebook · Bilibili · TikTok · Instagram · Vimeo** والمزيد، وهي رفيق عملي لهذه الإضافة على سطح المكتب.
+
+<p align="center">
+  <a href="https://www.quetta.net/products/pcextension">
+    <img src="./images/VBO44eHR7bku11CTLJORKU6Ryo.webp" alt="Quetta Video Downloader" width="320" />
+  </a>
 </p>
 
 ---
@@ -70,13 +80,6 @@
 | xvv1deos.com |
 | xhamster.com · xhamster42.desi · xhamster1.desi |
 | redtube.com |
-
----
-
-## التطوير والمساهمة
-
-- قالب البناء: [chrome-extension-boilerplate-react-vite](https://github.com/webLiang/chrome-extension-boilerplate-react-vite)
-- نرحّب بـ **Stars** و **Merge Requests**.
 
 ---
 

@@ -10,6 +10,8 @@
 
 Chrome extension for **multi-resolution video download** on Pornhub and other supported sites. This repo is maintained because the [original project](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) is unmaintained and Manifest V2 will be deprecated in 2024.
 
+> **Built with:** [chrome-extension-boilerplate-react-vite](https://github.com/webLiang/chrome-extension-boilerplate-react-vite) — a React + Vite Manifest V3 boilerplate. This extension is developed on top of that template. **Stars** and **Merge Requests** are welcome.
+
 ---
 
 ## 1. Multi-Resolution Download & Screenshot
@@ -18,7 +20,7 @@ Chrome extension for **multi-resolution video download** on Pornhub and other su
 - The extension injects JS into video pages to obtain stream URLs and extract download links.
 
 <p align="center">
-  <img src="./images/ScreenShot_2026-01-30_115236_135.png" alt="Extension screenshot" width="480" />
+  <img src="./images/ScreenShot_2026-01-30_115236_135.png" alt="Extension screenshot" width="320" />
 </p>
 
 ---
@@ -31,11 +33,19 @@ To use this extension on **phones or tablets**, you need a browser that supports
 |----------|----------------|
 | **Mobile** | **[Quetta](https://www.quetta.net/)** — Supports Chrome extensions and built-in video |
 
-> **Mobile URL (bookmark this):**  
-> **https://www.quetta.net/**
+> **Mobile URL (bookmark this):** **https://www.quetta.net/**  
+> **PC video downloader extension:** **https://www.quetta.net/products/pcextension**
 
 <p align="center">
-  <img src="./images/vC9a0X1ijXbch5Nqw4EvBAPjg.avif" alt="Quetta mobile browser" width="360" />
+  <img src="./images/vC9a0X1ijXbch5Nqw4EvBAPjg.avif" alt="Quetta mobile browser" width="240" />
+</p>
+
+Quetta also ships an official multi-platform video downloader extension — works on **YouTube · Twitter/X · Facebook · Bilibili · TikTok · Instagram · Vimeo** and more, a handy desktop complement to this plugin.
+
+<p align="center">
+  <a href="https://www.quetta.net/products/pcextension">
+    <img src="./images/VBO44eHR7bku11CTLJORKU6Ryo.webp" alt="Quetta Video Downloader" width="320" />
+  </a>
 </p>
 
 ---
@@ -70,13 +80,6 @@ To use this extension on **phones or tablets**, you need a browser that supports
 | xvv1deos.com |
 | xhamster.com · xhamster42.desi · xhamster1.desi |
 | redtube.com |
-
----
-
-## Development & Contributing
-
-- Build template: [chrome-extension-boilerplate-react-vite](https://github.com/webLiang/chrome-extension-boilerplate-react-vite)
-- **Stars** and **Merge Requests** are welcome.
 
 ---
 
