@@ -78,6 +78,30 @@ body {
   text-decoration: underline;
 }
 
+.popup-lang-select {
+  margin-left: auto;
+  flex-shrink: 0;
+  min-width: 96px;
+  border: 1px solid #d9d9d9;
+  background: #fff;
+  color: #333;
+  font-size: 11px;
+  line-height: 1.2;
+  border-radius: 12px;
+  padding: 5px 8px;
+  cursor: pointer;
+}
+
+.popup-lang-select:hover {
+  border-color: #999;
+  background: #f7f7f7;
+}
+
+.popup-lang-select:focus-visible {
+  outline: 2px solid #4c6fff;
+  outline-offset: 1px;
+}
+
 .App-header {
   height: 100%;
   display: flex;
