@@ -10,7 +10,14 @@ import downloadQueueStorage, {
 } from '@src/shared/storages/downloadQueueStorage';
 import { sortVideoInfosByQualityDesc } from '@src/shared/utils/videoInfoSort';
 import { ToastContainer, useToast } from '@pages/popup/components/Toast';
-import { translate } from '@src/chrome/i18n';
+import {
+  getCurrentLocale,
+  SUPPORTED_LOCALES,
+  setCurrentLocale,
+  subscribeLocaleChange,
+  translate,
+  type SupportedLocale,
+} from '@src/chrome/i18n';
 
 type VideoInfo = {
   videoUrl: string;
@@ -20,6 +27,15 @@ type VideoInfo = {
 };
 
 const manifestData = chrome.runtime.getManifest();
+
+const LOCALE_LABELS: Record<SupportedLocale, string> = {
+  en: 'English',
+  zh_CN: '中文',
+  es: 'Espanol',
+  ar: 'العربية',
+  hi: 'हिंदी',
+};
+
 const Popup = () => {
   const [videoInfos, setvideoInfos] = useState<Array<VideoInfo>>([]);
   const [remoteVersion, setRemoteVersion] = useState('0.0.0');
@@ -34,6 +50,7 @@ const Popup = () => {
   const [downloadHistory, setDownloadHistory] = useState<DownloadRecord[]>([]);
   const [pageTitle, setPageTitle] = useState('');
   const [currentTabTitle, setCurrentTabTitle] = useState('');
+  const [locale, setLocale] = useState<SupportedLocale>(getCurrentLocale());
   const getPageTitle = () => videoInfos[0]?.title || pageTitle || currentTabTitle || '';
   const [isEditingFileName, setIsEditingFileName] = useState(false);
   const fileNameEditableRef = useRef<HTMLDivElement | null>(null);
@@ -107,6 +124,10 @@ const Popup = () => {
   };
 
   useEffect(() => {
+    const unsubscribeLocale = subscribeLocaleChange(nextLocale => {
+      setLocale(nextLocale);
+    });
+
     // 初始化队列（等待队列也会从本地 storage 恢复）
     downloadQueueStorage.get().then(state => {
       setQueueTasks(state.tasks || []);
@@ -196,8 +217,13 @@ const Popup = () => {
       unsubQueue();
       unsubHistory();
       chrome.runtime.onMessage.removeListener(messageListener);
+      unsubscribeLocale();
     };
   }, []);
+
+  useEffect(() => {
+    document.title = translate('popupTitle');
+  }, [locale]);
 
   // Sync contentEditable DOM from displayFileName so title from get_video_info actually shows (React does not update contentEditable children)
   useLayoutEffect(() => {
@@ -376,6 +402,7 @@ const Popup = () => {
   const handleClearHistory = () => {
     downloadHistoryStorage.clearAll();
   };
+
   return (
     <div className="App" style={{}}>
       <ToastContainer toasts={toasts} onRemove={removeToast} />
@@ -407,6 +434,17 @@ const Popup = () => {
             )}
           </span>
         </div>
+        <select
+          className="popup-lang-select"
+          title="Choose language"
+          value={locale}
+          onChange={event => setCurrentLocale((event.currentTarget as HTMLSelectElement).value as SupportedLocale)}>
+          {SUPPORTED_LOCALES.map(item => (
+            <option key={item} value={item}>
+              {LOCALE_LABELS[item]}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="box">
         {videoInfos?.length > 0 && (

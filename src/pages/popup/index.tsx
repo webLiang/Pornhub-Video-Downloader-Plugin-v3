@@ -2,7 +2,7 @@ import { render } from 'preact';
 import '@pages/popup/index.css';
 import Popup from '@pages/popup/Popup';
 import refreshOnUpdate from 'virtual:reload-on-update-in-view';
-import { translate } from '@src/chrome/i18n';
+import { initI18n, translate } from '@src/chrome/i18n';
 
 refreshOnUpdate('pages/popup');
 
@@ -13,4 +13,6 @@ function init() {
   return render(<Popup />, appContainer);
 }
 
-init();
+initI18n().finally(() => {
+  init();
+});
