@@ -40,16 +40,40 @@ const buildHLSUrl = (baseUrl: string, uri: string): string => {
   return urlObj.toString();
 };
 
+type HLSUrlInput = string | { url?: string; fallback?: string };
+
+// Resolve m3u8 URL from string or { url, fallback } object (xhamster chromecastSource)
+const resolveHLSUrl = (url: HLSUrlInput): { primary: string; fallback?: string } => {
+  if (typeof url === 'string') {
+    return { primary: url };
+  }
+  return {
+    primary: url.url || '',
+    fallback: url.fallback,
+  };
+};
+
+const fetchHLSPlaylists = async (primary: string, fallback?: string) => {
+  try {
+    return { playlists: await parseHLSManifest(primary), urlHLS: primary };
+  } catch (error) {
+    if (!fallback) throw error;
+    return { playlists: await parseHLSManifest(fallback), urlHLS: fallback };
+  }
+};
+
 // Utility function: Process HLS data and generate m3u8 list
 const processHLSData = async (
-  hlsData: { url: string },
+  hlsData: { url: HLSUrlInput },
   fileName: string,
   urlBuilder: (baseUrl: string, uri: string) => string = buildHLSUrl,
 ): Promise<any[]> => {
-  if (!hlsData) return [];
+  if (!hlsData?.url) return [];
 
-  const urlHLS = hlsData.url;
-  const playlists = await parseHLSManifest(urlHLS);
+  const { primary, fallback } = resolveHLSUrl(hlsData.url);
+  if (!primary && !fallback) return [];
+
+  const { playlists, urlHLS } = await fetchHLSPlaylists(primary || fallback!, fallback);
 
   return playlists.map(item => ({
     quality: item.attributes.NAME ?? item.attributes.RESOLUTION?.height + 'p',
