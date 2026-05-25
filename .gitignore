@@ -18,4 +18,6 @@ utils/reload/injections/*.js
 public/manifest.json
 
 .cursor
+# obfuscated core build cache (local only)
+src/pages/background/utils/dist/.obf-build-cache.json
 # video-download-core：主仓库用 git submodule 指向 github.com/webLiang/video-download-core；混淆产物在 src/pages/background/utils/dist
