@@ -131,12 +131,15 @@ const getPornhubUrls = createMessageHandler({
   scriptPath: 'js/get-ph-flashvars.js',
   handler: async (event, resolve) => {
     console.log('recived message:', event.data);
-    const mp4UrlInfo = event.data.data.find((val: any) => val.format === 'mp4');
-    const m3u8UrlInfo = event.data?.data
+    const data = event.data?.data || [];
+    const videoTitle = event.data?.video_title || title;
+    const mp4UrlInfo = data.find((val: any) => val.format === 'mp4');
+    const m3u8UrlInfo = data
       ?.filter((val: any) => val.format === 'hls')
       .map((val: any) => ({
         ...val,
         format: 'm3u8',
+        title: videoTitle,
       }));
 
     // Fetch m3u8 content and extract real video URLs
@@ -174,17 +177,33 @@ const getPornhubUrls = createMessageHandler({
       document.querySelector('.video-actions-container .usernameBadgesWrapper a')?.innerHTML ||
       document.querySelector<HTMLAnchorElement>('userInfoContainer > a')?.innerText ||
       '';
+    const fileName = [usr, videoTitle].filter(Boolean).join('--');
+
+    const fallbackResult = (m3u8UrlInfoWithRealUrls || []).map((val: any) => ({
+      ...val,
+      title: fileName || val.title || title,
+    }));
 
     if (mp4UrlInfo) {
-      const mp4InfoList = (await fetch(mp4UrlInfo.videoUrl).then(res => res.json()))?.map((val: any) => ({
-        ...val,
-        title: usr + '--' + title,
-      }));
+      let mp4InfoList: any[] = [];
+      try {
+        mp4InfoList =
+          (await fetch(mp4UrlInfo.videoUrl).then(res => res.json()))?.map((val: any) => ({
+            ...val,
+            title: fileName || title,
+          })) || [];
+      } catch (error) {
+        console.error('Failed to fetch Pornhub MP4 info:', error);
+      }
 
-      const result = mp4InfoList.concat(m3u8UrlInfoWithRealUrls || []);
+      const result = mp4InfoList.concat(fallbackResult);
       cache.pornhub = result;
       resolve(result);
+      return;
     }
+
+    cache.pornhub = fallbackResult;
+    resolve(fallbackResult);
   },
 });
 
@@ -249,6 +268,9 @@ const getRedtube = createMessageHandler({
 });
 const hostMapGetUrls = {
   'pornhub.com': {
+    getUrls: getPornhubUrls,
+  },
+  'pornhubpremium.com': {
     getUrls: getPornhubUrls,
   },
   'xvideos.com': {
