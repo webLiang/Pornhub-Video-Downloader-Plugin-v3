@@ -10,11 +10,7 @@ import downloadQueueStorage, {
   type DownloadTask,
   type DownloadTaskFormat,
 } from '@src/shared/storages/downloadQueueStorage';
-import { registerDownloadFilenameListener } from '@src/shared/utils/downloadFilenameFix';
-
 reloadOnUpdate('pages/background');
-
-registerDownloadFilenameListener();
 
 /**
  * Extension reloading is necessary because the browser automatically caches the css.
