@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Parser } from 'm3u8-parser';
+import { siteHostGetUrls } from './sites';
 
 // Cache object
 const cache: Record<string, any> = {};
@@ -75,7 +76,7 @@ const processHLSData = async (
 
   const { playlists, urlHLS } = await fetchHLSPlaylists(primary || fallback!, fallback);
 
-  return playlists.map(item => ({
+  return (playlists ?? []).map(item => ({
     quality: item.attributes.NAME ?? item.attributes.RESOLUTION?.height + 'p',
     videoUrl: urlBuilder(urlHLS, item.uri),
     format: 'm3u8',
@@ -284,6 +285,7 @@ const hostMapGetUrls = {
   'redtube.com': {
     getUrls: getRedtube,
   },
+  ...siteHostGetUrls,
 };
 
 export default hostMapGetUrls;
