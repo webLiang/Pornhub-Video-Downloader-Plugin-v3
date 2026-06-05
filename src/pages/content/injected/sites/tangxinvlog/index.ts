@@ -1,0 +1,1 @@
+export { getTangxinVlogUrls } from './getUrls';
