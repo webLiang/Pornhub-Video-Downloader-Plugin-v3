@@ -18,11 +18,12 @@
     return cache.map[vkey] || null;
   }
 
-  function postMediaDefinitions(mediaDefinitions) {
+  function postMediaDefinitions(mediaDefinitions, flashvarsData) {
     if (!mediaDefinitions) return;
     window.postMessage({
       type: 'get-ph-flashvars',
       data: mediaDefinitions,
+      video_title: flashvarsData && flashvarsData.video_title,
     });
   }
 
@@ -132,7 +133,7 @@
 
     if (item && item.mediaDefinitions) {
       setShortiesCache(vkey, item.mediaDefinitions);
-      postMediaDefinitions(item.mediaDefinitions);
+      postMediaDefinitions(item.mediaDefinitions, item);
       return;
     }
 
@@ -147,7 +148,7 @@
         var fetchedItem = fetchedList ? findItemByVkey(fetchedList, vkey) : null;
         if (fetchedItem && fetchedItem.mediaDefinitions) {
           setShortiesCache(vkey, fetchedItem.mediaDefinitions);
-          postMediaDefinitions(fetchedItem.mediaDefinitions);
+          postMediaDefinitions(fetchedItem.mediaDefinitions, fetchedItem);
         }
       })
       .catch(function () {});
@@ -156,18 +157,36 @@
   }
 
   // 2) Regular video page: use flashvars_XXXX.mediaDefinitions
-  var jsString = (
-    document.querySelector('#mobileContainer >script:nth-child(1)') ||
-    document.querySelector('#player >script:nth-child(1)')
-  )?.innerHTML;
-  if (!jsString) return;
+  function getFlashvarsNameFromScripts() {
+    var knownScript = (
+      document.querySelector('#mobileContainer >script:nth-child(1)') ||
+      document.querySelector('#player >script:nth-child(1)')
+    )?.innerHTML;
+    var knownMatch = knownScript && knownScript.match(/flashvars_[0-9]{1,}/);
+    if (knownMatch && knownMatch[0]) return knownMatch[0];
 
-  var flashvarsMatch = jsString.match('flashvars_[0-9]{1,}');
-  if (!flashvarsMatch || !flashvarsMatch[0]) return;
+    var scripts = document.querySelectorAll('script');
+    for (var i = 0; i < scripts.length; i++) {
+      var html = scripts[i].innerHTML || scripts[i].textContent || '';
+      var match = html.match(/flashvars_[0-9]{1,}/);
+      if (match && match[0]) return match[0];
+    }
 
-  var flashvars = flashvarsMatch[0];
+    return '';
+  }
+
+  function getFlashvarsNameFromWindow() {
+    for (var prop in window) {
+      if (/^flashvars_[0-9]{1,}$/.test(prop)) return prop;
+    }
+    return '';
+  }
+
+  var flashvars = getFlashvarsNameFromScripts() || getFlashvarsNameFromWindow();
+  if (!flashvars) return;
+
   console.log('🚀 ~ handleMessage ~ flashvars:', flashvars);
   if (window[flashvars] && window[flashvars].mediaDefinitions) {
-    postMediaDefinitions(window[flashvars].mediaDefinitions);
+    postMediaDefinitions(window[flashvars].mediaDefinitions, window[flashvars]);
   }
 })();
