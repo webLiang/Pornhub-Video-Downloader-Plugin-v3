@@ -195,6 +195,10 @@
     "description": "Progress label",
     "message": "Progreso: $1%"
   },
+  "taskSpeed": {
+    "description": "Download speed label",
+    "message": "Velocidad: $1"
+  },
   "taskCompletedSegments": {
     "description": "Completed segments label, finish/target substitutions",
     "message": "Completado: $1 / $2"

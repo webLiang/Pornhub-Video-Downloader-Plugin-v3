@@ -10,6 +10,7 @@ import downloadQueueStorage, {
   type DownloadTask,
   type DownloadTaskFormat,
 } from '@src/shared/storages/downloadQueueStorage';
+import { DownloadSpeedTracker } from '@src/shared/utils/formatDownloadSpeed';
 reloadOnUpdate('pages/background');
 
 /**
@@ -32,6 +33,25 @@ const activeRunners = new Map<string, ActiveRunner>();
 /** Paused tasks keep downloader instances until resume or delete */
 const pausedRunners = new Map<string, ActiveRunner>();
 let scheduling = false;
+const downloadSpeedTracker = new DownloadSpeedTracker();
+
+type ProgressPatchInput = {
+  taskId: string;
+  patch: Partial<DownloadTask>;
+  fetchedBytes?: number;
+  hideSpeed?: boolean;
+};
+
+/** Merge progress fields with computed download speed (VDH-style byte delta / elapsed time). */
+function buildProgressPatch(input: ProgressPatchInput): Partial<DownloadTask> {
+  const { taskId, patch, fetchedBytes = 0, hideSpeed = false } = input;
+  const downloadSpeed = downloadSpeedTracker.update(taskId, fetchedBytes, hideSpeed);
+  return {
+    ...patch,
+    fetchedBytes,
+    downloadSpeed,
+  };
+}
 
 // 获取当前下载状态
 async function getDownloadState() {
@@ -145,6 +165,7 @@ async function deleteTaskAndPurge(taskId: string) {
     await removeOpfsFileByName(task.opfsCacheFileName);
   }
   await downloadQueueStorage.removeTask(taskId);
+  downloadSpeedTracker.clear(taskId);
   schedule();
 }
 
@@ -209,7 +230,9 @@ async function handleQueuePause(message: any, sendResponse: (response?: any) => 
     await downloadQueueStorage.updateTask(taskId, {
       status: 'paused',
       cachedBytes: bytes,
+      downloadSpeed: undefined,
     });
+    downloadSpeedTracker.clear(taskId);
     sendResponse({ success: true });
     schedule();
   } catch (e: any) {
@@ -250,15 +273,23 @@ async function handleQueueResume(message: any, sendResponse: (response?: any) =>
         resumeFromByte: task.cachedBytes || 0,
         onProgress: (data: any) => {
           const progress = data.progress >= 0 ? data.progress : 0;
-          downloadQueueStorage.updateTask(task.id, {
-            progress,
-            finishNum: data.isFileDownloading ? 1 : 0,
-            targetSegment: 1,
-            errorNum: 0,
-            isFileDownloading: data.isFileDownloading,
-            fileDownloadProgress: data.isFileDownloading ? data.progress : undefined,
-            cachedBytes: data.bytesReceived,
-          });
+          downloadQueueStorage.updateTask(
+            task.id,
+            buildProgressPatch({
+              taskId: task.id,
+              fetchedBytes: data.bytesReceived || 0,
+              hideSpeed: data.isFileDownloading,
+              patch: {
+                progress,
+                finishNum: data.isFileDownloading ? 1 : 0,
+                targetSegment: 1,
+                errorNum: 0,
+                isFileDownloading: data.isFileDownloading,
+                fileDownloadProgress: data.isFileDownloading ? data.progress : undefined,
+                cachedBytes: data.bytesReceived,
+              },
+            }),
+          );
         },
         onComplete: (data: any) => {
           const finalName = data.fileName || task.fileName || 'video';
@@ -346,6 +377,7 @@ async function startTask(task: DownloadTask) {
   // 双保险：已经在跑就不重复启动
   if (activeRunners.has(task.id)) return;
 
+  downloadSpeedTracker.clear(task.id);
   await downloadQueueStorage.updateTask(task.id, { status: 'downloading', startedAt: Date.now(), error: undefined });
 
   if (task.format === 'm3u8') {
@@ -362,14 +394,22 @@ function startM3u8Task(task: DownloadTask) {
     timeout: 15000,
     dataTimeout: 600000,
     onProgress: (data: any) => {
-      downloadQueueStorage.updateTask(task.id, {
-        progress: data.progress,
-        finishNum: data.finishNum,
-        errorNum: data.errorNum,
-        targetSegment: data.targetSegment,
-        fileDownloadProgress: data.fileDownloadProgress,
-        isFileDownloading: data.isFileDownloading,
-      });
+      downloadQueueStorage.updateTask(
+        task.id,
+        buildProgressPatch({
+          taskId: task.id,
+          fetchedBytes: data.bytesReceived || 0,
+          hideSpeed: !!data.isFileDownloading,
+          patch: {
+            progress: data.progress,
+            finishNum: data.finishNum,
+            errorNum: data.errorNum,
+            targetSegment: data.targetSegment,
+            fileDownloadProgress: data.fileDownloadProgress,
+            isFileDownloading: data.isFileDownloading,
+          },
+        }),
+      );
     },
     onError: (error: string) => {
       downloadQueueStorage.updateTask(task.id, { status: 'error', error });
@@ -421,15 +461,23 @@ function startMp4Task(task: DownloadTask) {
     resumeFromByte: 0,
     onProgress: (data: any) => {
       const progress = data.progress >= 0 ? data.progress : 0;
-      downloadQueueStorage.updateTask(task.id, {
-        progress,
-        finishNum: data.isFileDownloading ? 1 : 0,
-        targetSegment: 1,
-        errorNum: 0,
-        isFileDownloading: data.isFileDownloading,
-        fileDownloadProgress: data.isFileDownloading ? data.progress : undefined,
-        cachedBytes: data.bytesReceived,
-      });
+      downloadQueueStorage.updateTask(
+        task.id,
+        buildProgressPatch({
+          taskId: task.id,
+          fetchedBytes: data.bytesReceived || 0,
+          hideSpeed: !!data.isFileDownloading,
+          patch: {
+            progress,
+            finishNum: data.isFileDownloading ? 1 : 0,
+            targetSegment: 1,
+            errorNum: 0,
+            isFileDownloading: data.isFileDownloading,
+            fileDownloadProgress: data.isFileDownloading ? data.progress : undefined,
+            cachedBytes: data.bytesReceived,
+          },
+        }),
+      );
     },
     onComplete: (data: any) => {
       const finalName = data.fileName || task.fileName || 'video';

@@ -195,6 +195,10 @@
     "description": "Progress label",
     "message": "प्रगति: $1%"
   },
+  "taskSpeed": {
+    "description": "Download speed label",
+    "message": "गति: $1"
+  },
   "taskCompletedSegments": {
     "description": "Completed segments label, finish/target substitutions",
     "message": "पूरा हुआ: $1 / $2"
