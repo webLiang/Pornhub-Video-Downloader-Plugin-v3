@@ -15,7 +15,7 @@ async function resolveTangxinVlogUrls(): Promise<SiteVideoInfo[]> {
 
   const fileName = buildTangxinVlogFileName(getTangxinVideoObject());
 
-  // 嗅探阶段直接用媒体 m3u8，不在 content script 里 fetch CDN（避免 CORS / 卡住）
+  // Use media m3u8 directly at sniff time; do not fetch CDN from content script (CORS / hang)
   return [
     {
       quality: 'default',

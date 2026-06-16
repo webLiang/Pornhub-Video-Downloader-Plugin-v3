@@ -17,7 +17,7 @@ function isSchemaVideoObject(obj: Record<string, unknown>): boolean {
   return false;
 }
 
-/** 从 application/ld+json 读取 schema.org VideoObject */
+/** Read schema.org VideoObject from application/ld+json */
 export function parseVideoObjectLdJson(): VideoObjectLdJson | null {
   const scripts = document.querySelectorAll('script[type="application/ld+json"]');
   for (const script of scripts) {

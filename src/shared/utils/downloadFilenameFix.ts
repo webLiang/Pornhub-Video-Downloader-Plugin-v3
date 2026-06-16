@@ -1,13 +1,13 @@
 /**
- * 解决 blob: URL 下载时 Chrome 忽略 download() 的 filename 参数的问题。
+ * Fix Chrome ignoring the filename argument on blob: URL downloads.
  *
- * 重要（Chrome downloads API 行为）：
- * - onDeterminingFilename 会收到浏览器内**所有**下载，必须用 DownloadItem.byExtensionId 限定本扩展。
- * - 若扩展一直挂着 listener，会与其他下载扩展冲突（对方 suggest 时 Chrome 报「已被命名」）。
- * - 参考 Video DownloadHelper：仅在有 pending 下载时 addListener，空闲时 removeListener。
+ * Important (Chrome downloads API behavior):
+ * - onDeterminingFilename receives **all** browser downloads; scope with DownloadItem.byExtensionId.
+ * - A permanently attached listener conflicts with other download extensions ("already named" on suggest).
+ * - Video DownloadHelper pattern: addListener only while pending downloads exist; remove when idle.
  *
- * - item.finalUrl 在 onDeterminingFilename 里经常是 ""，不能用 finalUrl ?? url。
- * - pending Map 必须挂在 globalThis，避免 obf 包与 background 各一份闭包。
+ * - item.finalUrl is often "" in onDeterminingFilename; do not rely on finalUrl ?? url.
+ * - Pending Map must live on globalThis so obf bundle and background share one closure.
  */
 
 const GLOBAL_KEY = '__phDownloadBlobFilenamePending_v2';
@@ -20,9 +20,9 @@ type FilenameHandler = (
 ) => void;
 
 type PendingMaps = {
-  /** blobUrl → filename，download() 前写入 */
+  /** blobUrl → filename, written before download() */
   byUrl: Map<string, string>;
-  /** downloadId → filename，download() 回调拿到 id 后写入（最可靠） */
+  /** downloadId → filename, written after download() callback returns id (most reliable) */
   byDownloadId: Map<number, string>;
 };
 
@@ -53,7 +53,7 @@ function hasPendingWork(): boolean {
   return byUrl.size > 0 || byDownloadId.size > 0;
 }
 
-/** blob 是否由本扩展创建 */
+/** Whether the blob URL was created by this extension */
 function isOwnExtensionBlob(blobUrl: string, extensionId: string): boolean {
   const trimmed = (blobUrl || '').trim();
   if (!trimmed.startsWith('blob:')) return false;
@@ -70,7 +70,7 @@ function consumePendingBlob(blobUrl: string): void {
   byUrl.delete((blobUrl || '').trim());
 }
 
-/** 选出真正的 blob URL：finalUrl 可能为 "" */
+/** Pick the real blob URL; finalUrl may be "" */
 function pickBlobUrlFromItem(item: chrome.downloads.DownloadItem): string {
   const f = String(item.finalUrl ?? '').trim();
   const u = String(item.url ?? '').trim();
@@ -117,7 +117,7 @@ function ensureFilenameListener(): void {
   console.log('[downloadFilenameFix] listener attached');
 }
 
-/** 仅处理本扩展发起的下载；其他扩展/网页下载必须 suggest() 放行且不改名 */
+/** Only handle downloads from this extension; pass through others unchanged */
 function onDeterminingFilenameHandler(
   item: chrome.downloads.DownloadItem,
   suggest: (suggestion?: chrome.downloads.DownloadFilenameSuggestion) => void,
@@ -131,7 +131,7 @@ function onDeterminingFilenameHandler(
 
   const { byUrl, byDownloadId } = getPendingMaps();
 
-  // 优先用 downloadId（与 blob 无关，不会误伤其他扩展的同 uuid blob）
+  // Prefer downloadId (independent of blob; avoids colliding with other extensions' blob UUIDs)
   const byIdFilename = byDownloadId.get(item.id);
   if (byIdFilename != null) {
     byDownloadId.delete(item.id);
@@ -152,7 +152,7 @@ function onDeterminingFilenameHandler(
     return;
   }
 
-  // download() 回调尚未返回 id 时的兜底（race）
+  // Fallback when download() callback has not returned id yet (race)
   let wanted = byUrl.get(blobRef);
   if (wanted == null && item.url) {
     wanted = byUrl.get(String(item.url).trim());
@@ -179,7 +179,7 @@ function onDeterminingFilenameHandler(
   removeFilenameListenerIfIdle();
 }
 
-/** 在 chrome.downloads.download(blobUrl, filename) 前调用 */
+/** Call before chrome.downloads.download(blobUrl, filename) */
 export function setPendingBlobFilename(blobUrl: string, filename: string): void {
   rememberPending(blobUrl, filename);
   ensureFilenameListener();
@@ -192,7 +192,7 @@ export function setPendingBlobFilename(blobUrl: string, filename: string): void 
   });
 }
 
-/** download() 回调拿到 id 后调用，绑定本扩展 downloadId → filename */
+/** Call after download() callback returns id; bind downloadId → filename */
 export function bindPendingDownloadId(downloadId: number, blobUrl: string): void {
   const { byUrl, byDownloadId } = getPendingMaps();
   const key = (blobUrl || '').trim();
@@ -212,14 +212,14 @@ export function bindPendingDownloadId(downloadId: number, blobUrl: string): void
   });
 }
 
-/** 下载启动失败/超时/中断时清理 pending，避免残留影响后续下载 */
+/** Clear pending entry on start failure / timeout / interrupt */
 export function clearPendingBlobFilename(blobUrl: string): void {
   consumePendingBlob(blobUrl);
   removeFilenameListenerIfIdle();
 }
 
 /**
- * @deprecated 不再在 SW 启动时永久注册 listener；setPendingBlobFilename 会按需 attach。
+ * @deprecated Do not register listener permanently at SW startup; setPendingBlobFilename attaches on demand.
  */
 export function registerDownloadFilenameListener(): void {
   /* intentionally empty */

@@ -41,7 +41,7 @@ const Popup = () => {
   const [remoteVersion, setRemoteVersion] = useState('0.0.0');
   const { toasts, showSuccess, showError, showInfo, showWarning, removeToast } = useToast();
 
-  // M3U8 下载相关状态
+  // M3U8 download UI state
   const [fileName, setFileName] = useState('');
   // const [isGetMP4] = useState(false);
   const [queueTasks, setQueueTasks] = useState<DownloadTask[]>(downloadQueueStorage.getSnapshot()?.tasks || []);
@@ -92,7 +92,7 @@ const Popup = () => {
 
     setFileName(prev => (prev === next ? prev : next));
 
-    // contentEditable 不一定会随着 state 更新显示，这里同步一次 DOM
+    // contentEditable may not reflect state updates; sync DOM once
     const el = fileNameEditableRef.current;
     if (el && el.innerText !== next) {
       el.innerText = next;
@@ -128,12 +128,12 @@ const Popup = () => {
       setLocale(nextLocale);
     });
 
-    // 初始化队列（等待队列也会从本地 storage 恢复）
+    // Init queue (wait queue also restored from local storage)
     downloadQueueStorage.get().then(state => {
       setQueueTasks(state.tasks || []);
     });
 
-    // Get current tab URL & title for headers 和默认文件名
+    // Current tab URL & title for headers and default filename
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
       const activeTab = tabs[0];
       if (activeTab?.url) {
@@ -141,7 +141,7 @@ const Popup = () => {
       }
       if (activeTab?.title) {
         setCurrentTabTitle(activeTab.title);
-        // 每次打开 popup：先用 tab 标题作为默认文件名（后面 content script 返回 pageTitle 会再刷新一次）
+        // On popup open: default filename from tab title (content script pageTitle may refresh later)
         hasUserEditedFileNameRef.current = false;
         setDefaultFileName(activeTab.title);
       }
@@ -188,7 +188,7 @@ const Popup = () => {
     }
     fetchVersion();
 
-    // 订阅队列 storage 变化（liveUpdate 会自动同步）
+    // Subscribe to queue storage changes (liveUpdate sync)
     const unsubQueue = downloadQueueStorage.subscribe(() => {
       const snap = downloadQueueStorage.getSnapshot();
       if (snap) setQueueTasks(snap.tasks || []);
@@ -201,7 +201,7 @@ const Popup = () => {
       if (snap) setDownloadHistory(snap.records);
     });
 
-    // 监听来自 background 的消息（完成、错误等）
+    // Background messages (complete, error, etc.)
     const messageListener = (message: any) => {
       if (message.type === 'download-task-complete') {
         showSuccess(translate('toastDownloadComplete', message.fileName || translate('taskUnknownFile')));
@@ -237,7 +237,7 @@ const Popup = () => {
     }
   }, [displayFileName, isEditingFileName]);
 
-  /** 与队列里未结束的任务冲突：同一视频 URL 已排队 / 下载中 / 暂停时不再入队（error 允许重新点） */
+  /** Block enqueue when same URL is queued/downloading/paused (error tasks may retry) */
   const findBlockingTaskForUrl = (videoUrl: string): DownloadTask | undefined => {
     return queueTasks.find(t => {
       if (t.url !== videoUrl) return false;
@@ -289,7 +289,7 @@ const Popup = () => {
     navigator.clipboard.writeText(videoInfo.videoUrl);
   };
 
-  // // M3U8 下载相关方法
+  // // Legacy M3U8 download handlers (removed)
   // const handleStartDownload = () => {
   //   if (!m3u8Url.trim()) {
   //     showWarning('请输入 M3U8 链接');
@@ -299,7 +299,7 @@ const Popup = () => {
   //   const fallbackName = (fileName || getPageTitle() || 'video').trim();
   //   setFileName(fallbackName);
 
-  //   // 入队（attach Origin & Referer from current tab）
+  //   // Enqueue (attach Origin & Referer from current tab)
   //   chrome.runtime
   //     .sendMessage({
   //       type: 'download-queue-enqueue',
@@ -379,7 +379,7 @@ const Popup = () => {
     hasUserEditedFileNameRef.current = true;
   };
 
-  // 打开单条历史记录对应的下载文件（使用 chrome.downloads API）
+  // Open download item for a history record (chrome.downloads API)
   const handleOpenHistoryItem = (record: DownloadRecord) => {
     chrome.runtime.sendMessage({
       type: 'open-download-item',
@@ -498,7 +498,7 @@ const Popup = () => {
             })}
         </ul>
       </div>
-      {/* M3U8 下载区域 */}
+      {/* Download queue section */}
       {queueTasks.length > 0 && (
         <div className="m3u8-download-section" ref={m3u8SectionRef}>
           <div className="queue-header">
@@ -668,7 +668,7 @@ const Popup = () => {
 
 function sendMessageToContentScript(message, callback) {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    // 向当前选中的tab发送消息
+    // Send message to the active tab
     // console.log('popup send')
     chrome.tabs.sendMessage(tabs[0].id, message, function (response) {
       // console.log(response);

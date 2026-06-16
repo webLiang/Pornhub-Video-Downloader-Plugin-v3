@@ -1,13 +1,13 @@
 /**
- * 视频列表项：至少需要 quality 字段用于排序（Popup 的 VideoInfo 等均可满足）
+ * Video list item shape for sorting (Popup VideoInfo and similar types qualify).
  */
 export type VideoInfoLike = {
   quality: string;
 };
 
 /**
- * 从 quality 文案里抽出可比较的「垂直分辨率」数值，越大表示越清晰。
- * 兼容 1080p、720、4K、2160、NAME 里带数字等情况；无法识别时返回 0（排在最后）。
+ * Parse comparable vertical resolution from quality label (higher = sharper).
+ * Handles 1080p, 720, 4K, 2160, digits in name; returns 0 when unknown (sorted last).
  */
 export function parseQualityHeight(quality: string): number {
   const q = (quality || '').trim().toLowerCase();
@@ -27,7 +27,7 @@ export function parseQualityHeight(quality: string): number {
   return 0;
 }
 
-/** 按清晰度从高到低排序；同分保持原有顺序 */
+/** Sort by quality descending; stable order for equal scores */
 export function sortVideoInfosByQualityDesc<T extends VideoInfoLike>(items: T[]): T[] {
   return items
     .map((item, index) => ({ item, index }))

@@ -22,7 +22,7 @@ reloadOnUpdate('pages/background');
 console.log('background loaded');
 
 // ---------------------------------------------------------------------------
-// 多任务下载管理（并发<=6 + 等待队列持久化）
+// Multi-task download manager (max 6 concurrent + persistent wait queue)
 // ---------------------------------------------------------------------------
 
 const MAX_ACTIVE_TASKS = 6;
@@ -53,16 +53,16 @@ function buildProgressPatch(input: ProgressPatchInput): Partial<DownloadTask> {
   };
 }
 
-// 获取当前下载状态
+// Read current download state
 async function getDownloadState() {
   return await m3u8DownloadStorage.get();
 }
 
-// 监听来自 popup 的消息
+// Handle messages from popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('[background] Received message:', message);
 
-  // 新：队列模式
+  // Queue mode
   if (message.type === 'download-queue-enqueue') {
     handleQueueEnqueue(message, sendResponse);
     return true;
@@ -86,9 +86,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
-  // 处理 M3U8 下载相关消息
+  // Legacy M3U8 download messages
   if (message.type === 'm3u8-download-start') {
-    // 兼容旧逻辑：走队列（不会再限制单任务）
+    // Legacy path: enqueue (no longer single-task limited)
     handleQueueEnqueue(
       {
         type: 'download-queue-enqueue',
@@ -99,16 +99,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       },
       sendResponse,
     );
-    return true; // 保持消息通道打开以支持异步响应
+    return true; // keep channel open for async sendResponse
   } else if (message.type === 'm3u8-download-cancel') {
-    // 兼容旧取消：取消所有 active 的 m3u8 任务
+    // Legacy cancel: stop all active m3u8 tasks
     cancelAllByKind('m3u8').then(() => sendResponse({ success: true }));
     return true;
   } else if (message.type === 'm3u8-download-status') {
     getDownloadState().then(state => {
       sendResponse(state);
     });
-    return true; // 保持消息通道打开以支持异步响应
+    return true; // keep channel open for async sendResponse
   } else if (message.type === 'mp4-download-start') {
     handleQueueEnqueue(
       {
@@ -136,7 +136,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return false;
 });
 
-// background 被唤醒/重启时，自动续跑等待队列
+// Resume wait queue when background SW wakes or restarts
 schedule();
 
 async function cancelAllByKind(kind: ActiveRunner['kind']) {
@@ -326,8 +326,8 @@ function schedule() {
       const state = await downloadQueueStorage.get();
       const tasks = state.tasks || [];
 
-      // background/service worker 可能被重启：storage 里的 downloading 任务会失去 runner
-      // 这里把“没有 runner 的 downloading”回退到 queued，避免队列卡死
+      // SW restart drops in-memory runners for downloading tasks in storage
+      // Revert orphan "downloading" rows to queued so the queue does not stall
       const staleDownloading = tasks.filter(
         t => t.status === 'downloading' && !activeRunners.has(t.id) && !pausedRunners.has(t.id),
       );
@@ -355,9 +355,9 @@ function schedule() {
         .filter(t => t.status === 'queued')
         .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
 
-      // 不要根据「当前 storage 里的 downloading 列表」去删 activeRunners。
-      // storage 与内存可能短暂不一致（并发 update），误删会导致 pause/delete 找不到 runner，
-      // 而旧的 M3U8Downloader 仍在跑。runner 应在 onComplete/onError/pause/delete 里显式释放。
+      // Do not delete activeRunners based on storage downloading list alone.
+      // Storage and memory can briefly diverge; premature delete breaks pause/delete runner lookup
+      // while M3U8Downloader still runs. Release runners in onComplete/onError/pause/delete.
 
       let activeCount = downloading.length;
       for (const task of queued) {
@@ -374,7 +374,7 @@ function schedule() {
 }
 
 async function startTask(task: DownloadTask) {
-  // 双保险：已经在跑就不重复启动
+  // Guard: skip if already running
   if (activeRunners.has(task.id)) return;
 
   downloadSpeedTracker.clear(task.id);

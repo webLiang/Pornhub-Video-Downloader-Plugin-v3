@@ -86,7 +86,7 @@
   }
 }
 
-/* 响应式设计 */
+/* Responsive layout */
 @media (max-width: 480px) {
   .toast-container {
     top: 10px;

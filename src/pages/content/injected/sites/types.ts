@@ -1,4 +1,4 @@
-/** popup / background 共用的嗅探结果结构 */
+/** Sniff result shape shared by popup and background */
 export interface SiteVideoInfo {
   quality: string;
   videoUrl: string;

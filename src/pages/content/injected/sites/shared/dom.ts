@@ -1,4 +1,4 @@
-/** 等待 DOM 解析完成（content script 在 document_start 注入时需要） */
+/** Wait until DOM is parsed (needed when content script runs at document_start) */
 export function waitForDomReady(): Promise<void> {
   if (document.readyState !== 'loading') {
     return Promise.resolve();
@@ -8,7 +8,7 @@ export function waitForDomReady(): Promise<void> {
   });
 }
 
-/** 与 hostMapGetUrls 里 document.title 清理规则保持一致 */
+/** Match document.title sanitization in hostMapGetUrls */
 export function sanitizeFileName(raw: string): string {
   return raw.replace(/[\\\\/:*?\\"<>|.-]+/g, '').trim();
 }
