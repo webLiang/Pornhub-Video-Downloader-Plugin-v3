@@ -1,20 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Offscreen 文档管理工具
- * 用于在 background 脚本中创建和管理 offscreen 文档
+ * Offscreen document helpers for creating and managing offscreen pages from the background script.
  */
 
 const OFFSCREEN_DOCUMENT_PATH = 'src/pages/offscreen/index.html';
 
 /**
- * 检查 offscreen 文档是否已创建
+ * Check whether the offscreen document already exists.
  */
 async function hasOffscreenDocument(): Promise<boolean> {
   if (!chrome.offscreen) {
     return false;
   }
 
-  // 使用 ServiceWorkerGlobalScope 的 clients API
+  // ServiceWorkerGlobalScope clients API
   const globalScope = self as any;
   if (!globalScope.clients || !globalScope.clients.matchAll) {
     return false;
@@ -25,7 +24,7 @@ async function hasOffscreenDocument(): Promise<boolean> {
 }
 
 /**
- * 创建 offscreen 文档
+ * Create the offscreen document.
  */
 async function createOffscreenDocument(): Promise<void> {
   if (!chrome.offscreen) {
@@ -51,7 +50,7 @@ async function createOffscreenDocument(): Promise<void> {
 }
 
 /**
- * 关闭 offscreen 文档
+ * Close the offscreen document.
  */
 async function closeOffscreenDocument(): Promise<void> {
   if (!chrome.offscreen) {
@@ -71,10 +70,10 @@ async function closeOffscreenDocument(): Promise<void> {
 }
 
 /**
- * 通过 offscreen 文档下载文件
- * @param data - 文件数据（ArrayBuffer 或 Uint8Array）
- * @param filename - 文件名
- * @param mimeType - MIME 类型
+ * Download a file via the offscreen document.
+ * @param data - File bytes (ArrayBuffer or Uint8Array)
+ * @param filename - Target filename
+ * @param mimeType - MIME type
  */
 export async function downloadViaOffscreen(
   data: ArrayBuffer | Uint8Array,
@@ -82,18 +81,17 @@ export async function downloadViaOffscreen(
   mimeType: string = 'application/octet-stream',
 ): Promise<void> {
   try {
-    // 确保 offscreen 文档存在
+    // Ensure offscreen document exists
     await createOffscreenDocument();
 
-    // 将数据转换为 ArrayBuffer（如果需要）
+    // Normalize to ArrayBuffer when needed
     let arrayBuffer: ArrayBuffer;
     if (data instanceof ArrayBuffer) {
       arrayBuffer = data;
     } else if (data instanceof Uint8Array) {
-      // Uint8Array.buffer 可能是 SharedArrayBuffer，需要转换为 ArrayBuffer
+      // Uint8Array.buffer may be SharedArrayBuffer; copy to ArrayBuffer
       const buffer = data.buffer;
       if (buffer instanceof SharedArrayBuffer) {
-        // 如果是 SharedArrayBuffer，创建新的 ArrayBuffer
         arrayBuffer = new ArrayBuffer(buffer.byteLength);
         new Uint8Array(arrayBuffer).set(new Uint8Array(buffer));
       } else {
@@ -103,7 +101,7 @@ export async function downloadViaOffscreen(
       throw new Error('Unsupported data type');
     }
 
-    // 发送消息到 offscreen 文档
+    // Send download message to offscreen document
     const response = await chrome.runtime.sendMessage({
       type: 'download-blob',
       data: arrayBuffer,
@@ -122,5 +120,5 @@ export async function downloadViaOffscreen(
   }
 }
 
-// 导出管理函数（可选，用于手动管理）
+// Optional exports for manual lifecycle control
 export { createOffscreenDocument, closeOffscreenDocument, hasOffscreenDocument };

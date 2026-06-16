@@ -18,7 +18,7 @@ const Toast = ({ message, type = 'info', duration = 3000, onClose }: ToastProps)
       setVisible(false);
       setTimeout(() => {
         onClose && onClose();
-      }, 300); // 等待动画完成
+      }, 300); // wait for exit animation
     }, duration);
 
     return () => clearTimeout(timer);

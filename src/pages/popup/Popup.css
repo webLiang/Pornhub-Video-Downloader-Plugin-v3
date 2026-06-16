@@ -141,7 +141,7 @@ ul li span {
   color: cornflowerblue;
 }
 
-/* 视频列表「下载」按钮：固定宽度，避免「下载 / 下载中… / 排队中…」切换时整行抖动 */
+/* Video list download button: fixed width to avoid row shift when label changes */
 ul li .button.video-row-download {
   width: 88px;
   min-width: 88px;
@@ -337,7 +337,7 @@ dialog {
   }
 }
 
-/* M3U8 下载区域样式 */
+/* Download queue section */
 .m3u8-download-section {
   margin: 20px 0;
   padding: 15px;
@@ -475,7 +475,7 @@ dialog {
   border-left: 3px solid #dc3545;
 }
 
-/* 进度与操作同一行：左侧进度+文件名，右侧小按钮 */
+/* Progress row: filename/progress left, action buttons right */
 .m3u8-progress-row {
   display: flex;
   align-items: center;
@@ -510,7 +510,7 @@ dialog {
   flex-shrink: 0;
 }
 
-/* 小号操作按钮 */
+/* Compact action buttons */
 .btn-sm {
   padding: 4px 10px;
   font-size: 11px;
@@ -594,7 +594,7 @@ dialog {
   font-weight: bold;
 }
 
-/* 进度条：稍小高度，更紧凑美观 */
+/* Progress bar: shorter height for compact layout */
 .progress-bar {
   width: 100%;
   height: 6px;
@@ -692,7 +692,7 @@ dialog {
   background-color: #5a6268;
 }
 
-/* 文件下载进度相关样式 */
+/* File-save phase progress styles */
 .progress-info .file-download-progress {
   color: #007bff;
   font-weight: 500;
@@ -801,7 +801,7 @@ dialog {
   }
 }
 
-/* 简化版文件下载加载动画 */
+/* Minimal file-save loading animation */
 .file-download-indicator.simple {
   margin-top: 12px;
   padding: 10px 12px;

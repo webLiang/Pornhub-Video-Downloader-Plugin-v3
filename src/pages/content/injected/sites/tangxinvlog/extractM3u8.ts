@@ -2,8 +2,8 @@ import { getM3u8FromVideoObjectLdJson } from '../shared/ldJson';
 import { M3U8_URL_IN_TEXT_RE, normalizeM3u8Url } from '../shared/m3u8';
 
 /**
- * tangxinvlog.app 播放页 m3u8 提取（Astro SSR）：
- * JSON-LD → #player → 内联 bootstrap → og:image → /v/{id}/
+ * tangxinvlog.app playback page m3u8 extraction (Astro SSR):
+ * JSON-LD → #player → inline bootstrap → og:image → /v/{id}/
  */
 export function extractTangxinM3u8Url(): string | null {
   const fromLd = getM3u8FromVideoObjectLdJson();

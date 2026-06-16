@@ -14,8 +14,8 @@ async function handleMessage() {
       // Accept only messages from our extension
       return false;
     }
-    // 只对 get_video_info 异步响应；不可对所有消息 return true，否则会占住 sendMessage 通道，
-    // 导致 popup → background 的 download-queue-* 等消息收不到 sendResponse。
+    // Only return true for async get_video_info; otherwise the sendMessage channel stays open
+    // and popup → background download-queue-* messages never get sendResponse.
     if (message.command === 'get_video_info') {
       void (async function () {
         const videoUrls = await hostMapGetUrls[curTopDomain]?.getUrls();

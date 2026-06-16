@@ -1,7 +1,7 @@
 import type { SiteGetUrls, SiteVideoInfo } from '../types';
 
 /**
- * 站点嗅探通用包装：内存缓存 + 并发去重，空结果不缓存便于 DOM 就绪后重试。
+ * Site sniff wrapper: in-memory cache + in-flight dedupe; empty results not cached for DOM retry.
  */
 export function createCachedGetter(resolveUrls: () => Promise<SiteVideoInfo[]>): SiteGetUrls {
   let cached: SiteVideoInfo[] | null = null;

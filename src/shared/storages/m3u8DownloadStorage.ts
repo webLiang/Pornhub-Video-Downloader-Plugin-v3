@@ -10,9 +10,9 @@ type M3U8DownloadState = {
   error?: string;
   url?: string;
   isGetMP4?: boolean;
-  completedAt?: number; // 完成时间戳
-  fileDownloadProgress?: number; // 文件下载进度（0-100）
-  isFileDownloading?: boolean; // 是否正在文件下载阶段
+  completedAt?: number; // completion timestamp
+  fileDownloadProgress?: number; // file save progress (0-100)
+  isFileDownloading?: boolean; // whether in file-save phase
 };
 
 const defaultState: M3U8DownloadState = {
@@ -38,18 +38,18 @@ const storage = createStorage<M3U8DownloadState>('m3u8DownloadState', defaultSta
 
 const m3u8DownloadStorage: M3U8DownloadStorage = {
   ...storage,
-  // 更新下载进度
+  // Update download progress
   updateProgress: async (progress: Partial<M3U8DownloadState>) => {
     await storage.set(currentState => ({
       ...currentState,
       ...progress,
     }));
   },
-  // 重置状态
+  // Reset state
   reset: async () => {
     await storage.set(defaultState);
   },
-  // 标记为完成
+  // Mark completed
   markCompleted: async (fileName: string) => {
     await storage.set(currentState => ({
       ...currentState,
@@ -57,11 +57,11 @@ const m3u8DownloadStorage: M3U8DownloadStorage = {
       progress: 100,
       fileName: fileName,
       completedAt: Date.now(),
-      isFileDownloading: false, // 清除文件下载状态
-      fileDownloadProgress: 100, // 设置为 100%
+      isFileDownloading: false, // clear file-save flag
+      fileDownloadProgress: 100, // set to 100%
     }));
   },
-  // 标记为错误
+  // Mark error
   markError: async (error: string) => {
     await storage.set(currentState => ({
       ...currentState,
