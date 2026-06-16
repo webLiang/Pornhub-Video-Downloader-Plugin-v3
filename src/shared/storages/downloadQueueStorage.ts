@@ -32,6 +32,11 @@ export type DownloadTask = {
   opfsCacheFileName?: string;
   /** MP4 partial OPFS size for Range resume (bytes written before pause) */
   cachedBytes?: number;
+
+  /** Cumulative bytes fetched from network (for speed display) */
+  fetchedBytes?: number;
+  /** Human-readable download speed, e.g. "1.2 MB/s" */
+  downloadSpeed?: string;
 };
 
 type DownloadQueueState = {

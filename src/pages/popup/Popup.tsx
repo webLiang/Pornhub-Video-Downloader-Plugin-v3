@@ -557,6 +557,10 @@ const Popup = () => {
                                 : translate('taskStatusDownloading')}
                           </span>
                           <span>{translate('taskProgress', progressText)}</span>
+                          {task.status === 'downloading' &&
+                            task.downloadSpeed &&
+                            task.downloadSpeed !== '—' &&
+                            !task.isFileDownloading && <span>{translate('taskSpeed', task.downloadSpeed)}</span>}
                           {task.status === 'downloading' && !task.isFileDownloading && (
                             <span>
                               {translate('taskCompletedSegments', [String(task.finishNum), String(task.targetSegment)])}
