@@ -1,0 +1,51 @@
+---
+description: New and edited code comments must be English only (no Chinese)
+alwaysApply: true
+---
+
+# English-only code comments (no Chinese)
+
+For **all new and edited code** in this repository, **comments must be written in English only**. Do not add Chinese (or other non-English) text in comments.
+
+Works with `english-comments-and-logs.mdc` (logs also English) and `function-documentation.mdc` (JSDoc in English).
+
+## Applies to
+
+- `//` line comments and trailing inline comments
+- `/** */` JSDoc and block comments
+- CSS/SCSS `/* */` comments
+- JSX `{/* */}` comments
+
+## Does not apply to
+
+- User-facing copy in `public/_locales/**` (i18n messages)
+- Locale display labels (e.g. `zh_CN: 'Chinese'`)
+- Runtime error/log strings in untouched legacy code (refactor to English when you touch that code)
+
+## When editing legacy files
+
+- **New or changed comments** → English
+- **Functions you touch** without docs → add English JSDoc (see `function-documentation.mdc`)
+- Do **not** bulk-replace Chinese in unrelated legacy strings unless the user asks
+
+## Examples
+
+```ts
+// ✅ English comment
+/** Fetch HLS playlist text before resume to refresh signed segment URLs. */
+async function fetchM3u8TextForResume(): Promise<string> {}
+
+// ❌ Non-English comment — do not add
+// [fetch m3u8 before resume — wrong language]
+/** [non-English JSDoc] */
+```
+
+```css
+/* ✅ Download queue section layout */
+/* ❌ Non-English CSS comment */
+```
+
+```tsx
+{/* ✅ Download queue section */}
+{/* ❌ Non-English JSX comment */}
+```

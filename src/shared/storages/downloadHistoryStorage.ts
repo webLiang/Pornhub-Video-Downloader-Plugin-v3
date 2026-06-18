@@ -5,6 +5,8 @@ export type DownloadRecord = {
   id: string; // unique ID (timestamp-based)
   fileName: string;
   url: string;
+  /** Source page URL when the task was enqueued (tab URL / Referer). */
+  pageUrl?: string;
   completedAt: number; // epoch ms
 };
 
@@ -19,7 +21,7 @@ const MAX_HISTORY = 50;
 
 type DownloadHistoryStorage = BaseStorage<DownloadHistoryState> & {
   /** Add a completed download to the history list */
-  addRecord: (fileName: string, url: string) => Promise<void>;
+  addRecord: (fileName: string, url: string, pageUrl?: string) => Promise<void>;
   /** Remove a single record by id */
   removeRecord: (id: string) => Promise<void>;
   /** Clear all history */
@@ -34,12 +36,13 @@ const storage = createStorage<DownloadHistoryState>('m3u8DownloadHistory', defau
 const downloadHistoryStorage: DownloadHistoryStorage = {
   ...storage,
 
-  addRecord: async (fileName: string, url: string) => {
+  addRecord: async (fileName: string, url: string, pageUrl?: string) => {
     await storage.set(state => {
       const record: DownloadRecord = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         fileName,
         url,
+        pageUrl: pageUrl?.trim() || undefined,
         completedAt: Date.now(),
       };
       // Prepend new record, trim to max length

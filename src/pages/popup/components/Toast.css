@@ -18,8 +18,8 @@
   background-color: #fff;
   border-left: 4px solid;
   pointer-events: auto;
-  animation: toastSlideIn 0.3s ease-out;
-  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+  animation: toastSlideIn 0.2s ease-out;
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
 }
 
 .toast-show {

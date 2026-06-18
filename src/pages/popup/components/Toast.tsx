@@ -10,7 +10,12 @@ type ToastProps = {
   onClose?: () => void;
 };
 
-const Toast = ({ message, type = 'info', duration = 3000, onClose }: ToastProps) => {
+/** Default visible time before dismiss (ms). */
+const DEFAULT_TOAST_DURATION_MS = 2000;
+/** Wait for exit animation before unmount (ms). */
+const TOAST_EXIT_ANIMATION_MS = 200;
+
+const Toast = ({ message, type = 'info', duration = DEFAULT_TOAST_DURATION_MS, onClose }: ToastProps) => {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
@@ -18,7 +23,7 @@ const Toast = ({ message, type = 'info', duration = 3000, onClose }: ToastProps)
       setVisible(false);
       setTimeout(() => {
         onClose && onClose();
-      }, 300); // wait for exit animation
+      }, TOAST_EXIT_ANIMATION_MS);
     }, duration);
 
     return () => clearTimeout(timer);

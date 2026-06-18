@@ -475,22 +475,76 @@ dialog {
   border-left: 3px solid #dc3545;
 }
 
-/* Progress row: filename/progress left, action buttons right */
+/* Progress row: filename on top, meta row (status + actions) below */
 .m3u8-progress-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
   margin-bottom: 4px;
-  min-height: 24px;
 }
 
 .m3u8-progress-left {
-  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.m3u8-progress-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 24px;
+  min-width: 0;
+}
+
+.progress-info-primary {
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0 10px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  font-size: 11px;
+  color: #555;
+}
+
+.progress-info-primary.has-speed {
+  padding-right: 11.5em;
+}
+
+.progress-info-primary > span:not(.progress-info-speed) {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.progress-info-progress {
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-info-speed {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 11.5em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+  overflow: hidden;
+}
+
+.progress-info-secondary {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0 10px;
+  font-size: 11px;
+  color: #555;
+}
+
+.progress-info-secondary > span {
+  white-space: nowrap;
 }
 
 .m3u8-filename-show {
@@ -501,6 +555,19 @@ dialog {
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: left;
+}
+
+.task-detail-meta {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0 12px;
+  font-size: 11px;
+  color: #888;
+}
+
+.task-detail-meta > span {
+  white-space: nowrap;
 }
 
 .m3u8-progress-actions {
@@ -583,7 +650,7 @@ dialog {
 
 .progress-info.inline {
   margin-bottom: 0;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0 10px;
   font-size: 11px;
   color: #555;
@@ -856,23 +923,23 @@ dialog {
 /* ====== Download History ====== */
 .download-history {
   margin-top: 12px;
-  padding: 8px 12px;
-  background: #fafafa;
-  border: 1px solid #eee;
-  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
 }
 
 .history-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .history-title {
   font-size: 12px;
-  font-weight: 600;
-  color: #555;
+  font-weight: 700;
+  color: #333;
 }
 
 .btn-text {
@@ -893,27 +960,43 @@ dialog {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 160px;
+  max-height: 180px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .history-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 0;
-  border-bottom: 1px solid #f0f0f0;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #eef1f4;
+  border-radius: 8px;
+  background: #fafbfc;
   height: auto !important;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.history-item:last-child {
-  border-bottom: none;
+.history-item:hover {
+  border-color: #dfe3e8;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.history-item-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .history-filename {
-  flex: 1;
   min-width: 0;
   font-size: 11px;
+  font-weight: 500;
   color: #333 !important;
   white-space: nowrap;
   overflow: hidden;
@@ -921,15 +1004,31 @@ dialog {
   text-align: left;
 }
 
+.history-filename-link {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #0d6efd !important;
+  text-decoration: none;
+}
+
+.history-filename-link:hover {
+  text-decoration: underline;
+  color: #0b5ed7 !important;
+}
+
 .history-time {
   flex-shrink: 0;
   font-size: 10px;
-  color: #aaa !important;
+  color: #9ca3af !important;
 }
 
 .history-actions {
   display: flex;
-  gap: 2px;
+  gap: 4px;
   flex-shrink: 0;
 }
 

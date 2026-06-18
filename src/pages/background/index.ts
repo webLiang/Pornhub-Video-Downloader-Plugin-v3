@@ -21,6 +21,19 @@ reloadOnUpdate('pages/background');
 
 console.log('background loaded');
 
+/** Resolve source page URL from task fields (pageUrl first, then Referer header). */
+function resolveTaskPageUrl(task: DownloadTask): string | undefined {
+  const pageUrl = task.pageUrl?.trim();
+  if (pageUrl) return pageUrl;
+  const referer = task.headers?.Referer?.trim();
+  return referer || undefined;
+}
+
+/** Persist a completed download in history, including source page when available. */
+function addHistoryRecord(task: DownloadTask, finalName: string): void {
+  void downloadHistoryStorage.addRecord(finalName, task.url, resolveTaskPageUrl(task));
+}
+
 // ---------------------------------------------------------------------------
 // Multi-task download manager (max 6 concurrent + persistent wait queue)
 // ---------------------------------------------------------------------------
@@ -175,13 +188,17 @@ async function handleQueueEnqueue(message: any, sendResponse: (response?: any) =
     const format: DownloadTaskFormat = message.format || 'm3u8';
     const fileName = (message.fileName || '').trim() || 'video';
     const headers = message.headers;
+    const quality = typeof message.quality === 'string' ? message.quality.trim() : undefined;
+    const pageUrl =
+      (typeof message.pageUrl === 'string' ? message.pageUrl.trim() : undefined) ||
+      (typeof headers?.Referer === 'string' ? headers.Referer.trim() : undefined);
 
     if (!url) {
       sendResponse({ success: false, error: 'URL 不能为空' });
       return;
     }
 
-    const id = await downloadQueueStorage.enqueue({ url, fileName, format, headers });
+    const id = await downloadQueueStorage.enqueue({ url, fileName, format, quality, pageUrl, headers });
     schedule();
     sendResponse({ success: true, id });
   } catch (e: any) {
@@ -293,7 +310,7 @@ async function handleQueueResume(message: any, sendResponse: (response?: any) =>
         },
         onComplete: (data: any) => {
           const finalName = data.fileName || task.fileName || 'video';
-          downloadHistoryStorage.addRecord(finalName, task.url);
+          addHistoryRecord(task, finalName);
           downloadQueueStorage.removeTask(task.id);
           activeRunners.delete(task.id);
           pausedRunners.delete(task.id);
@@ -424,7 +441,7 @@ function startM3u8Task(task: DownloadTask) {
     },
     onComplete: (data: any) => {
       const finalName = data.fileName || task.fileName || 'video';
-      downloadHistoryStorage.addRecord(finalName, task.url);
+      addHistoryRecord(task, finalName);
       downloadQueueStorage.removeTask(task.id);
       try {
         downloader.destroy();
@@ -481,7 +498,7 @@ function startMp4Task(task: DownloadTask) {
     },
     onComplete: (data: any) => {
       const finalName = data.fileName || task.fileName || 'video';
-      downloadHistoryStorage.addRecord(finalName, task.url);
+      addHistoryRecord(task, finalName);
       downloadQueueStorage.removeTask(task.id);
       activeRunners.delete(task.id);
       chrome.runtime

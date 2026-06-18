@@ -1,6 +1,6 @@
 {
   "name": "pornhub-video-downloader-plugin-v3",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Pornhub视频xvideos视频下载。 ",
   "license": "MIT",
   "repository": {
@@ -24,6 +24,8 @@
     "prettier": "prettier . --write",
     "prepare": "husky install",
     "build:crx": "pnpm build && node utils/create-crx.cjs",
+    "release:github:dry": "node scripts/github-release.mjs --dry-run",
+    "release:github": "node scripts/github-release.mjs --publish",
     "video-core:init": "git submodule update --init --recursive",
     "video-core:pull": "bash scripts/video-core-pull.sh",
     "video-core:push": "git -C src/pages/background/utils/video-download-core push origin main",

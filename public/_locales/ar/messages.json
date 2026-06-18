@@ -199,6 +199,14 @@
     "description": "Download speed label",
     "message": "السرعة: $1"
   },
+  "taskQuality": {
+    "description": "Task quality label",
+    "message": "الجودة: $1"
+  },
+  "taskFormat": {
+    "description": "Task format label",
+    "message": "النوع: $1"
+  },
   "taskCompletedSegments": {
     "description": "Completed segments label, finish/target substitutions",
     "message": "مكتمل: $1 / $2"
@@ -249,6 +257,10 @@
   "historyTooltipOpenFile": {
     "description": "Open file tooltip",
     "message": "فتح الملف"
+  },
+  "historyTooltipOpenPage": {
+    "description": "Open source page tooltip",
+    "message": "فتح صفحة المصدر"
   },
   "historyTooltipDeleteRecord": {
     "description": "Delete record tooltip",

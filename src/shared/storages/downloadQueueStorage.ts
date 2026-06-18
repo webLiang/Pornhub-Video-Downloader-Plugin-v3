@@ -9,6 +9,10 @@ export type DownloadTask = {
   url: string;
   fileName: string;
   format: DownloadTaskFormat;
+  /** Quality label, e.g. 720p or 240 */
+  quality?: string;
+  /** Page URL where the download was started */
+  pageUrl?: string;
   status: DownloadTaskStatus;
   createdAt: number;
   startedAt?: number;
@@ -83,6 +87,8 @@ const downloadQueueStorage: DownloadQueueStorage = {
         url: task.url,
         fileName: task.fileName || '',
         format: task.format,
+        quality: task.quality,
+        pageUrl: task.pageUrl,
         headers: task.headers,
         status: 'queued',
         createdAt: Date.now(),
