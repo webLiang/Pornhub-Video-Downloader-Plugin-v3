@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Build CRX/ZIP artifacts and create a GitHub Release with auto-generated notes.
- * Locale diffs: public/_locales vs previous git tag.
+ * Notes: detailed git Changes + multilingual user-facing highlights (not raw i18n key diffs).
  */
 import { execSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -15,13 +15,74 @@ const RELEASES_DIR = path.join(ROOT, 'releases');
 const REPO = 'webLiang/Pornhub-Video-Downloader-Plugin-v3';
 const RELEASES_URL = `https://github.com/${REPO}/releases`;
 
-const LOCALE_LABELS = {
+/** Section headings for multilingual release summaries. */
+const LOCALE_SECTION_TITLES = {
   en: 'English',
-  zh_CN: 'Chinese',
+  zh_CN: '简体中文',
   es: 'Español',
-  ar: 'Arabic',
-  hi: 'Hindi',
+  ar: 'العربية',
+  hi: 'हिन्दी',
 };
+
+/** Fallback line when commits exist but no mapped highlights were detected. */
+const GENERIC_IMPROVEMENTS = {
+  en: 'Bug fixes and performance improvements.',
+  zh_CN: '问题修复与性能优化。',
+  es: 'Correcciones de errores y mejoras de rendimiento.',
+  ar: 'إصلاحات للأخطاء وتحسينات في الأداء.',
+  hi: 'बग फ़िक्स और प्रदर्शन में सुधार।',
+};
+
+/**
+ * User-facing release bullets per theme and locale.
+ * Extend when adding major UI features so multilingual sections stay accurate.
+ */
+const THEME_HIGHLIGHTS = {
+  downloadSpeed: {
+    en: 'Download queue shows real-time speed with a stable single-line layout (no layout shift when speed updates).',
+    zh_CN: '下载队列显示实时速度，单行布局更稳定，速度文字变化时不再抖动。',
+    es: 'La cola de descargas muestra la velocidad en tiempo real con un diseño estable en una sola línea.',
+    ar: 'تعرض قائمة التحميل السرعة الفعلية بتخطيط ثابت في سطر واحد دون اهتزاز عند تغيّر السرعة.',
+    hi: 'डाउनलोड कतार वास्तविक समय की गति दिखाती है, गति बदलने पर लेआउट स्थिर रहता है।',
+  },
+  taskDetails: {
+    en: 'Queue task cards show video quality (resolution) and format type.',
+    zh_CN: '下载队列任务卡片显示清晰度和视频格式类型。',
+    es: 'Las tarjetas de la cola muestran la calidad del vídeo y el tipo de formato.',
+    ar: 'تعرض بطاقات المهام في قائمة التحميل جودة الفيديو ونوع التنسيق.',
+    hi: 'कतार कार्ड पर वीडियो गुणवत्ता (रिज़ॉल्यूशन) और प्रकार दिखाया जाता है।',
+  },
+  historyOpenPage: {
+    en: 'Click a filename in download history to reopen the source page; refreshed history list styling.',
+    zh_CN: '点击下载历史中的文件名可打开来源页面；历史列表样式优化。',
+    es: 'Haz clic en un nombre de archivo del historial para abrir la página de origen; diseño del historial mejorado.',
+    ar: 'انقر اسم الملف في سجل التحميل لفتح صفحة المصدر؛ تحسين مظهر قائمة السجل.',
+    hi: 'डाउनलोड इतिहास में फ़ाइल नाम पर क्लिक करके स्रोत पृष्ठ खोलें; इतिहास सूची की शैली बेहतर।',
+  },
+  toastDuration: {
+    en: 'Toast notifications dismiss faster for a less intrusive experience.',
+    zh_CN: 'Toast 提示显示时间缩短，减少打扰。',
+    es: 'Las notificaciones toast desaparecen más rápido para molestar menos.',
+    ar: 'تختفي إشعارات Toast أسرع لتجربة أقل إزعاجاً.',
+    hi: 'टोस्ट सूचनाएँ तेज़ी से गायब होती हैं, कम विचलित करने वाला अनुभव।',
+  },
+};
+
+/** Map i18n message keys to release themes (used with locale diffs vs previous tag). */
+const KEY_TO_THEME = {
+  taskSpeed: 'downloadSpeed',
+  taskQuality: 'taskDetails',
+  taskFormat: 'taskDetails',
+  historyTooltipOpenPage: 'historyOpenPage',
+};
+
+/** Match commit subject/body text to release themes. */
+const COMMIT_THEME_RULES = [
+  { theme: 'downloadSpeed', test: /speed|jitter|layout|queue.*ui|task-speed/i },
+  { theme: 'taskDetails', test: /quality|format|task-detail|taskQuality|taskFormat|清晰度|格式/i },
+  { theme: 'historyOpenPage', test: /history|pageUrl|open.*page|download history/i },
+  { theme: 'toastDuration', test: /toast/i },
+];
 
 /** @typedef {{ notesFile?: string, bodyFile?: string, assets: string[], dryRun: boolean, publish: boolean, skipBuild: boolean, commit: boolean, push: boolean, title?: string, commitMessage?: string }} CliOptions */
 
@@ -211,35 +272,140 @@ function listLocales() {
     .sort();
 }
 
-/** Format one locale diff block for release notes. */
-function formatLocaleSection(locale, diff) {
-  const label = LOCALE_LABELS[locale] || locale;
-  const lines = [`#### ${label} (\`${locale}\`)`];
-
-  for (const key of diff.added) {
-    lines.push(`- **Added** \`${key}\`: ${diff.after[key].message}`);
-  }
-  for (const key of diff.changed) {
-    const oldMsg = diff.before?.[key]?.message ?? '(missing)';
-    const newMsg = diff.after[key].message;
-    lines.push(`- **Updated** \`${key}\`: ${oldMsg} → ${newMsg}`);
-  }
-  for (const key of diff.removed) {
-    lines.push(`- **Removed** \`${key}\``);
-  }
-
-  return lines.join('\n');
+/** Collect i18n keys added or changed in en since previous tag. */
+function collectChangedMessageKeys(prevTag) {
+  if (!prevTag) return [];
+  const diff = diffLocaleMessages(prevTag, 'en');
+  if (!diff) return [];
+  return [...new Set([...diff.added, ...diff.changed])];
 }
 
-/** Collect git commit one-liners since previous tag. */
-function collectCommitLog(prevTag) {
+/** Detect release themes from locale diffs and commit messages. */
+function detectReleaseThemes(prevTag, commits) {
+  const themes = new Set();
+  for (const key of collectChangedMessageKeys(prevTag)) {
+    const theme = KEY_TO_THEME[key];
+    if (theme) themes.add(theme);
+  }
+  for (const commit of commits) {
+    const text = `${commit.subject} ${commit.body}`;
+    for (const rule of COMMIT_THEME_RULES) {
+      if (rule.test.test(text)) themes.add(rule.theme);
+    }
+  }
+  return [...themes];
+}
+
+/** Collect git commits with hash, subject, and body since previous tag. */
+function collectDetailedCommits(prevTag) {
   if (!prevTag) return [];
   try {
-    const out = run(`git log ${prevTag}..HEAD --oneline --no-merges`);
-    return out ? out.split('\n').filter(Boolean) : [];
+    const out = run(`git log ${prevTag}..HEAD --no-merges --format=%H%x09%s%x09%b%x1e`);
+    return out
+      .split('\x1e')
+      .map(block => block.trim())
+      .filter(Boolean)
+      .map(block => {
+        const [hash, subject, ...bodyParts] = block.split('\t');
+        return {
+          hash: (hash || '').slice(0, 7),
+          subject: subject || '',
+          body: bodyParts.join('\t').trim(),
+        };
+      })
+      .filter(commit => commit.subject);
   } catch {
     return [];
   }
+}
+
+/** True when commit should be excluded from release notes. */
+function isExcludedCommit(subject) {
+  if (/^chore(\([^)]*\))?:\s*release\b/i.test(subject)) return true;
+  if (/^chore(\([^)]*\))?:\s*bump version/i.test(subject)) return true;
+  return false;
+}
+
+/** True when commit subject is worth an English user-facing bullet. */
+function isUserFacingCommit(subject) {
+  if (/^(docs|style)(\(|:)/i.test(subject)) return false;
+  if (/documentation|comments and documentation|readme/i.test(subject)) return false;
+  return true;
+}
+
+/** Strip conventional-commit prefix for English summary bullets. */
+function commitToSummary(subject) {
+  const match = subject.match(/^(?:feat|fix|perf|refactor|style|docs)(?:\([^)]*\))?:\s*(.+)$/i);
+  if (match) return match[1];
+  if (/^chore/i.test(subject)) return null;
+  return subject;
+}
+
+/** Format detailed Changes section from commit list. */
+function formatChangesSection(commits) {
+  const releaseCommits = commits.filter(commit => !isExcludedCommit(commit.subject));
+  if (!releaseCommits.length) {
+    return ['- No commits since previous tag (or first release).'];
+  }
+
+  const lines = [];
+  for (const commit of releaseCommits.slice(0, 40)) {
+    lines.push(`- **${commit.subject}** (\`${commit.hash}\`)`);
+    if (commit.body) {
+      for (const line of commit.body.split('\n')) {
+        const trimmed = line.trim();
+        if (trimmed) lines.push(`  ${trimmed}`);
+      }
+    }
+  }
+  if (releaseCommits.length > 40) {
+    lines.push(`- … and ${releaseCommits.length - 40} more commits`);
+  }
+  return lines;
+}
+
+/** Build multilingual user-facing highlight sections (not raw i18n key diffs). */
+function buildMultilingualSections(prevTag, commits) {
+  const themes = detectReleaseThemes(prevTag, commits);
+  const releaseCommits = commits.filter(commit => !isExcludedCommit(commit.subject));
+  if (!themes.length && !releaseCommits.length) return [];
+
+  const localeOrder = ['en', 'zh_CN', 'es', 'ar', 'hi'];
+  const sections = [];
+
+  for (const locale of localeOrder) {
+    const bullets = [];
+    const seen = new Set();
+
+    for (const theme of themes) {
+      const text = THEME_HIGHLIGHTS[theme]?.[locale];
+      if (text && !seen.has(text)) {
+        bullets.push(`- ${text}`);
+        seen.add(text);
+      }
+    }
+
+    if (locale === 'en') {
+      for (const commit of releaseCommits) {
+        if (!isUserFacingCommit(commit.subject)) continue;
+        const summary = commitToSummary(commit.subject);
+        if (summary && !seen.has(summary)) {
+          bullets.push(`- ${summary}`);
+          seen.add(summary);
+        }
+      }
+    }
+
+    if (!bullets.length && releaseCommits.length) {
+      bullets.push(`- ${GENERIC_IMPROVEMENTS[locale] || GENERIC_IMPROVEMENTS.en}`);
+    }
+    if (!bullets.length) continue;
+
+    const title = LOCALE_SECTION_TITLES[locale] || locale;
+    sections.push(`### ${title}`, '', ...bullets, '');
+  }
+
+  return sections;
 }
 
 /** Build default CRX/ZIP artifact paths from package metadata. */
@@ -251,7 +417,7 @@ function defaultArtifactPaths(name, version) {
 }
 
 /** Generate full release notes markdown. */
-function buildReleaseNotes({ version, prevTag, customNotesPath, commits, localeSections }) {
+function buildReleaseNotes({ version, prevTag, customNotesPath, commits, multilingualSections }) {
   const lines = [`## v${version}`, ''];
 
   if (prevTag) {
@@ -259,23 +425,10 @@ function buildReleaseNotes({ version, prevTag, customNotesPath, commits, localeS
   }
 
   lines.push('### Changes', '');
-  if (commits.length) {
-    for (const line of commits.slice(0, 40)) {
-      lines.push(`- ${line}`);
-    }
-    if (commits.length > 40) {
-      lines.push(`- … and ${commits.length - 40} more commits`);
-    }
-  } else {
-    lines.push('- No commits since previous tag (or first release).');
-  }
-  lines.push('');
+  lines.push(...formatChangesSection(commits), '');
 
-  lines.push('### i18n / Locales', '');
-  if (localeSections.length) {
-    lines.push(...localeSections, '');
-  } else {
-    lines.push('No locale message changes in `public/_locales`.', '');
+  if (multilingualSections.length) {
+    lines.push('### Release highlights', '', ...multilingualSections);
   }
 
   if (customNotesPath) {
@@ -293,19 +446,32 @@ function buildReleaseNotes({ version, prevTag, customNotesPath, commits, localeS
   return `${lines.join('\n').trim()}\n`;
 }
 
-/** Ensure gh CLI is available when publishing. */
+/** Ensure gh CLI is installed and authenticated before publish/commit steps. */
 function assertGhReady() {
+  let ghMissing = false;
   try {
     run('gh --version');
   } catch {
-    console.error('GitHub CLI (gh) is required for --publish. Install: https://cli.github.com/');
+    ghMissing = true;
+  }
+
+  if (ghMissing) {
+    console.error('\nGitHub CLI (gh) is required for --publish / --full.\n');
+    console.error('Install:');
+    console.error('  macOS:   brew install gh');
+    console.error('  Windows: winget install GitHub.cli');
+    console.error('  Linux:   see https://github.com/cli/cli#installation');
+    console.error('\nThen authenticate:');
+    console.error('  gh auth login');
+    console.error('\nDocs: https://cli.github.com/\n');
     process.exit(1);
   }
 
   try {
-    run(`gh auth status --hostname github.com`);
+    run('gh auth status --hostname github.com');
   } catch {
-    console.error('gh is not authenticated. Run: gh auth login');
+    console.error('\ngh is installed but not authenticated.\n');
+    console.error('Run:  gh auth login\n');
     process.exit(1);
   }
 }
@@ -333,8 +499,25 @@ function commitRelease(version, commitMessage) {
 function pushRelease(tag) {
   const branch = run('git rev-parse --abbrev-ref HEAD');
   runOrExit(`git push origin ${branch}`, { inherit: true });
-  runOrExit(`git push origin ${tag}`, { inherit: true });
-  console.log(`Pushed branch ${branch} and tag ${tag} to origin.`);
+
+  const tagPush = spawnSync(`git push origin ${tag}`, {
+    cwd: ROOT,
+    shell: true,
+    stdio: ['pipe', 'pipe', 'pipe'],
+  });
+  if (tagPush.status === 0) {
+    console.log(`Pushed branch ${branch} and tag ${tag} to origin.`);
+    return;
+  }
+
+  const stderr = tagPush.stderr?.toString() || '';
+  if (stderr.includes('already exists') || stderr.includes('rejected')) {
+    console.warn(`Tag ${tag} already exists on origin; branch push succeeded, skipping tag push.`);
+    return;
+  }
+
+  console.error(stderr || `git push origin ${tag} failed`);
+  process.exit(tagPush.status || 1);
 }
 
 /** Create annotated tag locally if missing. */
@@ -353,19 +536,17 @@ function ensureTag(tag, version) {
   console.log(`Created tag ${tag}`);
 }
 
-/** Upload release via gh CLI. */
+/** Upload release via gh CLI (assets are positional file args in gh 2.x+). */
 function publishRelease({ tag, title, notesPath, assets }) {
-  const assetArgs = assets.flatMap(file => ['--attach', file]);
-  const cmd = [
+  const parts = [
     'gh release create',
     tag,
     `--repo ${REPO}`,
     `--title ${JSON.stringify(title)}`,
     `--notes-file ${JSON.stringify(notesPath)}`,
-    ...assetArgs,
-  ].join(' ');
-
-  runOrExit(cmd, { inherit: true });
+    ...assets.map(file => JSON.stringify(file)),
+  ];
+  runOrExit(parts.join(' '), { inherit: true });
   console.log(`\nRelease published: ${RELEASES_URL}/tag/${tag}`);
 }
 
@@ -403,16 +584,8 @@ function main() {
     }
   }
 
-  const localeSections = [];
-  for (const locale of listLocales()) {
-    if (!prevTag) continue;
-    const diff = diffLocaleMessages(prevTag, locale);
-    if (diff) {
-      localeSections.push(formatLocaleSection(locale, diff));
-    }
-  }
-
-  const commits = prevTag ? collectCommitLog(prevTag) : [];
+  const commits = prevTag ? collectDetailedCommits(prevTag) : [];
+  const multilingualSections = prevTag ? buildMultilingualSections(prevTag, commits) : [];
   let notes;
   if (options.bodyFile) {
     const abs = path.resolve(ROOT, options.bodyFile);
@@ -427,7 +600,7 @@ function main() {
       prevTag,
       customNotesPath: options.notesFile,
       commits,
-      localeSections,
+      multilingualSections,
     });
   }
 
@@ -455,13 +628,15 @@ function main() {
     return;
   }
 
+  // Check gh before commit so a failed publish does not leave a release commit without a tag.
+  assertGhReady();
+
   if (options.commit) {
     commitRelease(version, options.commitMessage);
   } else if (hasWorkingTreeChanges()) {
     console.warn('Warning: uncommitted changes remain; tag will not include them unless you use --commit.');
   }
 
-  assertGhReady();
   ensureTag(tag, version);
   publishRelease({ tag, title, notesPath, assets });
 
