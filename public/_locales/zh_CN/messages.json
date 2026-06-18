@@ -199,6 +199,14 @@
     "description": "Download speed label",
     "message": "速度：$1"
   },
+  "taskQuality": {
+    "description": "Task quality label",
+    "message": "清晰度：$1"
+  },
+  "taskFormat": {
+    "description": "Task format label",
+    "message": "类型：$1"
+  },
   "taskCompletedSegments": {
     "description": "Completed segments label, finish/target substitutions",
     "message": "已完成：$1 / $2"
@@ -249,6 +257,10 @@
   "historyTooltipOpenFile": {
     "description": "Open file tooltip",
     "message": "打开文件"
+  },
+  "historyTooltipOpenPage": {
+    "description": "Open source page tooltip",
+    "message": "打开来源页面"
   },
   "historyTooltipDeleteRecord": {
     "description": "Delete record tooltip",

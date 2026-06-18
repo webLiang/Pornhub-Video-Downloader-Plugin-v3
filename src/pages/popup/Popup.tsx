@@ -270,6 +270,8 @@ const Popup = () => {
         url: videoInfo.videoUrl,
         fileName: finalFileName || undefined,
         format: videoInfo.format,
+        quality: videoInfo.quality,
+        pageUrl: currentTabUrl || undefined,
         headers: buildM3u8Headers(),
       })
       .then(response => {
@@ -386,6 +388,17 @@ const Popup = () => {
       url: record.url,
       fileName: record.fileName,
     });
+  };
+
+  /** Open the source page for a history record in a new tab. */
+  const handleOpenHistoryPage = (pageUrl: string) => {
+    try {
+      const parsed = new URL(pageUrl);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return;
+      chrome.tabs.create({ url: pageUrl });
+    } catch {
+      // ignore invalid URL
+    }
   };
 
   // Open the browser downloads folder
@@ -548,65 +561,77 @@ const Popup = () => {
                         <span className="m3u8-filename-show" title={task.fileName || translate('taskUnknownFile')}>
                           {task.fileName || translate('taskUnknownFile')}
                         </span>
-                        <div className="progress-info inline">
-                          <span>
-                            {task.status === 'queued'
-                              ? translate('taskStatusWaiting', queuedSuffix)
-                              : task.status === 'paused'
-                                ? translate('taskStatusPaused')
-                                : translate('taskStatusDownloading')}
-                          </span>
-                          <span>{translate('taskProgress', progressText)}</span>
-                          {task.status === 'downloading' &&
-                            task.downloadSpeed &&
-                            task.downloadSpeed !== '—' &&
-                            !task.isFileDownloading && <span>{translate('taskSpeed', task.downloadSpeed)}</span>}
-                          {task.status === 'downloading' && !task.isFileDownloading && (
-                            <span>
-                              {translate('taskCompletedSegments', [String(task.finishNum), String(task.targetSegment)])}
-                            </span>
-                          )}
-                          {task.errorNum > 0 && (
-                            <span className="error-count">{translate('taskErrorCount', String(task.errorNum))}</span>
-                          )}
-                          {task.status === 'error' && (
-                            <span className="error-count">
-                              {translate('taskFailedReason', task.error || translate('taskFailedUnknown'))}
-                            </span>
-                          )}
+                        <div className="task-detail-meta">
+                          {task.quality ? <span>{translate('taskQuality', task.quality)}</span> : null}
+                          <span>{translate('taskFormat', task.format)}</span>
                         </div>
-                      </div>
-                      <div className="m3u8-progress-actions">
-                        {task.status === 'queued' && (
-                          <button className="btn-sm btn-cancel" onClick={() => handleDeleteTask(task.id)}>
-                            {translate('taskActionDelete')}
-                          </button>
-                        )}
-                        {task.status === 'downloading' && (
-                          <>
-                            <button className="btn-sm btn-secondary" onClick={() => handlePauseTask(task.id)}>
-                              {translate('taskActionPause')}
-                            </button>
-                            <button className="btn-sm btn-cancel" onClick={() => handleDeleteTask(task.id)}>
-                              {translate('taskActionDelete')}
-                            </button>
-                          </>
-                        )}
-                        {task.status === 'paused' && (
-                          <>
-                            <button className="btn-sm btn-primary" onClick={() => handleResumeTask(task.id)}>
-                              {translate('taskActionResume')}
-                            </button>
-                            <button className="btn-sm btn-cancel" onClick={() => handleDeleteTask(task.id)}>
-                              {translate('taskActionDelete')}
-                            </button>
-                          </>
-                        )}
-                        {task.status === 'error' && (
-                          <button className="btn-sm btn-clear" onClick={() => handleDeleteTask(task.id)}>
-                            {translate('taskActionRemove')}
-                          </button>
-                        )}
+                        <div className="m3u8-progress-meta-row">
+                          <div
+                            className={`progress-info-primary${
+                              task.status === 'downloading' && !task.isFileDownloading ? ' has-speed' : ''
+                            }`}>
+                            <span>
+                              {task.status === 'queued'
+                                ? translate('taskStatusWaiting', queuedSuffix)
+                                : task.status === 'paused'
+                                  ? translate('taskStatusPaused')
+                                  : translate('taskStatusDownloading')}
+                            </span>
+                            <span className="progress-info-progress">{translate('taskProgress', progressText)}</span>
+                            {task.status === 'downloading' && !task.isFileDownloading && (
+                              <span className="progress-info-speed">
+                                {translate(
+                                  'taskSpeed',
+                                  task.downloadSpeed && task.downloadSpeed !== '—' ? task.downloadSpeed : '—',
+                                )}
+                              </span>
+                            )}
+                          </div>
+                          <div className="m3u8-progress-actions">
+                            {task.status === 'queued' && (
+                              <button className="btn-sm btn-cancel" onClick={() => handleDeleteTask(task.id)}>
+                                {translate('taskActionDelete')}
+                              </button>
+                            )}
+                            {task.status === 'downloading' && (
+                              <>
+                                <button className="btn-sm btn-secondary" onClick={() => handlePauseTask(task.id)}>
+                                  {translate('taskActionPause')}
+                                </button>
+                                <button className="btn-sm btn-cancel" onClick={() => handleDeleteTask(task.id)}>
+                                  {translate('taskActionDelete')}
+                                </button>
+                              </>
+                            )}
+                            {task.status === 'paused' && (
+                              <>
+                                <button className="btn-sm btn-primary" onClick={() => handleResumeTask(task.id)}>
+                                  {translate('taskActionResume')}
+                                </button>
+                                <button className="btn-sm btn-cancel" onClick={() => handleDeleteTask(task.id)}>
+                                  {translate('taskActionDelete')}
+                                </button>
+                              </>
+                            )}
+                            {task.status === 'error' && (
+                              <button className="btn-sm btn-clear" onClick={() => handleDeleteTask(task.id)}>
+                                {translate('taskActionRemove')}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        {task.errorNum > 0 || task.status === 'error' ? (
+                          <div className="progress-info-secondary">
+                            {task.errorNum > 0 && (
+                              <span className="error-count">{translate('taskErrorCount', String(task.errorNum))}</span>
+                            )}
+                            {task.status === 'error' && (
+                              <span className="error-count">
+                                {translate('taskFailedReason', task.error || translate('taskFailedUnknown'))}
+                              </span>
+                            )}
+                          </div>
+                        ) : null}
                       </div>
                     </div>
 
@@ -639,10 +664,22 @@ const Popup = () => {
           <ul className="history-list">
             {downloadHistory.map(record => (
               <li key={record.id} className="history-item">
-                <span className="history-filename" title={record.fileName}>
-                  {record.fileName}
-                </span>
-                <span className="history-time">{new Date(record.completedAt).toLocaleDateString()}</span>
+                <div className="history-item-body">
+                  {record.pageUrl ? (
+                    <button
+                      type="button"
+                      className="history-filename history-filename-link"
+                      title={`${translate('historyTooltipOpenPage')}\n${record.pageUrl}`}
+                      onClick={() => handleOpenHistoryPage(record.pageUrl!)}>
+                      {record.fileName}
+                    </button>
+                  ) : (
+                    <span className="history-filename" title={record.fileName}>
+                      {record.fileName}
+                    </span>
+                  )}
+                  <span className="history-time">{new Date(record.completedAt).toLocaleDateString()}</span>
+                </div>
                 <div className="history-actions">
                   <button
                     className="btn-icon-sm"

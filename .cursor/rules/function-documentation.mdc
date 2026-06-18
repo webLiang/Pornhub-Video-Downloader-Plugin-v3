@@ -1,0 +1,64 @@
+---
+description: Every function must have an English explanation (JSDoc or block comment)
+alwaysApply: true
+---
+
+# Function documentation (English only)
+
+For **all new and edited code** in this repository, **every function must be explained in English** before or above its definition.
+
+Works together with `english-comments-and-logs.mdc`: explanations, JSDoc, and inline comments are **English only**.
+
+## What must be documented
+
+- Named functions and `async` functions
+- `const` / `function` helpers at module or class scope
+- Class methods and React hooks (`useXxx`)
+- Exported APIs (content scripts, background, popup, `sites/`, download core)
+
+## What to write
+
+Use **JSDoc** when possible. At minimum, one English sentence stating **what the function does** and **why** (if non-obvious).
+
+Add `@param` / `@returns` when parameters or return value are not self-explanatory from names and types.
+
+```ts
+/**
+ * Extract direct http(s) mp4/m3u8/webm URLs from <video> elements on the page.
+ * Used as a fallback when no site-specific sniffer is registered or returns empty.
+ */
+export function extractDirectVideoTagUrls(): SiteVideoInfo[] {
+  // ...
+}
+
+/**
+ * Wait until DOM is parsed; content scripts may run at document_start.
+ */
+export function waitForDomReady(): Promise<void> {
+  // ...
+}
+```
+
+## Exceptions (still prefer a one-line English comment if unclear)
+
+- Trivial inline callbacks in `.map` / `.filter` / `.forEach` (single expression, obvious intent)
+- Auto-generated or third-party vendored files (do not rewrite wholesale)
+
+## Avoid
+
+```ts
+// ❌ No explanation
+export function resolveSiteVideoUrls(topDomain: string, hostMap: HostGetUrlsMap) {
+  // ...
+}
+
+// ❌ Non-English explanation
+/** [extract m3u8 from video tags — use English instead] */
+function extract() {}
+
+// ✅ English JSDoc
+/** Resolve video URLs: site-specific sniffer first, then generic <video> direct links. */
+function resolveSiteVideoUrls(topDomain: string, hostMap: HostGetUrlsMap) {}
+```
+
+When editing a file, add English docs to **new functions** and to **existing functions you touch** if they lack documentation.

@@ -199,6 +199,14 @@
     "description": "Download speed label",
     "message": "गति: $1"
   },
+  "taskQuality": {
+    "description": "Task quality label",
+    "message": "गुणवत्ता: $1"
+  },
+  "taskFormat": {
+    "description": "Task format label",
+    "message": "प्रकार: $1"
+  },
   "taskCompletedSegments": {
     "description": "Completed segments label, finish/target substitutions",
     "message": "पूरा हुआ: $1 / $2"
@@ -249,6 +257,10 @@
   "historyTooltipOpenFile": {
     "description": "Open file tooltip",
     "message": "फ़ाइल खोलें"
+  },
+  "historyTooltipOpenPage": {
+    "description": "Open source page tooltip",
+    "message": "स्रोत पृष्ठ खोलें"
   },
   "historyTooltipDeleteRecord": {
     "description": "Delete record tooltip",

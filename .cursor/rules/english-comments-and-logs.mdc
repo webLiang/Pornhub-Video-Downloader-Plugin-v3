@@ -1,0 +1,25 @@
+---
+description: All new comments and log/print output must be in English
+alwaysApply: true
+---
+
+# English-only comments and logs
+
+For **all new and edited code** in this repository:
+
+- **Comments**: Write inline comments, block comments, and JSDoc in **English** only. See `english-code-comments.mdc` for scope and exceptions.
+- **Logging / prints**: Use **English** for `console.log`, `console.warn`, `console.error`, `debug()`, user-facing dev messages in strings, and any `echo`/CLI output in scripts.
+
+Do not add new Chinese (or other non-English) text in comments or logs. Existing legacy strings may stay until intentionally refactored.
+
+**Examples**
+
+```ts
+// ✅ Prefer
+// Retry once when the segment request fails
+console.warn('Segment fetch failed, retrying', { url });
+
+// ❌ Avoid for new code
+// [non-English comment]
+console.warn('[non-English log message]', url);
+```
