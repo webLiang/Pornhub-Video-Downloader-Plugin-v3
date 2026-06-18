@@ -4,11 +4,12 @@ Compared to `v1.1.1`.
 
 ### Changes
 
+- 1ec369b chore: bump version to 1.1.2 and add GitHub release script with localization updates
 - aa0c241 fix(chrome-ext-videodownload): improve comments and documentation for clarity
 
 ### i18n / Locales
 
-#### العربية (`ar`)
+#### Arabic (`ar`)
 - **Added** `taskQuality`: الجودة: $1
 - **Added** `taskFormat`: النوع: $1
 - **Added** `historyTooltipOpenPage`: فتح صفحة المصدر
@@ -20,11 +21,11 @@ Compared to `v1.1.1`.
 - **Added** `taskQuality`: Calidad: $1
 - **Added** `taskFormat`: Tipo: $1
 - **Added** `historyTooltipOpenPage`: Abrir página de origen
-#### हिंदी (`hi`)
+#### Hindi (`hi`)
 - **Added** `taskQuality`: गुणवत्ता: $1
 - **Added** `taskFormat`: प्रकार: $1
 - **Added** `historyTooltipOpenPage`: स्रोत पृष्ठ खोलें
-#### 中文 (`zh_CN`)
+#### Chinese (`zh_CN`)
 - **Added** `taskQuality`: 清晰度：$1
 - **Added** `taskFormat`: 类型：$1
 - **Added** `historyTooltipOpenPage`: 打开来源页面

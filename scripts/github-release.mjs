@@ -17,13 +17,13 @@ const RELEASES_URL = `https://github.com/${REPO}/releases`;
 
 const LOCALE_LABELS = {
   en: 'English',
-  zh_CN: '中文',
+  zh_CN: 'Chinese',
   es: 'Español',
-  ar: 'العربية',
-  hi: 'हिंदी',
+  ar: 'Arabic',
+  hi: 'Hindi',
 };
 
-/** @typedef {{ notesFile?: string, bodyFile?: string, assets: string[], dryRun: boolean, publish: boolean, skipBuild: boolean, title?: string }} CliOptions */
+/** @typedef {{ notesFile?: string, bodyFile?: string, assets: string[], dryRun: boolean, publish: boolean, skipBuild: boolean, commit: boolean, push: boolean, title?: string, commitMessage?: string }} CliOptions */
 
 /** Parse CLI flags for release workflow. */
 function parseArgs(argv) {
@@ -33,6 +33,8 @@ function parseArgs(argv) {
     dryRun: false,
     publish: false,
     skipBuild: false,
+    commit: false,
+    push: false,
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -41,6 +43,14 @@ function parseArgs(argv) {
       options.dryRun = true;
     } else if (arg === '--publish') {
       options.publish = true;
+    } else if (arg === '--full') {
+      options.publish = true;
+      options.commit = true;
+      options.push = true;
+    } else if (arg === '--commit') {
+      options.commit = true;
+    } else if (arg === '--push') {
+      options.push = true;
     } else if (arg === '--skip-build') {
       options.skipBuild = true;
     } else if (arg === '--notes-file') {
@@ -51,6 +61,9 @@ function parseArgs(argv) {
       i += 1;
     } else if (arg === '--title') {
       options.title = argv[i + 1];
+      i += 1;
+    } else if (arg === '--commit-message') {
+      options.commitMessage = argv[i + 1];
       i += 1;
     } else if (arg === '--asset') {
       options.assets.push(argv[i + 1]);
@@ -80,14 +93,20 @@ function printHelp() {
 Options:
   --dry-run              Build + write release notes only (default when --publish omitted)
   --publish              Create git tag and GitHub release (requires gh CLI)
+  --full                 Shorthand: --publish --commit --push (one-shot release)
+  --commit               git add -A && git commit before tagging (use with --publish)
+  --push                 git push current branch + release tag after publish
   --skip-build           Skip pnpm build:crx
   --body-file <path>     Use this markdown as the full release notes (skip auto-generation)
   --notes-file <path>    Append custom markdown to auto-generated release notes
+  --commit-message <msg> Commit message (default: chore: release v<version>)
   --title <text>         Override release title (default: v<package.json version>)
   --asset <path>         Extra file to attach (repeatable)
 
 Examples:
   node scripts/github-release.mjs --dry-run
+  node scripts/github-release.mjs --full
+  node scripts/github-release.mjs --publish --commit --push
   node scripts/github-release.mjs --publish --body-file ./releases/RELEASE_NOTES_v1.2.0.md --skip-build
   node scripts/github-release.mjs --publish --notes-file ./docs/extra-notes.md
   node scripts/github-release.mjs --publish --asset ./docs/install-guide.pdf
@@ -291,6 +310,33 @@ function assertGhReady() {
   }
 }
 
+/** Return true when the working tree has staged or unstaged changes. */
+function hasWorkingTreeChanges() {
+  return Boolean(run('git status --porcelain'));
+}
+
+/** Stage all changes and commit; no-op when tree is clean. */
+function commitRelease(version, commitMessage) {
+  if (!hasWorkingTreeChanges()) {
+    console.log('Working tree clean; skipping commit.');
+    return false;
+  }
+
+  const message = commitMessage || `chore: release v${version}`;
+  runOrExit('git add -A');
+  runOrExit(`git commit -m ${JSON.stringify(message)}`);
+  console.log(`Committed: ${message}`);
+  return true;
+}
+
+/** Push current branch and release tag to origin. */
+function pushRelease(tag) {
+  const branch = run('git rev-parse --abbrev-ref HEAD');
+  runOrExit(`git push origin ${branch}`, { inherit: true });
+  runOrExit(`git push origin ${tag}`, { inherit: true });
+  console.log(`Pushed branch ${branch} and tag ${tag} to origin.`);
+}
+
 /** Create annotated tag locally if missing. */
 function ensureTag(tag, version) {
   const tags = listVersionTags();
@@ -299,8 +345,7 @@ function ensureTag(tag, version) {
     return;
   }
 
-  const clean = run('git status --porcelain');
-  if (clean) {
+  if (hasWorkingTreeChanges()) {
     console.warn('Warning: working tree has uncommitted changes; tag will point at current HEAD.');
   }
 
@@ -402,18 +447,30 @@ function main() {
 
   if (!options.publish) {
     console.log('\nDry run complete. To publish:');
+    console.log(`  pnpm release:github:full`);
+    console.log('Or step by step:');
     console.log(
-      `  node scripts/github-release.mjs --publish --skip-build --body-file ${path.relative(ROOT, notesPath)}`,
+      `  node scripts/github-release.mjs --publish --commit --push --body-file ${path.relative(ROOT, notesPath)}`,
     );
     return;
+  }
+
+  if (options.commit) {
+    commitRelease(version, options.commitMessage);
+  } else if (hasWorkingTreeChanges()) {
+    console.warn('Warning: uncommitted changes remain; tag will not include them unless you use --commit.');
   }
 
   assertGhReady();
   ensureTag(tag, version);
   publishRelease({ tag, title, notesPath, assets });
 
-  console.log('\nPush tag to remote when ready:');
-  console.log(`  git push origin ${tag}`);
+  if (options.push) {
+    pushRelease(tag);
+  } else {
+    console.log('\nPush when ready:');
+    console.log(`  git push origin HEAD && git push origin ${tag}`);
+  }
 }
 
 main();
