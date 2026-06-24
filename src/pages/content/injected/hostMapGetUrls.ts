@@ -271,6 +271,9 @@ const hostMapGetUrls = {
   'pornhub.com': {
     getUrls: getPornhubUrls,
   },
+  'pornhub.org': {
+    getUrls: getPornhubUrls,
+  },
   'pornhubpremium.com': {
     getUrls: getPornhubUrls,
   },
