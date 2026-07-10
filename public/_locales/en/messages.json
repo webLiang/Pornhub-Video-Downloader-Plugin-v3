@@ -29,6 +29,14 @@
     "description": "Filename placeholder",
     "message": "Leave empty to auto-generate"
   },
+  "downloadSubdirLabel": {
+    "description": "Download subdirectory label under Chrome downloads folder",
+    "message": "Download subdirectory"
+  },
+  "downloadSubdirPlaceholder": {
+    "description": "Download subdirectory placeholder",
+    "message": "Videos/"
+  },
 
   "popupQualityLabel": {
     "description": "Quality label",

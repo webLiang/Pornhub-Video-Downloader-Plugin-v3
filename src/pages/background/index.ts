@@ -10,6 +10,7 @@ import downloadQueueStorage, {
   type DownloadTask,
   type DownloadTaskFormat,
 } from '@src/shared/storages/downloadQueueStorage';
+import { getDownloadSubdir } from '@src/shared/storages/downloadSettingsStorage';
 import { DownloadSpeedTracker } from '@src/shared/utils/formatDownloadSpeed';
 reloadOnUpdate('pages/background');
 
@@ -282,12 +283,14 @@ async function handleQueueResume(message: any, sendResponse: (response?: any) =>
     if (runner.kind === 'm3u8') {
       (runner.instance as any).resume();
     } else {
+      const downloadSubdir = await getDownloadSubdir();
       void runner.instance.start({
         url: task.url,
         fileName: task.fileName || 'video',
         headers: task.headers,
         opfsFileName: task.opfsCacheFileName,
         resumeFromByte: task.cachedBytes || 0,
+        downloadSubdir,
         onProgress: (data: any) => {
           const progress = data.progress >= 0 ? data.progress : 0;
           downloadQueueStorage.updateTask(
@@ -398,13 +401,14 @@ async function startTask(task: DownloadTask) {
   await downloadQueueStorage.updateTask(task.id, { status: 'downloading', startedAt: Date.now(), error: undefined });
 
   if (task.format === 'm3u8') {
-    startM3u8Task(task);
+    await startM3u8Task(task);
   } else {
-    startMp4Task(task);
+    await startMp4Task(task);
   }
 }
 
-function startM3u8Task(task: DownloadTask) {
+async function startM3u8Task(task: DownloadTask) {
+  const downloadSubdir = await getDownloadSubdir();
   const downloader = new M3U8Downloader({
     maxConcurrent: 10,
     retryInterval: 2000,
@@ -463,10 +467,12 @@ function startM3u8Task(task: DownloadTask) {
     fileName: task.fileName || '',
     headers: task.headers || undefined,
     opfsFileName: task.opfsCacheFileName,
+    downloadSubdir,
   });
 }
 
-function startMp4Task(task: DownloadTask) {
+async function startMp4Task(task: DownloadTask) {
+  const downloadSubdir = await getDownloadSubdir();
   const downloader = new MP4Downloader();
   activeRunners.set(task.id, { kind: 'mp4', instance: downloader });
 
@@ -476,6 +482,7 @@ function startMp4Task(task: DownloadTask) {
     headers: task.headers,
     opfsFileName: task.opfsCacheFileName,
     resumeFromByte: 0,
+    downloadSubdir,
     onProgress: (data: any) => {
       const progress = data.progress >= 0 ? data.progress : 0;
       downloadQueueStorage.updateTask(

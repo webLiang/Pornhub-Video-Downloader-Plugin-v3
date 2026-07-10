@@ -8,6 +8,7 @@ import downloadQueueStorage, {
   type DownloadTask,
   type DownloadTaskStatus,
 } from '@src/shared/storages/downloadQueueStorage';
+import downloadSettingsStorage, { sanitizeDownloadSubdir } from '@src/shared/storages/downloadSettingsStorage';
 import { sortVideoInfosByQualityDesc } from '@src/shared/utils/videoInfoSort';
 import { ToastContainer, useToast } from '@pages/popup/components/Toast';
 import {
@@ -51,37 +52,54 @@ const Popup = () => {
   const [pageTitle, setPageTitle] = useState('');
   const [currentTabTitle, setCurrentTabTitle] = useState('');
   const [locale, setLocale] = useState<SupportedLocale>(getCurrentLocale());
+  const [localSubdir, setLocalSubdir] = useState('');
   const getPageTitle = () => videoInfos[0]?.title || pageTitle || currentTabTitle || '';
   const [isEditingFileName, setIsEditingFileName] = useState(false);
   const fileNameEditableRef = useRef<HTMLDivElement | null>(null);
   const displayFileName = fileName || getPageTitle() || '';
   const hasUserEditedFileNameRef = useRef(false);
 
+  /** Persist sanitized subdirectory under Chrome's default downloads folder. */
+  const commitSubdir = async () => {
+    const cleaned = sanitizeDownloadSubdir(localSubdir);
+    const saved = await downloadSettingsStorage.setDownloadSubdir(cleaned);
+    setLocalSubdir(saved);
+    return saved;
+  };
+
   const sanitizeDownloadFileName = (rawName: string, fallback = 'video') => {
-    // Remove characters that are illegal in Windows/Chrome download filenames
-    // Also trim, collapse spaces, and remove trailing dots/spaces which can break downloads
-    const input = (rawName || '').replace(/\s+/g, ' ').trim();
+    // Preserve `/` as a relative path separator (e.g. uploader/title); sanitize each segment
+    const input = (rawName || '').replace(/\\/g, '/').replace(/\s+/g, ' ').trim();
+    if (!input) return fallback;
 
-    // eslint(no-control-regex): avoid control char ranges in regex; strip them by charCode instead
-    let noControl = '';
-    for (let i = 0; i < input.length; i++) {
-      const code = input.charCodeAt(i);
-      if (code >= 32) noControl += input[i];
-    }
+    const sanitizeSegment = (segment: string) => {
+      // eslint(no-control-regex): avoid control char ranges in regex; strip them by charCode instead
+      let noControl = '';
+      for (let i = 0; i < segment.length; i++) {
+        const code = segment.charCodeAt(i);
+        if (code >= 32) noControl += segment[i];
+      }
 
-    const withoutIllegal = noControl.replace(/[<>:"/\\|?*]/g, '_');
-    const noTrailing = withoutIllegal.replace(/[.\s]+$/g, '').trim();
-    const normalized = noTrailing.replace(/_+/g, '_').trim();
+      const withoutIllegal = noControl.replace(/[<>:"/\\|?*]/g, '_');
+      const noTrailing = withoutIllegal.replace(/[.\s]+$/g, '').trim();
+      const normalized = noTrailing.replace(/_+/g, '_').trim();
+      if (!normalized || normalized === '.' || normalized === '..') return '';
 
-    const safe = normalized || fallback;
-    const MAX_LEN = 120;
-    if (safe.length <= MAX_LEN) return safe;
-    return (
-      safe
-        .slice(0, MAX_LEN)
-        .replace(/[.\s]+$/g, '')
-        .trim() || fallback
-    );
+      const MAX_LEN = 120;
+      if (normalized.length <= MAX_LEN) return normalized;
+      return (
+        normalized
+          .slice(0, MAX_LEN)
+          .replace(/[.\s]+$/g, '')
+          .trim() || ''
+      );
+    };
+
+    const parts = input
+      .split('/')
+      .map(p => sanitizeSegment(p.trim()))
+      .filter(Boolean);
+    return parts.join('/') || fallback;
   };
 
   const setDefaultFileName = (nextName: string) => {
@@ -161,15 +179,21 @@ const Popup = () => {
         const tabTitle = (tabs[0]?.title || '').trim();
         const pageTitle = (response.pageTitle || '').trim();
         const firstVideoTitle = (sortedInfos[0]?.title || '').trim();
+        // Pornhub may use "uploader/title"; compare basename against the tab title
+        const titleBasename = (name: string) => {
+          const parts = name.replace(/\\/g, '/').split('/').filter(Boolean);
+          return (parts[parts.length - 1] || name).trim();
+        };
+        const firstBase = titleBasename(firstVideoTitle);
 
         const pageMatchesTab = pageTitle && tabTitle && (tabTitle.includes(pageTitle) || pageTitle.includes(tabTitle));
-        const firstMatchesTab =
-          firstVideoTitle && tabTitle && (tabTitle.includes(firstVideoTitle) || firstVideoTitle.includes(tabTitle));
+        const firstMatchesTab = firstBase && tabTitle && (tabTitle.includes(firstBase) || firstBase.includes(tabTitle));
 
-        if (pageMatchesTab && pageTitle) {
-          setDefaultFileName(pageTitle);
-        } else if (firstMatchesTab && firstVideoTitle) {
+        if (firstMatchesTab && firstVideoTitle) {
+          // Prefer uploader/title from site sniffer when basename matches the tab
           setDefaultFileName(firstVideoTitle);
+        } else if (pageMatchesTab && pageTitle) {
+          setDefaultFileName(pageTitle);
         } else if (tabTitle) {
           setDefaultFileName(tabTitle);
         }
@@ -201,6 +225,15 @@ const Popup = () => {
       if (snap) setDownloadHistory(snap.records);
     });
 
+    // Load download subdirectory setting & subscribe
+    downloadSettingsStorage.get().then(settings => {
+      setLocalSubdir(settings.downloadSubdir ?? '');
+    });
+    const unsubSettings = downloadSettingsStorage.subscribe(() => {
+      const snap = downloadSettingsStorage.getSnapshot();
+      if (snap) setLocalSubdir(snap.downloadSubdir ?? '');
+    });
+
     // Background messages (complete, error, etc.)
     const messageListener = (message: any) => {
       if (message.type === 'download-task-complete') {
@@ -216,6 +249,7 @@ const Popup = () => {
     return () => {
       unsubQueue();
       unsubHistory();
+      unsubSettings();
       chrome.runtime.onMessage.removeListener(messageListener);
       unsubscribeLocale();
     };
@@ -246,7 +280,7 @@ const Popup = () => {
     });
   };
 
-  const onDownload = (videoInfo: VideoInfo) => () => {
+  const onDownload = (videoInfo: VideoInfo) => async () => {
     const blocking = findBlockingTaskForUrl(videoInfo.videoUrl);
     if (blocking) {
       scrollToM3u8Section();
@@ -259,6 +293,9 @@ const Popup = () => {
       }
       return;
     }
+
+    // Ensure subdirectory is persisted before background reads it
+    await commitSubdir();
 
     const finalFileName = sanitizeDownloadFileName(fileName || getPageTitle() || videoInfo.title || 'video', 'video');
     setFileName(finalFileName);
@@ -460,6 +497,25 @@ const Popup = () => {
         </select>
       </div>
       <div className="box">
+        <div className="download-subdir-row">
+          <span className="download-subdir-label">{translate('downloadSubdirLabel')}</span>
+          <input
+            id="ph-download-subdir"
+            type="text"
+            className="download-subdir-input"
+            value={localSubdir}
+            placeholder={translate('downloadSubdirPlaceholder')}
+            onChange={e => setLocalSubdir((e.target as HTMLInputElement).value)}
+            onBlur={commitSubdir}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                (e.target as HTMLInputElement).blur();
+              }
+            }}
+            spellCheck={false}
+            autoComplete="off"
+          />
+        </div>
         {videoInfos?.length > 0 && (
           <div className="m3u8-filename-row">
             <span className="m3u8-filename-label">{translate('popupFilenameLabel')}:</span>
