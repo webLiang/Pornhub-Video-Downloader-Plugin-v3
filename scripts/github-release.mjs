@@ -66,6 +66,20 @@ const THEME_HIGHLIGHTS = {
     ar: 'تختفي إشعارات Toast أسرع لتجربة أقل إزعاجاً.',
     hi: 'टोस्ट सूचनाएँ तेज़ी से गायब होती हैं, कम विचलित करने वाला अनुभव।',
   },
+  downloadSubdir: {
+    en: 'Set a default download subdirectory under Chrome’s downloads folder so all saves go into one folder.',
+    zh_CN: '可设置默认下载子目录（相对浏览器下载目录），后续文件统一保存到该文件夹。',
+    es: 'Configura una subcarpeta de descarga predeterminada bajo la carpeta de descargas de Chrome.',
+    ar: 'عيّن مجلد تنزيل فرعي افتراضي ضمن مجلد تنزيلات Chrome لحفظ الملفات في مكان واحد.',
+    hi: 'Chrome डाउनलोड फ़ोल्डर के अंतर्गत डिफ़ॉल्ट डाउनलोड उपनिर्देशिका सेट करें।',
+  },
+  pornhubUploaderPath: {
+    en: 'Pornhub downloads use uploader/title as a relative path so files are grouped by uploader.',
+    zh_CN: 'Pornhub 下载文件名改为「上传者/标题」相对路径，按上传者分文件夹保存。',
+    es: 'En Pornhub, el nombre usa uploader/título como ruta relativa para agrupar por autor.',
+    ar: 'في Pornhub يُحفظ الملف كمسار نسبي uploader/title لتجميع الملفات حسب الناشر.',
+    hi: 'Pornhub डाउनलोड में uploader/title सापेक्ष पथ से अपलोडर के अनुसार फ़ाइलें समूहित होती हैं।',
+  },
 };
 
 /** Map i18n message keys to release themes (used with locale diffs vs previous tag). */
@@ -74,6 +88,8 @@ const KEY_TO_THEME = {
   taskQuality: 'taskDetails',
   taskFormat: 'taskDetails',
   historyTooltipOpenPage: 'historyOpenPage',
+  downloadSubdirLabel: 'downloadSubdir',
+  downloadSubdirPlaceholder: 'downloadSubdir',
 };
 
 /** Match commit subject/body text to release themes. */
@@ -82,6 +98,8 @@ const COMMIT_THEME_RULES = [
   { theme: 'taskDetails', test: /quality|format|task-detail|taskQuality|taskFormat|清晰度|格式/i },
   { theme: 'historyOpenPage', test: /history|pageUrl|open.*page|download history/i },
   { theme: 'toastDuration', test: /toast/i },
+  { theme: 'downloadSubdir', test: /subdir|subdirectory|download.?path|downloadSubdir|下载子目录/i },
+  { theme: 'pornhubUploaderPath', test: /uploader|usernameBadges|pornhub.*path|uploader\/title/i },
 ];
 
 /** @typedef {{ notesFile?: string, bodyFile?: string, assets: string[], dryRun: boolean, publish: boolean, skipBuild: boolean, commit: boolean, push: boolean, title?: string, commitMessage?: string }} CliOptions */

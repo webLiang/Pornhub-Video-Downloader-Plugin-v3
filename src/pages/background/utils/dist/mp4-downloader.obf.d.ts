@@ -7,6 +7,8 @@ export interface MP4DownloadOptions {
   onError?: (error: string) => void;
   opfsFileName?: string;
   resumeFromByte?: number;
+  /** Relative subdirectory under Chrome downloads folder */
+  downloadSubdir?: string;
 }
 
 export interface MP4ProgressData {

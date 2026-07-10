@@ -29,6 +29,14 @@
     "description": "Filename placeholder",
     "message": "اتركه فارغًا للتوليد تلقائيًا"
   },
+  "downloadSubdirLabel": {
+    "description": "Download subdirectory label under Chrome downloads folder",
+    "message": "مجلد التنزيل الفرعي"
+  },
+  "downloadSubdirPlaceholder": {
+    "description": "Download subdirectory placeholder",
+    "message": "Videos/"
+  },
 
   "popupQualityLabel": {
     "description": "Quality label",

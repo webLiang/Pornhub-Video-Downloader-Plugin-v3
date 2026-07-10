@@ -4,6 +4,9 @@
  * Sanitizing the full "xxx.ts" string can strip the extension via trailing-dot trim or length cut.
  * Split stem by target extension, sanitize stem only, then re-append `.ts` / `.mp4`.
  *
+ * Relative paths like "uploader/title" are supported: each segment is sanitized, `/` is kept
+ * so Chrome saves under a subdirectory of the downloads folder.
+ *
  * Illegal filenames fall back to blob UUID; stem must still replace illegal characters.
  */
 const INVALID_WIN_CHARS = '<>:"/\\|?*';
@@ -60,16 +63,43 @@ export function sanitizeDownloadFilenameStem(stem: string, maxStemLen: number): 
 }
 
 /**
+ * Sanitize a single path segment (no `/`); drops empty / `.` / `..`.
+ */
+function sanitizePathSegment(segment: string, maxLen: number): string {
+  const safe = sanitizeDownloadFilenameStem(segment, maxLen);
+  if (!safe || safe === '.' || safe === '..') {
+    return '';
+  }
+  return safe;
+}
+
+/**
  * Strip target extension (case-insensitive), sanitize stem, force `.ext` suffix.
+ * Preserves relative directory prefixes (e.g. "uploader/title" → "uploader/title.mp4").
  */
 export function buildSanitizedDownloadFilenameWithExtension(fullFileName: string, ext: 'ts' | 'mp4'): string {
   const extLower = ext.toLowerCase();
   const suffix = `.${extLower}`;
-  let stem = (fullFileName || '').trim();
-  if (stem.toLowerCase().endsWith(suffix)) {
-    stem = stem.slice(0, -suffix.length);
+  let raw = (fullFileName || '').trim().replace(/\\/g, '/');
+  if (raw.toLowerCase().endsWith(suffix)) {
+    raw = raw.slice(0, -suffix.length);
   }
+
+  const parts = raw
+    .split('/')
+    .map(p => p.trim())
+    .filter(Boolean);
+  if (parts.length === 0) {
+    return `video${suffix}`;
+  }
+
   const maxStem = Math.max(1, MAX_DOWNLOAD_FILENAME_LEN - suffix.length);
-  const safeStem = sanitizeDownloadFilenameStem(stem, maxStem);
-  return `${safeStem}${suffix}`;
+  const baseStem = parts[parts.length - 1];
+  const dirParts = parts
+    .slice(0, -1)
+    .map(p => sanitizePathSegment(p, maxStem))
+    .filter(Boolean);
+  const safeStem = sanitizeDownloadFilenameStem(baseStem, maxStem);
+  const basename = `${safeStem}${suffix}`;
+  return dirParts.length ? `${dirParts.join('/')}/${basename}` : basename;
 }

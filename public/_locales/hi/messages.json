@@ -29,6 +29,14 @@
     "description": "Filename placeholder",
     "message": "खाली छोड़ें ताकि अपने-आप बन जाए"
   },
+  "downloadSubdirLabel": {
+    "description": "Download subdirectory label under Chrome downloads folder",
+    "message": "डाउनलोड उपनिर्देशिका"
+  },
+  "downloadSubdirPlaceholder": {
+    "description": "Download subdirectory placeholder",
+    "message": "Videos/"
+  },
 
   "popupQualityLabel": {
     "description": "Quality label",

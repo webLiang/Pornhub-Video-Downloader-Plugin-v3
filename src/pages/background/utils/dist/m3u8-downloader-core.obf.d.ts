@@ -18,6 +18,8 @@ interface StartOptions {
   fileName?: string;
   headers?: Record<string, string>;
   opfsFileName?: string;
+  /** Relative subdirectory under Chrome downloads folder */
+  downloadSubdir?: string;
 }
 
 declare class M3U8Downloader {

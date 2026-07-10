@@ -174,11 +174,15 @@ const getPornhubUrls = createMessageHandler({
       return val;
     });
     console.log('🚀 ~ handler:getPornhubUrls ~ m3u8UrlInfoWithRealUrls:', m3u8UrlInfoWithRealUrls);
-    const usr =
-      document.querySelector('.video-actions-container .usernameBadgesWrapper a')?.innerHTML ||
+    // Uploader name from page badge; used as a relative path segment before the video title
+    const usr = (
+      document.querySelector('.usernameBadgesWrapper a')?.textContent ||
+      document.querySelector('.video-actions-container .usernameBadgesWrapper a')?.textContent ||
       document.querySelector<HTMLAnchorElement>('userInfoContainer > a')?.innerText ||
-      '';
-    const fileName = [usr, videoTitle].filter(Boolean).join('--');
+      ''
+    ).trim();
+    // username/videoTitle → chrome.downloads relative path under downloads (and optional downloadSubdir)
+    const fileName = [usr, videoTitle].filter(Boolean).join('/');
 
     const fallbackResult = (m3u8UrlInfoWithRealUrls || []).map((val: any) => ({
       ...val,
