@@ -108,13 +108,8 @@ const Popup = () => {
     if (hasUserEditedFileNameRef.current) return;
     if (isEditingFileName) return;
 
+    // Only update React state; contentEditable DOM is synced in useLayoutEffect
     setFileName(prev => (prev === next ? prev : next));
-
-    // contentEditable may not reflect state updates; sync DOM once
-    const el = fileNameEditableRef.current;
-    if (el && el.innerText !== next) {
-      el.innerText = next;
-    }
   };
 
   const scrollToM3u8Section = () => {
@@ -521,13 +516,12 @@ const Popup = () => {
             <span className="m3u8-filename-label">{translate('popupFilenameLabel')}:</span>
             <div
               ref={fileNameEditableRef}
-              className={`m3u8-filename-display${isEditingFileName ? ' editing' : ''}${''}`}
+              className={`m3u8-filename-display${isEditingFileName ? ' editing' : ''}`}
               contentEditable={true}
               onFocus={handleFileNameFocus}
               onBlur={handleFileNameBlur}
-              data-placeholder={translate('popupFilenamePlaceholder')}>
-              {displayFileName}
-            </div>
+              data-placeholder={translate('popupFilenamePlaceholder')}
+            />
           </div>
         )}
         <ul>

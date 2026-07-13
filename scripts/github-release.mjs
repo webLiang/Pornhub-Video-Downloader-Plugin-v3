@@ -80,6 +80,13 @@ const THEME_HIGHLIGHTS = {
     ar: 'في Pornhub يُحفظ الملف كمسار نسبي uploader/title لتجميع الملفات حسب الناشر.',
     hi: 'Pornhub डाउनलोड में uploader/title सापेक्ष पथ से अपलोडर के अनुसार फ़ाइलें समूहित होती हैं।',
   },
+  filenameDupFix: {
+    en: 'Fixed the popup filename field repeating the same name multiple times.',
+    zh_CN: '修复弹窗文件名输入框把同一名称重复显示多次的问题。',
+    es: 'Se corrigió que el nombre de archivo en el popup se repitiera varias veces.',
+    ar: 'تم إصلاح تكرار اسم الملف عدة مرات في نافذة الإضافة.',
+    hi: 'पॉपअप में फ़ाइल नाम बार-बार दोहराए जाने की समस्या ठीक की गई।',
+  },
 };
 
 /** Map i18n message keys to release themes (used with locale diffs vs previous tag). */
@@ -100,6 +107,7 @@ const COMMIT_THEME_RULES = [
   { theme: 'toastDuration', test: /toast/i },
   { theme: 'downloadSubdir', test: /subdir|subdirectory|download.?path|downloadSubdir|下载子目录/i },
   { theme: 'pornhubUploaderPath', test: /uploader|usernameBadges|pornhub.*path|uploader\/title/i },
+  { theme: 'filenameDupFix', test: /contentEditable|filename.*dup|重复|fileName.*display|m3u8-filename/i },
 ];
 
 /** @typedef {{ notesFile?: string, bodyFile?: string, assets: string[], dryRun: boolean, publish: boolean, skipBuild: boolean, commit: boolean, push: boolean, title?: string, commitMessage?: string }} CliOptions */
