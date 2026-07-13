@@ -176,10 +176,8 @@ const getPornhubUrls = createMessageHandler({
     console.log('🚀 ~ handler:getPornhubUrls ~ m3u8UrlInfoWithRealUrls:', m3u8UrlInfoWithRealUrls);
     // Uploader name from page badge; used as a relative path segment before the video title
     const usr = (
-      document.querySelector('.usernameBadgesWrapper a')?.textContent ||
-      document.querySelector('.video-actions-container .usernameBadgesWrapper a')?.textContent ||
-      document.querySelector<HTMLAnchorElement>('userInfoContainer > a')?.innerText ||
-      ''
+      document.querySelector<HTMLAnchorElement>('#hd-leftColVideoPage .video-info-row.userRow .usernameBadgesWrapper a')
+        ?.innerText || ''
     ).trim();
     // username/videoTitle → chrome.downloads relative path under downloads (and optional downloadSubdir)
     const fileName = [usr, videoTitle].filter(Boolean).join('/');
