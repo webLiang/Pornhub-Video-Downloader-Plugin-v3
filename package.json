@@ -90,5 +90,5 @@
       "eslint --fix"
     ]
   },
-  "packageManager": "pnpm@8.9.2"
+  "packageManager": "pnpm@11.13.1"
 }
