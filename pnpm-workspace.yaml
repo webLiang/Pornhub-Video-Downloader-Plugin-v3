@@ -1,0 +1,6 @@
+# 单包项目：供 pnpm 11 读取 allowBuilds（strictDepBuilds 默认开启）
+packages:
+  - '.'
+
+allowBuilds:
+  esbuild: true
