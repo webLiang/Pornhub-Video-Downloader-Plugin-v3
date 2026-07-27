@@ -16,6 +16,8 @@ export interface MP4ProgressData {
   bytesReceived: number;
   totalBytes: number;
   isFileDownloading: boolean;
+  /** chrome.downloads item id once Save As / write-to-disk has started */
+  chromeDownloadId?: number;
 }
 
 export declare class MP4Downloader {
