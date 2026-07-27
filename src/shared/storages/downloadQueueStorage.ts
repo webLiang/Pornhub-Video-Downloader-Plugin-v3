@@ -27,7 +27,10 @@ export type DownloadTask = {
 
   // file saving stage progress (mp4 or merged file)
   fileDownloadProgress?: number; // 0-100
+  /** True while waiting for chrome.downloads to finish (incl. Save As prompt). */
   isFileDownloading?: boolean;
+  /** chrome.downloads item id while in the Save As / write-to-disk phase */
+  chromeDownloadId?: number;
 
   // used to attach correct headers for fetch requests in background
   headers?: Record<string, string>;
