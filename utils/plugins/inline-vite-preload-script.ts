@@ -1,6 +1,9 @@
 /**
  * solution for multiple content scripts
  * https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite/issues/177#issuecomment-1784112536
+ *
+ * Not registered under Vite 8 / Rolldown: meta.chunks preload scraping is brittle.
+ * Kept for reference only; see utils/vite.ts.
  */
 export default function inlineVitePreloadScript() {
   let __vitePreload = '';
