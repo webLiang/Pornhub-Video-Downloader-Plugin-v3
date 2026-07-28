@@ -3,16 +3,19 @@ import makeManifest from './plugins/make-manifest';
 import customDynamicImport from './plugins/custom-dynamic-import';
 import addHmr from './plugins/add-hmr';
 import watchRebuild from './plugins/watch-rebuild';
-import inlineVitePreloadScript from './plugins/inline-vite-preload-script';
+import fixContentImportMeta from './plugins/fix-content-import-meta';
+// inlineVitePreloadScript is disabled for Vite 8 / Rolldown: it scrapes
+// meta.chunks for a /preload/ chunk, which is unreliable under Rolldown.
+// See utils/plugins/inline-vite-preload-script.ts (kept for reference).
 
 export const getPlugins = (isDev: boolean): PluginOption[] => [
   makeManifest({ getCacheInvalidationKey }),
   customDynamicImport(),
+  // Content scripts are classic scripts — strip Vite 8 preload import.meta usage
+  fixContentImportMeta(),
   // You can toggle enable HMR in background script or view
   addHmr({ background: true, view: true, isDev }),
   isDev && watchRebuild({ afterWriteBundle: regenerateCacheInvalidationKey }),
-  // For fix issue#177 (https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite/issues/177)
-  inlineVitePreloadScript(),
 ];
 
 const cacheInvalidationKeyRef = { current: generateKey() };

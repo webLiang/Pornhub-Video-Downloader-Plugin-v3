@@ -10,12 +10,14 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node",
-    "types": ["vite/client", "node", "chrome"],
+    "moduleResolution": "bundler",
+    "types": ["node", "chrome"],
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
     "paths": {
       "@root/*": ["./*"],
       "@src/*": ["src/*"],
@@ -24,7 +26,13 @@
       "virtual:reload-on-update-in-background-script": ["./src/global.d.ts"],
       "virtual:reload-on-update-in-view": ["./src/global.d.ts"],
       "react": ["./node_modules/preact/compat/"],
-      "react-dom": ["./node_modules/preact/compat/"]
+      "react-dom": ["./node_modules/preact/compat/"],
+      "preact/jsx-runtime": ["./node_modules/preact/jsx-runtime/src/index.d.ts"],
+      "preact/jsx-dev-runtime": ["./node_modules/preact/jsx-runtime/src/index.d.ts"],
+      "vite": ["./node_modules/vite/dist/node/index.d.ts"],
+      "@preact/preset-vite": ["./node_modules/@preact/preset-vite/dist/cjs/index.d.ts"],
+      "@testing-library/preact": ["./node_modules/@testing-library/preact/types/index.d.ts"],
+      "vitest/config": ["./node_modules/vitest/config.d.ts"]
     }
   },
   "include": ["src", "utils", "vite.config.ts"]

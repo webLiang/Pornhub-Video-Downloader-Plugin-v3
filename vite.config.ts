@@ -1,6 +1,6 @@
-/// <reference types="vitest" />
+import type {} from 'vitest/config';
 import { defineConfig } from 'vite';
-import preact from '@preact/preset-vite';
+import { preact } from '@preact/preset-vite';
 import path, { resolve } from 'path';
 import { getCacheInvalidationKey, getPlugins } from './utils/vite';
 
@@ -52,6 +52,11 @@ export default defineConfig({
       '@src': srcDir,
       '@assets': resolve(srcDir, 'assets'),
       '@pages': pagesDir,
+      // Align with tsconfig paths so Vitest uses Preact compat for react imports
+      react: resolve(rootDir, 'node_modules/preact/compat'),
+      'react-dom': resolve(rootDir, 'node_modules/preact/compat'),
+      'react/jsx-runtime': resolve(rootDir, 'node_modules/preact/jsx-runtime'),
+      'react/jsx-dev-runtime': resolve(rootDir, 'node_modules/preact/jsx-dev-runtime'),
       ...coreAlias,
     },
   },
@@ -65,7 +70,7 @@ export default defineConfig({
     modulePreload: false,
     reportCompressedSize: isProduction,
     emptyOutDir: !isDev,
-    rollupOptions: {
+    rolldownOptions: {
       input: {
         contentInjected: resolve(pagesDir, 'content', 'injected', 'index.ts'),
         injectedMain: resolve(pagesDir, 'content', 'injectedMain', 'index.ts'),
@@ -78,8 +83,9 @@ export default defineConfig({
         entryFileNames: 'src/pages/[name]/index.js',
         chunkFileNames: isDev ? 'assets/js/[name].js' : 'assets/js/[name].[hash].js',
         assetFileNames: assetInfo => {
-          const { name } = path.parse(assetInfo.name);
-          const assetFileName = name === 'contentStyle' ? `${name}${getCacheInvalidationKey()}` : name;
+          const name = assetInfo.names?.[0] ?? assetInfo.name;
+          const { name: baseName } = path.parse(name ?? '');
+          const assetFileName = baseName === 'contentStyle' ? `${baseName}${getCacheInvalidationKey()}` : baseName;
           return `assets/[ext]/${assetFileName}.chunk.[ext]`;
         },
       },

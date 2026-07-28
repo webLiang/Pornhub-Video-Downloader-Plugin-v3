@@ -1,5 +1,5 @@
 import { describe, test } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/preact';
 import App from '@pages/content/ui/app';
 
 describe('appTest', () => {
@@ -8,9 +8,9 @@ describe('appTest', () => {
     const text = 'content view';
 
     // when
-    render(<App />);
+    const { getByText } = render(<App />);
 
     // then
-    screen.getByText(text);
+    getByText(text);
   });
 });

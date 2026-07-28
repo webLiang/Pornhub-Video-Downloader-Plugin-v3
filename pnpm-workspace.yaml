@@ -1,6 +1,12 @@
-# 单包项目：供 pnpm 11 读取 allowBuilds（strictDepBuilds 默认开启）
+# 单包项目：供 pnpm 11 读取 allowBuilds / overrides（strictDepBuilds 默认开启）
 packages:
   - '.'
 
 allowBuilds:
+  '@parcel/watcher': true
   esbuild: true
+
+overrides:
+  vite: 8.1.5
+
+confirmModulesPurge: false
