@@ -10,7 +10,7 @@
 
 إضافة Chrome لتنزيل مقاطع الفيديو بدقات متعددة من Pornhub ومواقع أخرى مدعومة. تتم صيانة هذا المستودع لأن [المشروع الأصلي](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) غير مُحدَّث وManifest V2 قيد الإيقاف.
 
-> **مبني على القالب:** [chrome-extension-boilerplate-react-vite](https://github.com/webLiang/chrome-extension-boilerplate-react-vite) — قالب إضافات Chrome بمعيار Manifest V3 باستخدام React + Vite. تم تطوير هذه الإضافة فوق هذا القالب. نرحّب بـ **Stars** و **Merge Requests**.
+> **مبني على القالب:** [chrome-extension-boilerplate-react-vite](https://github.com/webLiang/chrome-extension-boilerplate-react-vite) — قالب إضافات Chrome بمعيار Manifest V3 باستخدام React + **Vite 8** مع **بناء أسرع**. تم تطوير هذه الإضافة فوق هذا القالب. نرحّب بـ **Stars** و **Merge Requests**.
 
 ---
 

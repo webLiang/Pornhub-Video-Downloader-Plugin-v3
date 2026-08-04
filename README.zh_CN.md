@@ -10,7 +10,7 @@
 
 Chrome 插件，支持 Pornhub 等站点视频**多分辨率下载**。因[原仓库](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin)长期未更新且 2024 Manifest V2 即将弃用，故维护此仓库。
 
-> **基于模板：**[chrome-extension-boilerplate-react-vite](https://github.com/webLiang/chrome-extension-boilerplate-react-vite) —— React + Vite 的 Manifest V3 插件脚手架，本插件即基于该模板开发。欢迎 **Star** 与 **MR** 一起维护。
+> **基于模板：**[chrome-extension-boilerplate-react-vite](https://github.com/webLiang/chrome-extension-boilerplate-react-vite) —— React + **Vite 8** 的 Manifest V3 插件脚手架，**打包更快**。本插件即基于该模板开发。欢迎 **Star** 与 **MR** 一起维护。
 
 ---
 
