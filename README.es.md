@@ -10,7 +10,7 @@
 
 Extensión de Chrome para descargar videos en **múltiples resoluciones** desde Pornhub y otros sitios compatibles. Este repositorio se mantiene porque el [proyecto original](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) no se actualiza y Manifest V2 se deprecará.
 
-> **Basado en la plantilla:** [chrome-extension-boilerplate-react-vite](https://github.com/webLiang/chrome-extension-boilerplate-react-vite) — boilerplate de Chrome Extension Manifest V3 con React + Vite. Esta extensión se desarrolla sobre dicha plantilla. Se agradecen **Stars** y **Merge Requests**.
+> **Basado en la plantilla:** [chrome-extension-boilerplate-react-vite](https://github.com/webLiang/chrome-extension-boilerplate-react-vite) — boilerplate de Chrome Extension Manifest V3 con React + **Vite 8** y **compilaciones más rápidas**. Esta extensión se desarrolla sobre dicha plantilla. Se agradecen **Stars** y **Merge Requests**.
 
 ---
 
