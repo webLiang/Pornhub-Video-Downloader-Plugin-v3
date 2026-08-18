@@ -112,3 +112,14 @@ Quetta 同时提供一款官方的多平台视频下载插件，支持 **YouTube
   </picture>
 </a>
 
+---
+
+## 更多 Chrome 扩展
+
+同一作者的其他开源扩展：
+
+| 扩展 | 说明 |
+|------|------|
+| [DevTools Unlock](https://github.com/webLiang/devtools-unlock) | 在屏蔽调试的站点上恢复可用的 DevTools。 |
+| [Header Modify](https://github.com/webLiang/header-modify-extention) | 为当前站点改写请求头（含 iframe）。 |
+

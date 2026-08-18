@@ -111,3 +111,14 @@ Quetta एक आधिकारिक मल्टी-प्लेटफ़ॉ�
   </picture>
 </a>
 
+---
+
+## और Chrome एक्सटेंशन
+
+इसी लेखक के अन्य ओपन-सोर्स टूल:
+
+| एक्सटेंशन | विवरण |
+|-----------|------|
+| [DevTools Unlock](https://github.com/webLiang/devtools-unlock) | डिबगिंग ब्लॉक करने वाली साइटों पर DevTools वापस चालू करें (जैसे disable-devtool)। |
+| [Header Modify](https://github.com/webLiang/header-modify-extention) | मौजूदा साइट के रिक्वेस्ट हेडर बदलें, iframes सहित। |
+

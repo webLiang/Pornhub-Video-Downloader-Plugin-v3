@@ -125,6 +125,25 @@ const createMessageHandler = <T>(config: {
   };
 };
 
+/**
+ * Read the Pornhub watch-page uploader name from DOM.
+ * Desktop uses #hd-leftColVideoPage; mobile uses .userContainer / .usernameWrapper.
+ * Generic .usernameBadgesWrapper is avoided first because comments reuse that class.
+ */
+const getPornhubUploaderName = (): string => {
+  const selectors = [
+    '#hd-leftColVideoPage .video-info-row.userRow .usernameBadgesWrapper a',
+    '.userContainer .usernameWrapper a',
+    '.fromRow .usernameWrapper a',
+    '.usernameWrapper a',
+  ];
+  for (const selector of selectors) {
+    const name = document.querySelector(selector)?.textContent?.trim();
+    if (name) return name;
+  }
+  return '';
+};
+
 // Get Pornhub URLs
 const getPornhubUrls = createMessageHandler({
   messageType: 'get-ph-flashvars',
@@ -174,11 +193,7 @@ const getPornhubUrls = createMessageHandler({
       return val;
     });
     console.log('🚀 ~ handler:getPornhubUrls ~ m3u8UrlInfoWithRealUrls:', m3u8UrlInfoWithRealUrls);
-    // Uploader name from page badge; used as a relative path segment before the video title
-    const usr = (
-      document.querySelector<HTMLAnchorElement>('#hd-leftColVideoPage .video-info-row.userRow .usernameBadgesWrapper a')
-        ?.innerText || ''
-    ).trim();
+    const usr = getPornhubUploaderName();
     // username/videoTitle → chrome.downloads relative path under downloads (and optional downloadSubdir)
     const fileName = [usr, videoTitle].filter(Boolean).join('/');
 

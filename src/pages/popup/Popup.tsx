@@ -8,7 +8,10 @@ import downloadQueueStorage, {
   type DownloadTask,
   type DownloadTaskStatus,
 } from '@src/shared/storages/downloadQueueStorage';
-import downloadSettingsStorage, { sanitizeDownloadSubdir } from '@src/shared/storages/downloadSettingsStorage';
+import downloadSettingsStorage, {
+  isUseChannelFolderEnabled,
+  sanitizeDownloadSubdir,
+} from '@src/shared/storages/downloadSettingsStorage';
 import { sortVideoInfosByQualityDesc } from '@src/shared/utils/videoInfoSort';
 import { ToastContainer, useToast } from '@pages/popup/components/Toast';
 import {
@@ -37,6 +40,45 @@ const LOCALE_LABELS: Record<SupportedLocale, string> = {
   hi: 'हिंदी',
 };
 
+/**
+ * Sanitize a download filename. When keepChannelFolder is true, `/` stays a path
+ * separator (channel/title). When false, segments are joined with `-` so Chrome
+ * does not create a channel subdirectory. Flattened names use `--` (uploader--title).
+ */
+function sanitizeDownloadFileName(rawName: string, fallback = 'video', keepChannelFolder = true) {
+  const input = (rawName || '').replace(/\\/g, '/').replace(/\s+/g, ' ').trim();
+  if (!input) return fallback;
+
+  const sanitizeSegment = (segment: string) => {
+    // eslint(no-control-regex): avoid control char ranges in regex; strip them by charCode instead
+    let noControl = '';
+    for (let i = 0; i < segment.length; i++) {
+      const code = segment.charCodeAt(i);
+      if (code >= 32) noControl += segment[i];
+    }
+
+    const withoutIllegal = noControl.replace(/[<>:"/\\|?*]/g, '_');
+    const noTrailing = withoutIllegal.replace(/[.\s]+$/g, '').trim();
+    const normalized = noTrailing.replace(/_+/g, '_').trim();
+    if (!normalized || normalized === '.' || normalized === '..') return '';
+
+    const MAX_LEN = 120;
+    if (normalized.length <= MAX_LEN) return normalized;
+    return (
+      normalized
+        .slice(0, MAX_LEN)
+        .replace(/[.\s]+$/g, '')
+        .trim() || ''
+    );
+  };
+
+  const parts = input
+    .split('/')
+    .map(p => sanitizeSegment(p.trim()))
+    .filter(Boolean);
+  return parts.join(keepChannelFolder ? '/' : '--') || fallback;
+}
+
 const Popup = () => {
   const [videoInfos, setvideoInfos] = useState<Array<VideoInfo>>([]);
   const [remoteVersion, setRemoteVersion] = useState('0.0.0');
@@ -53,11 +95,15 @@ const Popup = () => {
   const [currentTabTitle, setCurrentTabTitle] = useState('');
   const [locale, setLocale] = useState<SupportedLocale>(getCurrentLocale());
   const [localSubdir, setLocalSubdir] = useState('');
+  const [useChannelFolder, setUseChannelFolder] = useState(true);
+  const useChannelFolderRef = useRef(true);
   const getPageTitle = () => videoInfos[0]?.title || pageTitle || currentTabTitle || '';
   const [isEditingFileName, setIsEditingFileName] = useState(false);
   const fileNameEditableRef = useRef<HTMLDivElement | null>(null);
-  const displayFileName = fileName || getPageTitle() || '';
   const hasUserEditedFileNameRef = useRef(false);
+  // Prefer sniffer title (uploader/title) over the tab title unless the user edited the field
+  const rawDisplayName = hasUserEditedFileNameRef.current ? fileName : getPageTitle() || fileName;
+  const displayFileName = sanitizeDownloadFileName(rawDisplayName || '', '', useChannelFolder);
 
   /** Persist sanitized subdirectory under Chrome's default downloads folder. */
   const commitSubdir = async () => {
@@ -67,43 +113,34 @@ const Popup = () => {
     return saved;
   };
 
-  const sanitizeDownloadFileName = (rawName: string, fallback = 'video') => {
-    // Preserve `/` as a relative path separator (e.g. uploader/title); sanitize each segment
-    const input = (rawName || '').replace(/\\/g, '/').replace(/\s+/g, ' ').trim();
-    if (!input) return fallback;
+  /**
+   * Apply a persisted channel-folder preference and refresh the auto filename preview.
+   * Manual edits stay as-is except `/` is flattened when the option turns off.
+   */
+  const applyChannelFolderSetting = (keepFolder: boolean) => {
+    useChannelFolderRef.current = keepFolder;
+    setUseChannelFolder(keepFolder);
 
-    const sanitizeSegment = (segment: string) => {
-      // eslint(no-control-regex): avoid control char ranges in regex; strip them by charCode instead
-      let noControl = '';
-      for (let i = 0; i < segment.length; i++) {
-        const code = segment.charCodeAt(i);
-        if (code >= 32) noControl += segment[i];
+    let nextName = '';
+    if (hasUserEditedFileNameRef.current) {
+      if (!keepFolder) {
+        nextName = sanitizeDownloadFileName(fileName, '', false);
       }
-
-      const withoutIllegal = noControl.replace(/[<>:"/\\|?*]/g, '_');
-      const noTrailing = withoutIllegal.replace(/[.\s]+$/g, '').trim();
-      const normalized = noTrailing.replace(/_+/g, '_').trim();
-      if (!normalized || normalized === '.' || normalized === '..') return '';
-
-      const MAX_LEN = 120;
-      if (normalized.length <= MAX_LEN) return normalized;
-      return (
-        normalized
-          .slice(0, MAX_LEN)
-          .replace(/[.\s]+$/g, '')
-          .trim() || ''
-      );
-    };
-
-    const parts = input
-      .split('/')
-      .map(p => sanitizeSegment(p.trim()))
-      .filter(Boolean);
-    return parts.join('/') || fallback;
+    } else {
+      const source = getPageTitle() || fileName;
+      nextName = sanitizeDownloadFileName(source, '', keepFolder);
+    }
+    if (!nextName) return;
+    setFileName(nextName);
+    const el = fileNameEditableRef.current;
+    if (el && el.innerText !== nextName) {
+      el.innerText = nextName;
+    }
   };
 
+  /** Set the auto filename from a page/tab title unless the user already edited it. */
   const setDefaultFileName = (nextName: string) => {
-    const next = sanitizeDownloadFileName(nextName, '');
+    const next = sanitizeDownloadFileName(nextName, '', useChannelFolderRef.current);
     if (!next) return;
     if (hasUserEditedFileNameRef.current) return;
     if (isEditingFileName) return;
@@ -174,18 +211,24 @@ const Popup = () => {
         const tabTitle = (tabs[0]?.title || '').trim();
         const pageTitle = (response.pageTitle || '').trim();
         const firstVideoTitle = (sortedInfos[0]?.title || '').trim();
-        // Pornhub may use "uploader/title"; compare basename against the tab title
+        // Pornhub uses "uploader/title"; Xvideos uses "uploader--title". Compare the title segment to the tab.
         const titleBasename = (name: string) => {
-          const parts = name.replace(/\\/g, '/').split('/').filter(Boolean);
-          return (parts[parts.length - 1] || name).trim();
+          const slashParts = name.replace(/\\/g, '/').split('/').filter(Boolean);
+          const afterSlash = (slashParts[slashParts.length - 1] || name).trim();
+          const dashIdx = afterSlash.indexOf('--');
+          if (dashIdx >= 0) {
+            return afterSlash.slice(dashIdx + 2).trim() || afterSlash;
+          }
+          return afterSlash;
         };
         const firstBase = titleBasename(firstVideoTitle);
 
         const pageMatchesTab = pageTitle && tabTitle && (tabTitle.includes(pageTitle) || pageTitle.includes(tabTitle));
         const firstMatchesTab = firstBase && tabTitle && (tabTitle.includes(firstBase) || firstBase.includes(tabTitle));
+        const snifferHasUploader = firstVideoTitle.includes('/') || firstVideoTitle.includes('--');
 
-        if (firstMatchesTab && firstVideoTitle) {
-          // Prefer uploader/title from site sniffer when basename matches the tab
+        if (firstVideoTitle && (firstMatchesTab || snifferHasUploader)) {
+          // Prefer uploader/title from site sniffer when it looks like the current video
           setDefaultFileName(firstVideoTitle);
         } else if (pageMatchesTab && pageTitle) {
           setDefaultFileName(pageTitle);
@@ -220,13 +263,27 @@ const Popup = () => {
       if (snap) setDownloadHistory(snap.records);
     });
 
-    // Load download subdirectory setting & subscribe
+    // Load download subdirectory / channel-folder settings & subscribe
     downloadSettingsStorage.get().then(settings => {
       setLocalSubdir(settings.downloadSubdir ?? '');
+      const keepFolder = isUseChannelFolderEnabled(settings);
+      useChannelFolderRef.current = keepFolder;
+      setUseChannelFolder(keepFolder);
+      if (!keepFolder) {
+        setFileName(prev => sanitizeDownloadFileName(prev, '', false));
+      }
     });
     const unsubSettings = downloadSettingsStorage.subscribe(() => {
       const snap = downloadSettingsStorage.getSnapshot();
-      if (snap) setLocalSubdir(snap.downloadSubdir ?? '');
+      if (!snap) return;
+      setLocalSubdir(snap.downloadSubdir ?? '');
+      const keepFolder = isUseChannelFolderEnabled(snap);
+      if (keepFolder === useChannelFolderRef.current) return;
+      useChannelFolderRef.current = keepFolder;
+      setUseChannelFolder(keepFolder);
+      if (!keepFolder) {
+        setFileName(prev => sanitizeDownloadFileName(prev, '', false));
+      }
     });
 
     // Background messages (complete, error, etc.)
@@ -292,7 +349,10 @@ const Popup = () => {
     // Ensure subdirectory is persisted before background reads it
     await commitSubdir();
 
-    const finalFileName = sanitizeDownloadFileName(fileName || getPageTitle() || videoInfo.title || 'video', 'video');
+    const sourceName = hasUserEditedFileNameRef.current
+      ? fileName || getPageTitle() || videoInfo.title
+      : getPageTitle() || fileName || videoInfo.title || 'video';
+    const finalFileName = sanitizeDownloadFileName(sourceName || 'video', 'video', useChannelFolderRef.current);
     setFileName(finalFileName);
     scrollToM3u8Section();
 
@@ -406,11 +466,19 @@ const Popup = () => {
     setIsEditingFileName(true);
   };
 
+  /** Persist the edited filename, applying the current channel-folder join rule. */
   const handleFileNameBlur = () => {
     setIsEditingFileName(false);
     const value = fileNameEditableRef.current?.innerText || '';
-    setFileName(sanitizeDownloadFileName(value, ''));
+    setFileName(sanitizeDownloadFileName(value, '', useChannelFolderRef.current));
     hasUserEditedFileNameRef.current = true;
+  };
+
+  /** Toggle whether auto filenames keep `channel/title` as a nested folder. */
+  const handleChannelFolderToggle = () => {
+    const next = !useChannelFolderRef.current;
+    applyChannelFolderSetting(next);
+    void downloadSettingsStorage.setUseChannelFolder(next);
   };
 
   // Open download item for a history record (chrome.downloads API)
@@ -492,24 +560,42 @@ const Popup = () => {
         </select>
       </div>
       <div className="box">
-        <div className="download-subdir-row">
-          <span className="download-subdir-label">{translate('downloadSubdirLabel')}</span>
-          <input
-            id="ph-download-subdir"
-            type="text"
-            className="download-subdir-input"
-            value={localSubdir}
-            placeholder={translate('downloadSubdirPlaceholder')}
-            onChange={e => setLocalSubdir((e.target as HTMLInputElement).value)}
-            onBlur={commitSubdir}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                (e.target as HTMLInputElement).blur();
-              }
-            }}
-            spellCheck={false}
-            autoComplete="off"
-          />
+        <div className="save-settings">
+          <div className="download-subdir-row">
+            <span className="download-subdir-label">{translate('downloadSubdirLabel')}</span>
+            <input
+              id="ph-download-subdir"
+              type="text"
+              className="download-subdir-input"
+              value={localSubdir}
+              placeholder={translate('downloadSubdirPlaceholder')}
+              onChange={e => setLocalSubdir((e.target as HTMLInputElement).value)}
+              onBlur={commitSubdir}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  (e.target as HTMLInputElement).blur();
+                }
+              }}
+              spellcheck={false}
+              autoComplete="off"
+            />
+          </div>
+          <div className="channel-folder-row">
+            <div className="channel-folder-copy">
+              <span className="channel-folder-label">{translate('channelFolderLabel')}</span>
+              <span className="channel-folder-hint">{translate('channelFolderHint')}</span>
+            </div>
+            <button
+              type="button"
+              className="toggle-switch"
+              role="switch"
+              aria-checked={useChannelFolder}
+              aria-label={translate('channelFolderLabel')}
+              title={translate('channelFolderHint')}
+              onClick={handleChannelFolderToggle}>
+              <span className="toggle-switch-thumb" />
+            </button>
+          </div>
         </div>
         {videoInfos?.length > 0 && (
           <div className="m3u8-filename-row">

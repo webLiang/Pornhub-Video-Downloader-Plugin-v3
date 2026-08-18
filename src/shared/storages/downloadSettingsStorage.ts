@@ -8,11 +8,24 @@ export type DownloadSettings = {
    * Absolute paths and ".." segments are rejected by sanitizeDownloadSubdir.
    */
   downloadSubdir: string;
+  /**
+   * When true (default), keep `/` in auto filenames so Chrome saves as channel/title.
+   * When false, join segments with `-` so the file stays in one folder.
+   */
+  useChannelFolder: boolean;
 };
 
 const DEFAULTS: DownloadSettings = {
   downloadSubdir: '',
+  useChannelFolder: true,
 };
+
+/**
+ * Read useChannelFolder with a true default so older stored objects without the field stay nested.
+ */
+export function isUseChannelFolderEnabled(settings: Partial<DownloadSettings> | null | undefined): boolean {
+  return settings?.useChannelFolder !== false;
+}
 
 /** Max length for the whole subdir string to stay under Windows MAX_PATH when combined with a filename. */
 const MAX_SUBDIR_LEN = 200;
@@ -64,6 +77,8 @@ export function withDownloadSubdir(basename: string, subdir: string): string {
 type DownloadSettingsStorage = BaseStorage<DownloadSettings> & {
   /** Update downloadSubdir after sanitizing. */
   setDownloadSubdir: (value: string) => Promise<string>;
+  /** Persist whether auto filenames keep `channel/title` as a nested folder. */
+  setUseChannelFolder: (value: boolean) => Promise<boolean>;
 };
 
 const storage = createStorage<DownloadSettings>('download-settings', DEFAULTS, {
@@ -76,8 +91,14 @@ const downloadSettingsStorage: DownloadSettingsStorage = {
 
   setDownloadSubdir: async (value: string) => {
     const cleaned = sanitizeDownloadSubdir(value);
-    await storage.set(prev => ({ ...prev, downloadSubdir: cleaned }));
+    await storage.set(prev => ({ ...DEFAULTS, ...prev, downloadSubdir: cleaned }));
     return cleaned;
+  },
+
+  setUseChannelFolder: async (value: boolean) => {
+    const next = Boolean(value);
+    await storage.set(prev => ({ ...DEFAULTS, ...prev, useChannelFolder: next }));
+    return next;
   },
 };
 

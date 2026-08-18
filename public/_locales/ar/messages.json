@@ -37,6 +37,14 @@
     "description": "Download subdirectory placeholder",
     "message": "Videos/"
   },
+  "channelFolderLabel": {
+    "description": "Toggle: keep slash in filenames as a nested folder",
+    "message": "اعتبار / مجلدًا فرعيًا"
+  },
+  "channelFolderHint": {
+    "description": "Hint for the slash-as-folder toggle",
+    "message": "تشغيل: a/b ينشئ مجلدًا · إيقاف: يُحفظ كـ a--b"
+  },
 
   "popupQualityLabel": {
     "description": "Quality label",

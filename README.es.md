@@ -111,3 +111,14 @@ Quetta también ofrece una extensión oficial multiplataforma para descargar vid
   </picture>
 </a>
 
+---
+
+## Más extensiones de Chrome
+
+Otras herramientas de código abierto del mismo autor:
+
+| Extensión | Descripción |
+|-----------|-------------|
+| [DevTools Unlock](https://github.com/webLiang/devtools-unlock) | Restaura DevTools en sitios que bloquean la depuración (p. ej. disable-devtool). |
+| [Header Modify](https://github.com/webLiang/header-modify-extention) | Reescribe las cabeceras de petición del sitio actual, incluidos los iframes. |
+
