@@ -37,6 +37,14 @@
     "description": "Download subdirectory placeholder",
     "message": "Videos/"
   },
+  "channelFolderLabel": {
+    "description": "Toggle: keep slash in filenames as a nested folder",
+    "message": "Usar / como carpeta"
+  },
+  "channelFolderHint": {
+    "description": "Hint for the slash-as-folder toggle",
+    "message": "Activado: a/b crea una carpeta · Desactivado: se guarda como a--b"
+  },
 
   "popupQualityLabel": {
     "description": "Quality label",

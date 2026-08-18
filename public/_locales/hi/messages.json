@@ -37,6 +37,14 @@
     "description": "Download subdirectory placeholder",
     "message": "Videos/"
   },
+  "channelFolderLabel": {
+    "description": "Toggle: keep slash in filenames as a nested folder",
+    "message": "/ को फ़ोल्डर मानें"
+  },
+  "channelFolderHint": {
+    "description": "Hint for the slash-as-folder toggle",
+    "message": "चालू: a/b से फ़ोल्डर बनेगा · बंद: a--b के रूप में सेव"
+  },
 
   "popupQualityLabel": {
     "description": "Quality label",

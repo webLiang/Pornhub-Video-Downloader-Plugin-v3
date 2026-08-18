@@ -111,3 +111,14 @@ Quetta also ships an official multi-platform video downloader extension — work
     <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=webLiang/Pornhub-Video-Downloader-Plugin-v3&type=Date" />
   </picture>
 </a>
+
+---
+
+## More Chrome extensions
+
+Other open-source tools from the same author:
+
+| Extension | Description |
+|-----------|-------------|
+| [DevTools Unlock](https://github.com/webLiang/devtools-unlock) | Restore DevTools on sites that block debugging (e.g. disable-devtool). |
+| [Header Modify](https://github.com/webLiang/header-modify-extention) | Rewrite request headers for the current site, including iframes. |
