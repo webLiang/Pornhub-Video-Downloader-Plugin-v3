@@ -87,6 +87,13 @@ const THEME_HIGHLIGHTS = {
     ar: 'تم إصلاح تكرار اسم الملف عدة مرات في نافذة الإضافة.',
     hi: 'पॉपअप में फ़ाइल नाम बार-बार दोहराए जाने की समस्या ठीक की गई।',
   },
+  pauseResumePlayback: {
+    en: 'Fixed a bug where pausing and resuming a download produced a video file that would not play.',
+    zh_CN: '修复下载过程中暂停再继续后，生成的视频无法播放的问题。',
+    es: 'Se corrigió un error por el que pausar y reanudar una descarga generaba un vídeo que no se podía reproducir.',
+    ar: 'تم إصلاح خلل كان يجعل إيقاف التحميل ثم استئنافه ينتج ملف فيديو لا يمكن تشغيله.',
+    hi: 'पॉज़ करके फिर डाउनलोड जारी रखने पर जो वीडियो फ़ाइल नहीं चल पाती थी, वह समस्या ठीक की गई।',
+  },
 };
 
 /** Map i18n message keys to release themes (used with locale diffs vs previous tag). */
@@ -108,6 +115,7 @@ const COMMIT_THEME_RULES = [
   { theme: 'downloadSubdir', test: /subdir|subdirectory|download.?path|downloadSubdir|下载子目录/i },
   { theme: 'pornhubUploaderPath', test: /uploader|usernameBadges|pornhub.*path|uploader\/title/i },
   { theme: 'filenameDupFix', test: /contentEditable|filename.*dup|重复|fileName.*display|m3u8-filename/i },
+  { theme: 'pauseResumePlayback', test: /pause|resume|playable|无法播放|opfs.*append|pauseSoft/i },
 ];
 
 /** @typedef {{ notesFile?: string, bodyFile?: string, assets: string[], dryRun: boolean, publish: boolean, skipBuild: boolean, commit: boolean, push: boolean, title?: string, commitMessage?: string }} CliOptions */
