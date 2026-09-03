@@ -10,7 +10,35 @@
 
 Chrome एक्सटेंशन जो Pornhub और अन्य समर्थित साइटों पर **मल्टी-रेज़ोल्यूशन** में वीडियो डाउनलोड करने देता है। यह रिपॉज़िटरी इसलिए मेंटेन की जा रही है क्योंकि [मूल प्रोजेक्ट](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) लंबे समय से अपडेट नहीं है और Manifest V2 डिप्रिकेट हो रहा है।
 
-> **टेम्पलेट पर आधारित:** [chrome-extension-boilerplate-react-vite](https://github.com/webLiang/chrome-extension-boilerplate-react-vite) — React + **Vite 8** पर बना Manifest V3 बॉयलरप्लेट, **तेज़ बिल्ड** के साथ। यह एक्सटेंशन उसी टेम्पलेट पर विकसित किया गया है। **Star** और **MR** का स्वागत है।
+<table width="100%">
+  <tr>
+    <td align="center">
+      <br/>
+      <strong>⚡️ इस Chrome एक्सटेंशन टेम्पलेट से बना है</strong>
+      <h1><a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite">Vite 8</a></h1>
+      <p><strong>React + TypeScript · Manifest V3 · तेज़ बिल्ड</strong></p>
+      <p>
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite"><img alt="Vite 8" height="36" src="https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white" /></a>
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite"><img alt="React" height="36" src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" /></a>
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite"><img alt="Manifest V3" height="36" src="https://img.shields.io/badge/Manifest-V3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" /></a>
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite#why-this-template"><img alt="Builds ~100-300ms" height="36" src="https://img.shields.io/badge/Builds-~100--300ms-22c55e?style=for-the-badge" /></a>
+      </p>
+      <p>
+        यह एक्सटेंशन <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite"><strong>chrome-extension-boilerplate-react-vite</strong></a> पर विकसित है।<br/>
+        <strong>Vite 8 + Rolldown</strong> — प्रोडक्शन बिल्ड आमतौर पर <strong>~100–300ms</strong> में पूरा होता है।<br/>
+        📖 <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite#intro">टेम्पलेट डॉक्स</a> ·
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite#why-this-template">स्पीड नोट्स</a> ·
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite#screenshots">स्क्रीनशॉट</a> ·
+        <a href="https://github.com/vitejs/awesome-vite">Awesome Vite</a>
+      </p>
+      <p>
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite"><img alt="GitHub stars" src="https://img.shields.io/github/stars/webLiang/chrome-extension-boilerplate-react-vite?style=for-the-badge&logo=github" /></a>
+      </p>
+      <p>टेम्पलेट पर <strong>Stars</strong> और <strong>Merge Requests</strong> का स्वागत है।</p>
+      <br/>
+    </td>
+  </tr>
+</table>
 
 ---
 
