@@ -10,7 +10,35 @@
 
 Extensión de Chrome para descargar videos en **múltiples resoluciones** desde Pornhub y otros sitios compatibles. Este repositorio se mantiene porque el [proyecto original](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) no se actualiza y Manifest V2 se deprecará.
 
-> **Basado en la plantilla:** [chrome-extension-boilerplate-react-vite](https://github.com/webLiang/chrome-extension-boilerplate-react-vite) — boilerplate de Chrome Extension Manifest V3 con React + **Vite 8** y **compilaciones más rápidas**. Esta extensión se desarrolla sobre dicha plantilla. Se agradecen **Stars** y **Merge Requests**.
+<table width="100%">
+  <tr>
+    <td align="center">
+      <br/>
+      <strong>⚡️ Creado con esta plantilla de extensión de Chrome</strong>
+      <h1><a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite">Vite 8</a></h1>
+      <p><strong>React + TypeScript · Manifest V3 · Compilaciones más rápidas</strong></p>
+      <p>
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite"><img alt="Vite 8" height="36" src="https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white" /></a>
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite"><img alt="React" height="36" src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" /></a>
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite"><img alt="Manifest V3" height="36" src="https://img.shields.io/badge/Manifest-V3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" /></a>
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite#why-this-template"><img alt="Builds ~100-300ms" height="36" src="https://img.shields.io/badge/Builds-~100--300ms-22c55e?style=for-the-badge" /></a>
+      </p>
+      <p>
+        Esta extensión se desarrolla sobre <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite"><strong>chrome-extension-boilerplate-react-vite</strong></a>.<br/>
+        <strong>Vite 8 + Rolldown</strong> — las builds de producción suelen tardar <strong>~100–300ms</strong>.<br/>
+        📖 <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite#intro">Documentación</a> ·
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite#why-this-template">Notas de velocidad</a> ·
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite#screenshots">Capturas</a> ·
+        <a href="https://github.com/vitejs/awesome-vite">Awesome Vite</a>
+      </p>
+      <p>
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite"><img alt="GitHub stars" src="https://img.shields.io/github/stars/webLiang/chrome-extension-boilerplate-react-vite?style=for-the-badge&logo=github" /></a>
+      </p>
+      <p>Se agradecen <strong>Stars</strong> y <strong>Merge Requests</strong> en la plantilla.</p>
+      <br/>
+    </td>
+  </tr>
+</table>
 
 ---
 
