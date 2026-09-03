@@ -80,6 +80,8 @@
 | xvv1deos.com |
 | xhamster.com · xhamster42.desi · xhamster1.desi |
 | redtube.com |
+| missav.ws · missav.live · missav.com |
+| 123av.com |
 
 ---
 
@@ -97,6 +99,7 @@
 | v1.0.11 | تحسين اسم ملف التنزيل |
 | v1.0.12 | تحسين اسم ملف التنزيل على الكمبيوتر |
 | v1.0.15 | إصلاح قواعد xvideos.com |
+| v1.2.0 | دعم تنزيل HLS على missav.ws / missav.live / 123av.com |
 | todo | دعم مخطط له: [spankbang.com](https://spankbang.com/) |
 
 ---

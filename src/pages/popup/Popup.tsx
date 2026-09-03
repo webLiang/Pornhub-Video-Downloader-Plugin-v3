@@ -28,6 +28,8 @@ type VideoInfo = {
   quality: string;
   format: 'mp4' | 'webm' | 'm3u8';
   title: string;
+  /** Site-specific Origin/Referer; overrides tab-derived headers when set. */
+  headers?: Record<string, string>;
 };
 
 const manifestData = chrome.runtime.getManifest();
@@ -364,7 +366,10 @@ const Popup = () => {
         format: videoInfo.format,
         quality: videoInfo.quality,
         pageUrl: currentTabUrl || undefined,
-        headers: buildM3u8Headers(),
+        headers: {
+          ...buildM3u8Headers(),
+          ...(videoInfo.headers || {}),
+        },
       })
       .then(response => {
         if (response && !response.success) {

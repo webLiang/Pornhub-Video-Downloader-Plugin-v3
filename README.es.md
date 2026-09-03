@@ -80,6 +80,8 @@ Quetta también ofrece una extensión oficial multiplataforma para descargar vid
 | xvv1deos.com |
 | xhamster.com · xhamster42.desi · xhamster1.desi |
 | redtube.com |
+| missav.ws · missav.live · missav.com |
+| 123av.com |
 
 ---
 
@@ -97,6 +99,7 @@ Quetta también ofrece una extensión oficial multiplataforma para descargar vid
 | v1.0.11 | Mejora del nombre de archivo descargado |
 | v1.0.12 | Mejora del nombre de archivo en PC |
 | v1.0.15 | Arregla reglas de xvideos.com |
+| v1.2.0 | Descarga HLS en missav.ws / missav.live / 123av.com |
 | todo | Soporte planificado: [spankbang.com](https://spankbang.com/) |
 
 ---

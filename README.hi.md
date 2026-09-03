@@ -80,6 +80,8 @@ Quetta एक आधिकारिक मल्टी-प्लेटफ़ॉ�
 | xvv1deos.com |
 | xhamster.com · xhamster42.desi · xhamster1.desi |
 | redtube.com |
+| missav.ws · missav.live · missav.com |
+| 123av.com |
 
 ---
 
@@ -97,6 +99,7 @@ Quetta एक आधिकारिक मल्टी-प्लेटफ़ॉ�
 | v1.0.11 | डाउनलोड फ़ाइल नाम सुधार |
 | v1.0.12 | PC साइट पर फ़ाइल नाम सुधार |
 | v1.0.15 | xvideos.com नियम सुधार |
+| v1.2.0 | missav.ws / missav.live / 123av.com HLS डाउनलोड |
 | todo | प्लान्ड सपोर्ट: [spankbang.com](https://spankbang.com/) |
 
 ---

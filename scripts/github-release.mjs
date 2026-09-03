@@ -94,6 +94,13 @@ const THEME_HIGHLIGHTS = {
     ar: 'تم إصلاح خلل كان يجعل إيقاف التحميل ثم استئنافه ينتج ملف فيديو لا يمكن تشغيله.',
     hi: 'पॉज़ करके फिर डाउनलोड जारी रखने पर जो वीडियो फ़ाइल नहीं चल पाती थी, वह समस्या ठीक की गई।',
   },
+  missav123av: {
+    en: 'Added download support for MissAV (missav.ws / missav.live / missav.com) and 123av.com, including multi-quality HLS when the site provides it.',
+    zh_CN: '新增 MissAV（missav.ws / missav.live / missav.com）和 123av.com 下载支持，站点提供多清晰度时可选分辨率。',
+    es: 'Se añadió soporte de descarga para MissAV (missav.ws / missav.live / missav.com) y 123av.com, con varias calidades HLS cuando el sitio las ofrece.',
+    ar: 'تمت إضافة دعم التنزيل لـ MissAV (missav.ws / missav.live / missav.com) و123av.com مع عدة جودات HLS عند توفرها.',
+    hi: 'MissAV (missav.ws / missav.live / missav.com) और 123av.com के लिए डाउनलोड समर्थन जोड़ा गया; साइट कई गुणवत्ता दे तो HLS रिज़ॉल्यूशन चुन सकते हैं।',
+  },
 };
 
 /** Map i18n message keys to release themes (used with locale diffs vs previous tag). */
@@ -116,6 +123,7 @@ const COMMIT_THEME_RULES = [
   { theme: 'pornhubUploaderPath', test: /uploader|usernameBadges|pornhub.*path|uploader\/title/i },
   { theme: 'filenameDupFix', test: /contentEditable|filename.*dup|重复|fileName.*display|m3u8-filename/i },
   { theme: 'pauseResumePlayback', test: /pause|resume|playable|无法播放|opfs.*append|pauseSoft/i },
+  { theme: 'missav123av', test: /missav|123av|surrit|javplayer/i },
 ];
 
 /** @typedef {{ notesFile?: string, bodyFile?: string, assets: string[], dryRun: boolean, publish: boolean, skipBuild: boolean, commit: boolean, push: boolean, title?: string, commitMessage?: string }} CliOptions */

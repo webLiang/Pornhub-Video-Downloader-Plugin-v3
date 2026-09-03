@@ -1,0 +1,1 @@
+export { getMissavUrls } from './getUrls';

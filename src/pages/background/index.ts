@@ -158,10 +158,88 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.type === 'open-download-item') {
     openDownloadItem(message, sendResponse);
     return true;
+  } else if (message.type === 'ext-fetch-text') {
+    handleExtFetchText(message, sendResponse);
+    return true;
   }
 
   return false;
 });
+
+const EXT_FETCH_TIMEOUT_MS = 20000;
+
+/** Headers fetch() cannot set in a service worker; attach them with a session DNR rule. */
+const EXT_FETCH_DNR_HEADERS = /^(origin|referer)$/i;
+
+/**
+ * Content-script helper: fetch a URL from the SW (bypasses page CORS).
+ * Only http(s) is allowed. Origin/Referer are applied via declarativeNetRequest.
+ */
+function handleExtFetchText(
+  message: { url?: string; headers?: Record<string, string> },
+  sendResponse: (response: unknown) => void,
+): void {
+  const url = typeof message.url === 'string' ? message.url.trim() : '';
+  if (!/^https?:\/\//i.test(url)) {
+    sendResponse({ ok: false, error: 'invalid url' });
+    return;
+  }
+
+  const headers = new Headers();
+  const dnrHeaders: chrome.declarativeNetRequest.ModifyHeaderInfo[] = [];
+  if (message.headers && typeof message.headers === 'object') {
+    for (const [key, value] of Object.entries(message.headers)) {
+      if (typeof value !== 'string' || !value) continue;
+      if (EXT_FETCH_DNR_HEADERS.test(key)) {
+        dnrHeaders.push({
+          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+          header: key,
+          value,
+        });
+      } else {
+        headers.set(key, value);
+      }
+    }
+  }
+
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), EXT_FETCH_TIMEOUT_MS);
+  const ruleId = dnrHeaders.length ? Math.ceil(Math.random() * 1e8) : 0;
+
+  void (async () => {
+    try {
+      if (ruleId) {
+        await chrome.declarativeNetRequest.updateSessionRules({
+          addRules: [
+            {
+              id: ruleId,
+              priority: 1,
+              action: {
+                type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+                requestHeaders: dnrHeaders,
+              },
+              condition: { urlFilter: url },
+            },
+          ],
+        });
+      }
+      const response = await fetch(url, { headers, signal: abort.signal });
+      const text = await response.text();
+      sendResponse({ ok: response.ok, status: response.status, text });
+    } catch (error) {
+      sendResponse({ ok: false, error: error instanceof Error ? error.message : String(error) });
+    } finally {
+      clearTimeout(timer);
+      if (ruleId) {
+        try {
+          await chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: [ruleId] });
+        } catch {
+          // rule may already be gone
+        }
+      }
+    }
+  })();
+}
 
 // Resume wait queue when background SW wakes or restarts
 schedule();
