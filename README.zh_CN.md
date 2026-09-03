@@ -80,6 +80,8 @@ Quetta 同时提供一款官方的多平台视频下载插件，支持 **YouTube
 | xvv1deos.com |
 | xhamster.com · xhamster42.desi · xhamster1.desi |
 | redtube.com |
+| missav.ws · missav.live · missav.com |
+| 123av.com |
 
 ---
 
@@ -98,6 +100,7 @@ Quetta 同时提供一款官方的多平台视频下载插件，支持 **YouTube
 | v1.0.12 | PC 站下载文件名优化 |
 | v1.0.15 | 修复 xvideos.com 规则 |
 | v1.0.18 | 修复 ph 支持下载|
+| v1.2.0 | 支持 missav.ws / missav.live / 123av.com HLS 下载 |
 | todo | [spankbang.com](https://spankbang.com/) 计划支持 |
 
 ---

@@ -80,6 +80,8 @@ Quetta also ships an official multi-platform video downloader extension — work
 | xvv1deos.com |
 | xhamster.com · xhamster42.desi · xhamster1.desi |
 | redtube.com |
+| missav.ws · missav.live · missav.com |
+| 123av.com |
 
 ---
 
@@ -98,6 +100,7 @@ Quetta also ships an official multi-platform video downloader extension — work
 | v1.0.12 | PC site download filename improvements |
 | v1.0.15 | Fix xvideos.com rules |
 | v1.0.17 xvideos 修复
+| v1.2.0 | missav.ws / missav.live / 123av.com HLS download |
 | todo | [spankbang.com](https://spankbang.com/) planned |
 
 ---
