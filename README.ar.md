@@ -15,24 +15,24 @@
     <td align="center">
       <br/>
       <strong>⚡️ مبني باستخدام قالب إضافات Chrome هذا</strong>
-      <h1><a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite">Vite 8</a></h1>
-      <p><strong>React + TypeScript · Manifest V3 · بناء أسرع</strong></p>
+      <h1><a href="https://github.com/webLiang/chrome-extension-boilerplate-ai">Vite 8</a></h1>
+      <p><strong>React + TypeScript · Manifest V3 · بناء أسرع · for AI-assisted development</strong></p>
       <p>
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite"><img alt="Vite 8" height="36" src="https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white" /></a>
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite"><img alt="React" height="36" src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" /></a>
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite"><img alt="Manifest V3" height="36" src="https://img.shields.io/badge/Manifest-V3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" /></a>
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite#why-this-template"><img alt="Builds ~100-300ms" height="36" src="https://img.shields.io/badge/Builds-~100--300ms-22c55e?style=for-the-badge" /></a>
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="Vite 8" height="36" src="https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white" /></a>
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="React" height="36" src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" /></a>
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="Manifest V3" height="36" src="https://img.shields.io/badge/Manifest-V3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" /></a>
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai#why-this-template"><img alt="Builds ~100-300ms" height="36" src="https://img.shields.io/badge/Builds-~100--300ms-22c55e?style=for-the-badge" /></a>
       </p>
       <p>
-        طُوِّرت هذه الإضافة فوق <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite"><strong>chrome-extension-boilerplate-react-vite</strong></a>.<br/>
+        طُوِّرت هذه الإضافة فوق <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><strong>chrome-extension-boilerplate-ai</strong></a>.<br/>
         <strong>Vite 8 + Rolldown</strong> — تكتمل بنى الإنتاج عادةً خلال <strong>~100–300ms</strong>.<br/>
-        📖 <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite#intro">وثائق القالب</a> ·
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite#why-this-template">ملاحظات السرعة</a> ·
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite#screenshots">لقطات الشاشة</a> ·
+        📖 <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai#intro">وثائق القالب</a> ·
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai#why-this-template">ملاحظات السرعة</a> ·
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai#screenshots">لقطات الشاشة</a> ·
         <a href="https://github.com/vitejs/awesome-vite">Awesome Vite</a>
       </p>
       <p>
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-react-vite"><img alt="GitHub stars" src="https://img.shields.io/github/stars/webLiang/chrome-extension-boilerplate-react-vite?style=for-the-badge&logo=github" /></a>
+        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="GitHub stars" src="https://img.shields.io/github/stars/webLiang/chrome-extension-boilerplate-ai?style=for-the-badge&logo=github" /></a>
       </p>
       <p>نرحّب بـ <strong>Stars</strong> و <strong>Merge Requests</strong> على القالب.</p>
       <br/>
