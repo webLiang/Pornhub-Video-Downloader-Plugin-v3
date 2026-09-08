@@ -132,6 +132,16 @@
 
 ---
 
+## ادعم هذا المشروع
+
+إذا أفادك هذا الامتداد، فإن ⭐ يساعد المزيد من الأشخاص على اكتشافه.
+
+<div align="center">
+
+<img src="./images/star-pornhub-video-downloader.gif" alt="كيفية وضع نجمة على هذا المستودع في GitHub" width="760" />
+
+</div>
+
 ## Star History
 
 <a href="https://star-history.dera.page/#webLiang/Pornhub-Video-Downloader-Plugin-v3&Date">
