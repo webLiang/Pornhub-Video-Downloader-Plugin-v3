@@ -132,6 +132,16 @@ Quetta एक आधिकारिक मल्टी-प्लेटफ़ॉ�
 
 ---
 
+## इस प्रोजेक्ट को सपोर्ट करें
+
+अगर यह एक्सटेंशन आपके काम आया, तो एक ⭐ और लोगों तक इसे पहुँचाने में मदद करता है।
+
+<div align="center">
+
+<img src="./images/star-pornhub-video-downloader.gif" alt="GitHub पर इस रिपॉजिटरी को Star कैसे करें" width="760" />
+
+</div>
+
 ## Star History
 
 <a href="https://star-history.dera.page/#webLiang/Pornhub-Video-Downloader-Plugin-v3&Date">

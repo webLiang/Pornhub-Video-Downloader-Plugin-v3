@@ -133,6 +133,16 @@ Quetta 同时提供一款官方的多平台视频下载插件，支持 **YouTube
 
 ---
 
+## 支持本项目
+
+如果这个扩展对你有帮助，点个 ⭐ 可以帮助更多人发现它。
+
+<div align="center">
+
+<img src="./images/star-pornhub-video-downloader.gif" alt="在 GitHub 上为本仓库点 Star 的操作演示" width="760" />
+
+</div>
+
 ## Star History
 
 <a href="https://star-history.dera.page/#webLiang/Pornhub-Video-Downloader-Plugin-v3&Date">

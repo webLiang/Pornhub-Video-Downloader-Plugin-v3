@@ -132,6 +132,16 @@ Quetta también ofrece una extensión oficial multiplataforma para descargar vid
 
 ---
 
+## Apoya este proyecto
+
+Si esta extensión te resultó útil, un ⭐ ayuda a que más personas la encuentren.
+
+<div align="center">
+
+<img src="./images/star-pornhub-video-downloader.gif" alt="Cómo dar Star a este repositorio en GitHub" width="760" />
+
+</div>
+
 ## Star History
 
 <a href="https://star-history.dera.page/#webLiang/Pornhub-Video-Downloader-Plugin-v3&Date">
