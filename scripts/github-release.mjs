@@ -132,7 +132,7 @@ const KEY_TO_THEME = {
 /** Match commit subject/body text to release themes. */
 const COMMIT_THEME_RULES = [
   { theme: 'downloadSpeed', test: /speed|jitter|layout|queue.*ui|task-speed/i },
-  { theme: 'taskDetails', test: /quality|format|task-detail|taskQuality|taskFormat|清晰度|格式/i },
+  { theme: 'taskDetails', test: /task-detail|taskQuality|taskFormat|清晰度/i },
   { theme: 'historyOpenPage', test: /history|pageUrl|open.*page|download history/i },
   { theme: 'toastDuration', test: /toast/i },
   { theme: 'downloadSubdir', test: /subdir|subdirectory|download.?path|downloadSubdir|下载子目录/i },
