@@ -1,17 +1,97 @@
 html,
 body {
   width: 450px;
+  height: 580px;
+  max-height: 580px;
+  overflow: hidden;
 }
+
+#app-container {
+  height: 100%;
+}
+
 .App {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   right: 0;
+  display: flex;
+  flex-direction: column;
   text-align: center;
   height: 100%;
-  padding: 10px;
+  padding: 10px 10px 0;
+  overflow: hidden;
   background-color: #fff;
+}
+
+.popup-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 8px;
+}
+
+.popup-support-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 8px 8px 14px;
+  border-top: 1px solid #f0f0f0;
+  background-color: #fff;
+}
+
+/* Compact chips: hug label width; ~22px tall so they stay secondary to Download */
+.popup-support-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 11px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  box-sizing: border-box;
+  white-space: nowrap;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    transform 0.08s ease;
+}
+
+.popup-support-btn:active {
+  transform: scale(0.98);
+}
+
+/* Match Download / Copy (#f1c40f); Star is the stronger CTA */
+.popup-support-btn-star {
+  background-color: #f1c40f;
+  color: #fff;
+  border: 1px solid #f1c40f;
+}
+
+.popup-support-btn-star:hover {
+  background-color: #e0b40e;
+  border-color: #e0b40e;
+  color: #fff;
+}
+
+/* Outline uses header accent #f90 so Report sits next to Star without two solid yellows */
+.popup-support-btn-bug {
+  background-color: #fff;
+  color: #f90;
+  border: 1px solid #f90;
+}
+
+.popup-support-btn-bug:hover {
+  background-color: #fff8ee;
+  color: #e08800;
+  border-color: #e08800;
 }
 
 /* Compact header bar */

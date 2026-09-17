@@ -34,6 +34,9 @@ type VideoInfo = {
 
 const manifestData = chrome.runtime.getManifest();
 
+const GITHUB_REPO_URL = 'https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3';
+const GITHUB_NEW_ISSUE_URL = `${GITHUB_REPO_URL}/issues/new`;
+
 const LOCALE_LABELS: Record<SupportedLocale, string> = {
   en: 'English',
   zh_CN: '中文',
@@ -522,8 +525,9 @@ const Popup = () => {
   };
 
   return (
-    <div className="App" style={{}}>
+    <div className="App">
       <ToastContainer toasts={toasts} onRemove={removeToast} />
+      <div className="popup-scroll">
       <div className="popup-header-bar">
         <img src={iconLogo} className="popup-header-logo" alt="logo" />
         <div className="popup-header-info">
@@ -840,6 +844,20 @@ const Popup = () => {
           </ul>
         </div>
       )}
+      </div>
+      {/* Always-visible GitHub star / bug actions; content scrolls above this bar */}
+      <div className="popup-support-bar">
+        <a className="popup-support-btn popup-support-btn-star" href={GITHUB_REPO_URL} target="_blank" rel="noreferrer">
+          {translate('popupSupportStar')}
+        </a>
+        <a
+          className="popup-support-btn popup-support-btn-bug"
+          href={GITHUB_NEW_ISSUE_URL}
+          target="_blank"
+          rel="noreferrer">
+          {translate('popupSupportBug')}
+        </a>
+      </div>
     </div>
   );
 };

@@ -281,6 +281,15 @@
   "historyTooltipDeleteRecord": {
     "description": "Delete record tooltip",
     "message": "रिकॉर्ड हटाएँ"
+  },
+
+  "popupSupportStar": {
+    "description": "Footer link to star the GitHub repository",
+    "message": "रेपो को Star करें"
+  },
+  "popupSupportBug": {
+    "description": "Footer link to open a GitHub issue",
+    "message": "बग रिपोर्ट करें"
   }
 }
 

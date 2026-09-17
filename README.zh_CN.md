@@ -10,35 +10,15 @@
 
 Chrome 插件，支持 Pornhub 等站点视频**多分辨率下载**。因[原仓库](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin)长期未更新且 2024 Manifest V2 即将弃用，故维护此仓库。
 
-<table width="100%">
-  <tr>
-    <td align="center">
-      <br/>
-      <strong>⚡️ 基于这套 Chrome 扩展模板构建</strong>
-      <h1><a href="https://github.com/webLiang/chrome-extension-boilerplate-ai">Vite 8</a></h1>
-      <p><strong>React + TypeScript · Manifest V3 · 打包更快 · 面向 AI 辅助开发</strong></p>
-      <p>
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="Vite 8" height="36" src="https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white" /></a>
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="React" height="36" src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" /></a>
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="Manifest V3" height="36" src="https://img.shields.io/badge/Manifest-V3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" /></a>
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai/blob/main/README.zh_CN.md#%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8%E8%BF%99%E4%B8%AA%E6%A8%A1%E6%9D%BF"><img alt="Builds ~100-300ms" height="36" src="https://img.shields.io/badge/Builds-~100--300ms-22c55e?style=for-the-badge" /></a>
-      </p>
-      <p>
-        本插件基于 <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><strong>chrome-extension-boilerplate-ai</strong></a> 开发。<br/>
-        <strong>Vite 8 + Rolldown</strong> — 生产构建通常约 <strong>100–300ms</strong>。单包、可自由搭配，方便 AI 读工程。<br/>
-        📖 <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai/blob/main/README.zh_CN.md#%E7%AE%80%E4%BB%8B">模板文档</a> ·
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai/blob/main/README.zh_CN.md#%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8%E8%BF%99%E4%B8%AA%E6%A8%A1%E6%9D%BF">速度说明</a> ·
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai/blob/main/README.zh_CN.md#%E6%88%AA%E5%9B%BE">效果截图</a> ·
-        <a href="https://github.com/vitejs/awesome-vite">Awesome Vite</a>
-      </p>
-      <p>
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="GitHub stars" src="https://img.shields.io/github/stars/webLiang/chrome-extension-boilerplate-ai?style=for-the-badge&logo=github" /></a>
-      </p>
-      <p>欢迎给模板点 <strong>Star</strong>，也欢迎 <strong>Merge Request</strong>。</p>
-      <br/>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <strong>要做 Chrome 插件？</strong>
+  直接用
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><strong>chrome-extension-boilerplate-ai</strong></a>
+  — Vite 8 · MV3 · 生产构建约 100–300ms。
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai/blob/main/README.zh_CN.md#%E7%AE%80%E4%BB%8B">文档</a>
+  ·
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="GitHub stars" src="https://img.shields.io/github/stars/webLiang/chrome-extension-boilerplate-ai?style=flat" /></a>
+</p>
 
 ---
 
@@ -135,7 +115,9 @@ Quetta 同时提供一款官方的多平台视频下载插件，支持 **YouTube
 
 ## 支持本项目
 
-如果这个扩展对你有帮助，点个 ⭐ 可以帮助更多人发现它。
+**如果这个插件帮你省了时间，请给本仓库点 Star** — 这是支持维护、也让更多人发现它最快的方式。
+
+**[Star webLiang/Pornhub-Video-Downloader-Plugin-v3](https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3)**
 
 <div align="center">
 

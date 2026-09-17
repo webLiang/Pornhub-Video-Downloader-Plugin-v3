@@ -10,35 +10,15 @@
 
 Extensión de Chrome para descargar videos en **múltiples resoluciones** desde Pornhub y otros sitios compatibles. Este repositorio se mantiene porque el [proyecto original](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) no se actualiza y Manifest V2 se deprecará.
 
-<table width="100%">
-  <tr>
-    <td align="center">
-      <br/>
-      <strong>⚡️ Creado con esta plantilla de extensión de Chrome</strong>
-      <h1><a href="https://github.com/webLiang/chrome-extension-boilerplate-ai">Vite 8</a></h1>
-      <p><strong>React + TypeScript · Manifest V3 · Compilaciones más rápidas · para desarrollo asistido por IA</strong></p>
-      <p>
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="Vite 8" height="36" src="https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white" /></a>
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="React" height="36" src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" /></a>
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="Manifest V3" height="36" src="https://img.shields.io/badge/Manifest-V3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" /></a>
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai#why-this-template"><img alt="Builds ~100-300ms" height="36" src="https://img.shields.io/badge/Builds-~100--300ms-22c55e?style=for-the-badge" /></a>
-      </p>
-      <p>
-        Esta extensión se desarrolla sobre <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><strong>chrome-extension-boilerplate-ai</strong></a>.<br/>
-        <strong>Vite 8 + Rolldown</strong> — las builds de producción suelen tardar <strong>~100–300ms</strong>.<br/>
-        📖 <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai#intro">Documentación</a> ·
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai#why-this-template">Notas de velocidad</a> ·
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai#screenshots">Capturas</a> ·
-        <a href="https://github.com/vitejs/awesome-vite">Awesome Vite</a>
-      </p>
-      <p>
-        <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="GitHub stars" src="https://img.shields.io/github/stars/webLiang/chrome-extension-boilerplate-ai?style=for-the-badge&logo=github" /></a>
-      </p>
-      <p>Se agradecen <strong>Stars</strong> y <strong>Merge Requests</strong> en la plantilla.</p>
-      <br/>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <strong>¿Vas a crear una extensión de Chrome?</strong>
+  Empieza con
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><strong>chrome-extension-boilerplate-ai</strong></a>
+  — Vite 8 · MV3 · build de producción ~100–300ms.
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai#intro">Docs</a>
+  ·
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="GitHub stars" src="https://img.shields.io/github/stars/webLiang/chrome-extension-boilerplate-ai?style=flat" /></a>
+</p>
 
 ---
 
@@ -134,7 +114,9 @@ Quetta también ofrece una extensión oficial multiplataforma para descargar vid
 
 ## Apoya este proyecto
 
-Si esta extensión te resultó útil, un ⭐ ayuda a que más personas la encuentren.
+**Si este plugin te ahorró tiempo, por favor da star a este repo** — es la forma más rápida de apoyar el mantenimiento y que más gente lo encuentre.
+
+**[Star webLiang/Pornhub-Video-Downloader-Plugin-v3](https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3)**
 
 <div align="center">
 

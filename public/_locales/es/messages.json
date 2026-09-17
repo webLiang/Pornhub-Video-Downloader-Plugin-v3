@@ -281,6 +281,15 @@
   "historyTooltipDeleteRecord": {
     "description": "Delete record tooltip",
     "message": "Eliminar registro"
+  },
+
+  "popupSupportStar": {
+    "description": "Footer link to star the GitHub repository",
+    "message": "Dar star al repo"
+  },
+  "popupSupportBug": {
+    "description": "Footer link to open a GitHub issue",
+    "message": "Reportar un error"
   }
 }
 

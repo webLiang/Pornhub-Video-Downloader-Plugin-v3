@@ -10,7 +10,15 @@
 
 Chrome extension for **multi-resolution video download** on Pornhub and other supported sites. This repo is maintained because the [original project](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) is unmaintained and Manifest V2 will be deprecated in 2024.
 
-> **Built with:** [chrome-extension-boilerplate-ai](https://github.com/webLiang/chrome-extension-boilerplate-ai) — a React + **Vite 8** Manifest V3 boilerplate for **AI-assisted development**, with **faster builds**. This extension is developed on top of that template. **Stars** and **Merge Requests** are welcome.
+<p align="center">
+  <strong>Building a Chrome extension?</strong>
+  Start from
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><strong>chrome-extension-boilerplate-ai</strong></a>
+  — Vite 8 · MV3 · typical prod build ~100–300ms.
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai#intro">Docs</a>
+  ·
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="GitHub stars" src="https://img.shields.io/github/stars/webLiang/chrome-extension-boilerplate-ai?style=flat" /></a>
+</p>
 
 ---
 
@@ -107,7 +115,9 @@ Quetta also ships an official multi-platform video downloader extension — work
 
 ## Support this project
 
-If this extension helped you, a ⭐ helps more people find it.
+**If this plugin saved you time, please star this repo** — it is the fastest way to support maintenance and help others find it.
+
+**[Star webLiang/Pornhub-Video-Downloader-Plugin-v3](https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3)**
 
 <div align="center">
 

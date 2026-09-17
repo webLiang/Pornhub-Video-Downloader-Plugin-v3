@@ -126,16 +126,19 @@ const createMessageHandler = <T>(config: {
 };
 
 /**
- * Read the Pornhub watch-page uploader name from DOM.
- * Desktop uses #hd-leftColVideoPage; mobile uses .userContainer / .usernameWrapper.
- * Generic .usernameBadgesWrapper is avoided first because comments reuse that class.
+ * Read the current watch-page channel/uploader from the video info row.
+ * Prefer `.usernameWrap[data-type="channel"]` under `.userRow` (live Pornhub markup).
+ * Do not query page-wide `.usernameWrapper a`: that class is reused by related videos
+ * and would prefix downloads with a sidebar channel (e.g. Inked Gurlz) instead of
+ * the visible channel (e.g. Rave Bunnys). Comments reuse `.usernameBadgesWrapper`.
  */
 const getPornhubUploaderName = (): string => {
   const selectors = [
-    '#hd-leftColVideoPage .video-info-row.userRow .usernameBadgesWrapper a',
+    '.video-info-row.userRow .usernameWrap[data-type="channel"] a',
+    '.video-info-row.userRow .usernameWrap a',
+    '.video-info-row.userRow .usernameBadgesWrapper a',
+    '.userContainer .usernameWrap a',
     '.userContainer .usernameWrapper a',
-    '.fromRow .usernameWrapper a',
-    '.usernameWrapper a',
   ];
   for (const selector of selectors) {
     const name = document.querySelector(selector)?.textContent?.trim();

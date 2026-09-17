@@ -101,6 +101,20 @@ const THEME_HIGHLIGHTS = {
     ar: 'تمت إضافة دعم التنزيل لـ MissAV (missav.ws / missav.live / missav.com) و123av.com مع عدة جودات HLS عند توفرها.',
     hi: 'MissAV (missav.ws / missav.live / missav.com) और 123av.com के लिए डाउनलोड समर्थन जोड़ा गया; साइट कई गुणवत्ता दे तो HLS रिज़ॉल्यूशन चुन सकते हैं।',
   },
+  pornhubChannelName: {
+    en: 'Pornhub download names now use the current video’s channel (the name under the player), not a related-video channel from the sidebar.',
+    zh_CN: 'Pornhub 下载文件名前缀改为播放器下方的当前视频频道名，不再误用侧边相关推荐的频道。',
+    es: 'En Pornhub, el nombre de descarga usa el canal del vídeo actual (bajo el reproductor), no un canal de vídeos relacionados.',
+    ar: 'في Pornhub يستخدم اسم التنزيل قناة الفيديو الحالية أسفل المشغّل وليس قناة من الشريط الجانبي للفيديوهات ذات الصلة.',
+    hi: 'Pornhub डाउनलोड नाम अब वर्तमान वीडियो का चैनल (प्लेयर के नीचे) लेता है, साइडबार के related वीडियो चैनल नहीं।',
+  },
+  popupGithubCta: {
+    en: 'Popup footer: compact Star this repo and Report a bug buttons that open GitHub.',
+    zh_CN: '弹窗底部增加小按钮「给仓库点 Star」和「反馈问题」，跳转 GitHub。',
+    es: 'Pie del popup: botones compactos para dar star al repo y reportar un error (abren GitHub).',
+    ar: 'تذييل النافذة: أزرار صغيرة لوضع نجمة على المستودع والإبلاغ عن مشكلة (تفتح GitHub).',
+    hi: 'पॉपअप फ़ुटर में छोटे बटन: रेपो को Star करें और बग रिपोर्ट करें (GitHub खोलते हैं)।',
+  },
 };
 
 /** Map i18n message keys to release themes (used with locale diffs vs previous tag). */
@@ -111,6 +125,8 @@ const KEY_TO_THEME = {
   historyTooltipOpenPage: 'historyOpenPage',
   downloadSubdirLabel: 'downloadSubdir',
   downloadSubdirPlaceholder: 'downloadSubdir',
+  popupSupportStar: 'popupGithubCta',
+  popupSupportBug: 'popupGithubCta',
 };
 
 /** Match commit subject/body text to release themes. */
@@ -124,6 +140,8 @@ const COMMIT_THEME_RULES = [
   { theme: 'filenameDupFix', test: /contentEditable|filename.*dup|重复|fileName.*display|m3u8-filename/i },
   { theme: 'pauseResumePlayback', test: /pause|resume|playable|无法播放|opfs.*append|pauseSoft/i },
   { theme: 'missav123av', test: /missav|123av|surrit|javplayer/i },
+  { theme: 'pornhubChannelName', test: /usernameWrap|getPornhubUploaderName|related.?video|channel name|uploader name/i },
+  { theme: 'popupGithubCta', test: /popupSupport|star this repo|report a bug|github.*star|给仓库点/i },
 ];
 
 /** @typedef {{ notesFile?: string, bodyFile?: string, assets: string[], dryRun: boolean, publish: boolean, skipBuild: boolean, commit: boolean, push: boolean, title?: string, commitMessage?: string }} CliOptions */
