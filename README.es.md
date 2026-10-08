@@ -10,11 +10,19 @@
 
 Extensión de Chrome para descargar videos en **múltiples resoluciones** desde Pornhub y otros sitios compatibles. Este repositorio se mantiene porque el [proyecto original](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) no se actualiza y Manifest V2 se deprecará.
 
+<h3 align="center">
+  Construido con <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><b>chrome-extension-boilerplate-ai</b></a>
+</h3>
+
 <p align="center">
-  <strong>¿Vas a crear una extensión de Chrome?</strong>
-  Empieza con
-  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><strong>chrome-extension-boilerplate-ai</strong></a>
-  — Vite 8 · MV3 · build de producción ~100–300ms.
+  Este proyecto está construido a partir de esa plantilla — <b>Vite 8</b>, Manifest V3 y una estructura más plana, más fácil de editar con agentes de IA.<br/>
+  El build de producción suele tardar ~100–300ms.
+</p>
+
+<p align="center">
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="Vite 8" src="https://img.shields.io/badge/Vite-8-646CFF?style=flat&logo=vite&logoColor=white" /></a>
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="Manifest V3" src="https://img.shields.io/badge/Manifest-V3-4285F4?style=flat&logo=googlechrome&logoColor=white" /></a>
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="AI-friendly" src="https://img.shields.io/badge/AI-friendly-111111?style=flat" /></a>
   <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai#intro">Docs</a>
   ·
   <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="GitHub stars" src="https://img.shields.io/github/stars/webLiang/chrome-extension-boilerplate-ai?style=flat" /></a>
@@ -80,16 +88,18 @@ Quetta también ofrece una extensión oficial multiplataforma para descargar vid
 
 ## Sitios compatibles
 
-| Sitios |
-|-------|
-| pornhub.com |
-| xvideos.com |
-| xnxx.com · xnxx.es |
-| xvv1deos.com |
-| xhamster.com · xhamster42.desi · xhamster1.desi |
-| redtube.com |
-| missav.ws · missav.live · missav.com |
-| 123av.com |
+También se incluyen los subdominios de idioma de un host listado (por ejemplo `cn.pornhub.com`, `de.pornhub.com`, `fr.pornhub.com`, `es.pornhub.com`). La coincidencia usa el dominio registrable: las dos últimas etiquetas del hostname. Los dominios de país registrados por separado aparecen abajo.
+
+| Sitio | Dominios |
+|-------|----------|
+| Pornhub | pornhub.com · pornhub.org · pornhubpremium.com |
+| Xvideos | xvideos.com · xvv1deos.com |
+| XNXX | xnxx.com · xnxx.es |
+| xHamster | xhamster.com · xhamster.desi · xhamster1.desi · xhamster42.desi · xhamster43.desi · xhamster44.desi |
+| RedTube | redtube.com |
+| MissAV | missav.com · missav.ws · missav.live |
+| 123AV | 123av.com |
+| Tangxin Vlog | tangxinvlog.app |
 
 ---
 

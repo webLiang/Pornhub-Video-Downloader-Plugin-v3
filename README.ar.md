@@ -10,11 +10,19 @@
 
 إضافة Chrome لتنزيل مقاطع الفيديو بدقات متعددة من Pornhub ومواقع أخرى مدعومة. تتم صيانة هذا المستودع لأن [المشروع الأصلي](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) غير مُحدَّث وManifest V2 قيد الإيقاف.
 
+<h3 align="center">
+  مبني على <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><b>chrome-extension-boilerplate-ai</b></a>
+</h3>
+
 <p align="center">
-  <strong>هل تريد بناء إضافة Chrome؟</strong>
-  ابدأ من
-  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><strong>chrome-extension-boilerplate-ai</strong></a>
-  — Vite 8 · MV3 · بناء إنتاج ~100–300ms.
+  هذا المشروع مبني على هذا القالب — <b>Vite 8</b> وManifest V3 وبنية أبسط يسهل على وكلاء الذكاء الاصطناعي تعديلها.<br/>
+  بناء الإنتاج عادةً حوالي 100–300ms.
+</p>
+
+<p align="center">
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="Vite 8" src="https://img.shields.io/badge/Vite-8-646CFF?style=flat&logo=vite&logoColor=white" /></a>
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="Manifest V3" src="https://img.shields.io/badge/Manifest-V3-4285F4?style=flat&logo=googlechrome&logoColor=white" /></a>
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="AI-friendly" src="https://img.shields.io/badge/AI-friendly-111111?style=flat" /></a>
   <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai#intro">Docs</a>
   ·
   <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="GitHub stars" src="https://img.shields.io/github/stars/webLiang/chrome-extension-boilerplate-ai?style=flat" /></a>
@@ -80,16 +88,18 @@
 
 ## المواقع المدعومة
 
-| المواقع |
-|--------|
-| pornhub.com |
-| xvideos.com |
-| xnxx.com · xnxx.es |
-| xvv1deos.com |
-| xhamster.com · xhamster42.desi · xhamster1.desi |
-| redtube.com |
-| missav.ws · missav.live · missav.com |
-| 123av.com |
+تُدرج أيضًا النطاقات الفرعية اللغوية للمضيف المذكور (مثل `cn.pornhub.com` و`de.pornhub.com` و`fr.pornhub.com` و`es.pornhub.com`). تعتمد المطابقة على النطاق القابل للتسجيل: آخر جزأين من اسم المضيف. النطاقات الخاصة بدول ومسجّلة بشكل مستقل مذكورة أدناه.
+
+| الموقع | النطاقات |
+|--------|----------|
+| Pornhub | pornhub.com · pornhub.org · pornhubpremium.com |
+| Xvideos | xvideos.com · xvv1deos.com |
+| XNXX | xnxx.com · xnxx.es |
+| xHamster | xhamster.com · xhamster.desi · xhamster1.desi · xhamster42.desi · xhamster43.desi · xhamster44.desi |
+| RedTube | redtube.com |
+| MissAV | missav.com · missav.ws · missav.live |
+| 123AV | 123av.com |
+| Tangxin Vlog | tangxinvlog.app |
 
 ---
 

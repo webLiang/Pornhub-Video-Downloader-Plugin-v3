@@ -10,11 +10,19 @@
 
 Chrome एक्सटेंशन जो Pornhub और अन्य समर्थित साइटों पर **मल्टी-रेज़ोल्यूशन** में वीडियो डाउनलोड करने देता है। यह रिपॉज़िटरी इसलिए मेंटेन की जा रही है क्योंकि [मूल प्रोजेक्ट](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) लंबे समय से अपडेट नहीं है और Manifest V2 डिप्रिकेट हो रहा है।
 
+<h3 align="center">
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><b>chrome-extension-boilerplate-ai</b></a> पर आधारित
+</h3>
+
 <p align="center">
-  <strong>Chrome एक्सटेंशन बनाना है?</strong>
-  शुरू करें
-  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><strong>chrome-extension-boilerplate-ai</strong></a>
-  से — Vite 8 · MV3 · प्रोडक्शन बिल्ड ~100–300ms।
+  यह प्रोजेक्ट उसी टेम्पलेट पर बना है — <b>Vite 8</b>, Manifest V3, और एक सपाट संरचना जो AI कोडिंग एजेंट के लिए आसान है।<br/>
+  प्रोडक्शन बिल्ड आमतौर पर ~100–300ms।
+</p>
+
+<p align="center">
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="Vite 8" src="https://img.shields.io/badge/Vite-8-646CFF?style=flat&logo=vite&logoColor=white" /></a>
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="Manifest V3" src="https://img.shields.io/badge/Manifest-V3-4285F4?style=flat&logo=googlechrome&logoColor=white" /></a>
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="AI-friendly" src="https://img.shields.io/badge/AI-friendly-111111?style=flat" /></a>
   <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai#intro">Docs</a>
   ·
   <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="GitHub stars" src="https://img.shields.io/github/stars/webLiang/chrome-extension-boilerplate-ai?style=flat" /></a>
@@ -80,16 +88,18 @@ Quetta एक आधिकारिक मल्टी-प्लेटफ़ॉ�
 
 ## समर्थित साइटें
 
-| साइटें |
-|------|
-| pornhub.com |
-| xvideos.com |
-| xnxx.com · xnxx.es |
-| xvv1deos.com |
-| xhamster.com · xhamster42.desi · xhamster1.desi |
-| redtube.com |
-| missav.ws · missav.live · missav.com |
-| 123av.com |
+लिस्टेड होस्ट के भाषा सबडोमेन भी शामिल हैं (जैसे `cn.pornhub.com`, `de.pornhub.com`, `fr.pornhub.com`, `es.pornhub.com`)। मैच रजिस्ट्रबल डोमेन से होता है, यानी होस्टनेम के आखिरी दो लेबल। अलग से रजिस्टर किए देश/क्षेत्र डोमेन नीचे दिए हैं।
+
+| साइट | डोमेन |
+|------|------|
+| Pornhub | pornhub.com · pornhub.org · pornhubpremium.com |
+| Xvideos | xvideos.com · xvv1deos.com |
+| XNXX | xnxx.com · xnxx.es |
+| xHamster | xhamster.com · xhamster.desi · xhamster1.desi · xhamster42.desi · xhamster43.desi · xhamster44.desi |
+| RedTube | redtube.com |
+| MissAV | missav.com · missav.ws · missav.live |
+| 123AV | 123av.com |
+| Tangxin Vlog | tangxinvlog.app |
 
 ---
 

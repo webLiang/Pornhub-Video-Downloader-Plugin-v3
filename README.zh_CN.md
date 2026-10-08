@@ -10,11 +10,19 @@
 
 Chrome 插件，支持 Pornhub 等站点视频**多分辨率下载**。因[原仓库](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin)长期未更新且 2024 Manifest V2 即将弃用，故维护此仓库。
 
+<h3 align="center">
+  基于 <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><b>chrome-extension-boilerplate-ai</b></a> 构建
+</h3>
+
 <p align="center">
-  <strong>要做 Chrome 插件？</strong>
-  直接用
-  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><strong>chrome-extension-boilerplate-ai</strong></a>
-  — Vite 8 · MV3 · 生产构建约 100–300ms。
+  本项目基于该模板构建 — <b>Vite 8</b>、Manifest V3，目录更扁平，更方便 AI 改代码。<br/>
+  生产构建通常约 100–300ms。
+</p>
+
+<p align="center">
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="Vite 8" src="https://img.shields.io/badge/Vite-8-646CFF?style=flat&logo=vite&logoColor=white" /></a>
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="Manifest V3" src="https://img.shields.io/badge/Manifest-V3-4285F4?style=flat&logo=googlechrome&logoColor=white" /></a>
+  <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="AI-friendly" src="https://img.shields.io/badge/AI-friendly-111111?style=flat" /></a>
   <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai/blob/main/README.zh_CN.md#%E7%AE%80%E4%BB%8B">文档</a>
   ·
   <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><img alt="GitHub stars" src="https://img.shields.io/github/stars/webLiang/chrome-extension-boilerplate-ai?style=flat" /></a>
@@ -80,16 +88,18 @@ Quetta 同时提供一款官方的多平台视频下载插件，支持 **YouTube
 
 ## 支持网站
 
-| 站点 |
-|------|
-| pornhub.com |
-| xvideos.com |
-| xnxx.com · xnxx.es |
-| xvv1deos.com |
-| xhamster.com · xhamster42.desi · xhamster1.desi |
-| redtube.com |
-| missav.ws · missav.live · missav.com |
-| 123av.com |
+已列出主域名的语言子域同样支持（例如 `cn.pornhub.com`、`de.pornhub.com`、`fr.pornhub.com`、`es.pornhub.com`）。匹配按可注册域名，即主机名最后两段。单独注册的国家/地区域名见下表。
+
+| 站点 | 域名 |
+|------|------|
+| Pornhub | pornhub.com · pornhub.org · pornhubpremium.com |
+| Xvideos | xvideos.com · xvv1deos.com |
+| XNXX | xnxx.com · xnxx.es |
+| xHamster | xhamster.com · xhamster.desi · xhamster1.desi · xhamster42.desi · xhamster43.desi · xhamster44.desi |
+| RedTube | redtube.com |
+| MissAV | missav.com · missav.ws · missav.live |
+| 123AV | 123av.com |
+| 糖心 Vlog | tangxinvlog.app |
 
 ---
 
