@@ -1,0 +1,37 @@
+---
+description: When adding or changing a supported video site, update the site list in every README
+globs: src/pages/content/injected/sites/**/*,src/pages/content/injected/hostMapGetUrls.ts
+alwaysApply: false
+---
+
+# Supported site list
+
+A site is not done until the README tables match the hostname registry.
+
+## Registry
+
+- New sites: `src/pages/content/injected/sites/<site>/` plus a key in `siteHostGetUrls` (`sites/index.ts`).
+- Legacy tube sites (Pornhub, Xvideos, XNXX, xHamster, RedTube): keys in `hostMapGetUrls.ts`.
+- Each key is `curTopDomain`: the last two hostname labels (`rou.video`, `missav.ws`). Do not add a separate row for a language subdomain such as `cn.pornhub.com`.
+
+## Docs to update in the same change
+
+Add, edit, or remove the same domains in every language README:
+
+- `README.md`
+- `README.en.md`
+- `README.zh_CN.md`
+- `README.es.md`
+- `README.hi.md`
+- `README.ar.md`
+
+Sections: Supported Sites / 支持网站 / Sitios compatibles / समर्थित साइटें / المواقع المدعومة.
+
+The display name may be translated. The domain cell must list every registry key for that site, separated by ` · `.
+
+```markdown
+| Rou.video | rou.video |
+| MissAV | missav.com · missav.ws · missav.live |
+```
+
+Do not add a changelog row unless this change is part of a version release.

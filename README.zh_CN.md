@@ -100,6 +100,7 @@ Quetta 同时提供一款官方的多平台视频下载插件，支持 **YouTube
 | MissAV | missav.com · missav.ws · missav.live |
 | 123AV | 123av.com |
 | 糖心 Vlog | tangxinvlog.app |
+| Rou.video | rou.video |
 
 ---
 

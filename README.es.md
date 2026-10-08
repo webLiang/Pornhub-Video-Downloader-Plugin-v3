@@ -100,6 +100,7 @@ También se incluyen los subdominios de idioma de un host listado (por ejemplo `
 | MissAV | missav.com · missav.ws · missav.live |
 | 123AV | 123av.com |
 | Tangxin Vlog | tangxinvlog.app |
+| Rou.video | rou.video |
 
 ---
 

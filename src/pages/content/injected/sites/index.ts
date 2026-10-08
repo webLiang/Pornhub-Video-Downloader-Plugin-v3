@@ -2,6 +2,7 @@ import type { SiteGetUrls } from './types';
 import { getAv123Urls } from './av123';
 import { getMissavUrls } from './missav';
 import { getTangxinVlogUrls } from './tangxinvlog';
+import { getRouvideoUrls } from './rouvideo';
 
 /**
  * Per-site sniff registry (hostname → getUrls).
@@ -9,6 +10,9 @@ import { getTangxinVlogUrls } from './tangxinvlog';
  * Keys must match curTopDomain (last two hostname labels).
  */
 export const siteHostGetUrls: Record<string, { getUrls: SiteGetUrls }> = {
+  'rou.video': {
+    getUrls: getRouvideoUrls,
+  },
   'tangxinvlog.app': {
     getUrls: getTangxinVlogUrls,
   },
