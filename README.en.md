@@ -101,6 +101,10 @@ Language subdomains of a listed host are included (for example `cn.pornhub.com`,
 | 123AV | 123av.com |
 | Tangxin Vlog | tangxinvlog.app |
 | Rou.video | rou.video |
+| Huangguo | huangguoai.com |
+| Huangdou H5 | iwgsqufx.cc · roufquunbu.cc · ahievheved.cc · nbsito.top · tideember.cc · momodrift.top · zuzuspot.top · zuzucast.top · glowcanvas.cc · eyeonneb.cc |
+
+Huangdou: open an H5 watching route from https://hdmgdj.com/, start the episode, then open the extension. The address publication page itself has no video.
 
 ---
 

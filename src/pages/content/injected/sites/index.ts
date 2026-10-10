@@ -3,6 +3,9 @@ import { getAv123Urls } from './av123';
 import { getMissavUrls } from './missav';
 import { getTangxinVlogUrls } from './tangxinvlog';
 import { getRouvideoUrls } from './rouvideo';
+import { getHuangguoUrls } from './huangguo';
+import { getHuangdouUrls } from './huangdou';
+import huangdouDomains from './huangdou/domains.json';
 
 /**
  * Per-site sniff registry (hostname → getUrls).
@@ -10,6 +13,10 @@ import { getRouvideoUrls } from './rouvideo';
  * Keys must match curTopDomain (last two hostname labels).
  */
 export const siteHostGetUrls: Record<string, { getUrls: SiteGetUrls }> = {
+  'huangguoai.com': {
+    getUrls: getHuangguoUrls,
+  },
+  ...Object.fromEntries(huangdouDomains.map(domain => [domain, { getUrls: getHuangdouUrls }])),
   'rou.video': {
     getUrls: getRouvideoUrls,
   },

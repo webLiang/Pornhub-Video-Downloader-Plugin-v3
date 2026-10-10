@@ -101,6 +101,10 @@ Quetta 同时提供一款官方的多平台视频下载插件，支持 **YouTube
 | 123AV | 123av.com |
 | 糖心 Vlog | tangxinvlog.app |
 | Rou.video | rou.video |
+| 黄果短剧 | huangguoai.com |
+| 黄豆魔改短剧 H5 | iwgsqufx.cc · roufquunbu.cc · ahievheved.cc · nbsito.top · tideember.cc · momodrift.top · zuzuspot.top · zuzucast.top · glowcanvas.cc · eyeonneb.cc |
+
+黄豆：从 https://hdmgdj.com/ 进入「在线 H5 观看」线路，开始播放当前集后打开插件。地址发布页本身没有可下载的视频。
 
 ---
 
@@ -156,4 +160,3 @@ Quetta 同时提供一款官方的多平台视频下载插件，支持 **YouTube
 |------|------|
 | [DevTools Unlock](https://github.com/webLiang/devtools-unlock) | 在屏蔽调试的站点上恢复可用的 DevTools。 |
 | [Header Modify](https://github.com/webLiang/header-modify-extention) | 为当前站点改写请求头（含 iframe）。 |
-

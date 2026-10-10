@@ -101,6 +101,10 @@ Quetta एक आधिकारिक मल्टी-प्लेटफ़ॉ�
 | 123AV | 123av.com |
 | Tangxin Vlog | tangxinvlog.app |
 | Rou.video | rou.video |
+| Huangguo | huangguoai.com |
+| Huangdou H5 | iwgsqufx.cc · roufquunbu.cc · ahievheved.cc · nbsito.top · tideember.cc · momodrift.top · zuzuspot.top · zuzucast.top · glowcanvas.cc · eyeonneb.cc |
+
+Huangdou: https://hdmgdj.com/ से H5 देखने का लिंक खोलें, एपिसोड चलाएँ और फिर एक्सटेंशन खोलें। पता सूची वाले पृष्ठ पर वीडियो नहीं है।
 
 ---
 
@@ -155,4 +159,3 @@ Quetta एक आधिकारिक मल्टी-प्लेटफ़ॉ�
 |-----------|------|
 | [DevTools Unlock](https://github.com/webLiang/devtools-unlock) | डिबगिंग ब्लॉक करने वाली साइटों पर DevTools वापस चालू करें (जैसे disable-devtool)। |
 | [Header Modify](https://github.com/webLiang/header-modify-extention) | मौजूदा साइट के रिक्वेस्ट हेडर बदलें, iframes सहित। |
-

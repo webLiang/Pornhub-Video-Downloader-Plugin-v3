@@ -1,0 +1,1 @@
+export { getHuangdouUrls } from './getUrls';

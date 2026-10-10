@@ -101,6 +101,10 @@ También se incluyen los subdominios de idioma de un host listado (por ejemplo `
 | 123AV | 123av.com |
 | Tangxin Vlog | tangxinvlog.app |
 | Rou.video | rou.video |
+| Huangguo | huangguoai.com |
+| Huangdou H5 | iwgsqufx.cc · roufquunbu.cc · ahievheved.cc · nbsito.top · tideember.cc · momodrift.top · zuzuspot.top · zuzucast.top · glowcanvas.cc · eyeonneb.cc |
+
+Huangdou: abre una ruta H5 desde https://hdmgdj.com/, reproduce el episodio y abre la extensión. La página de direcciones no contiene vídeos.
 
 ---
 
@@ -155,4 +159,3 @@ Otras herramientas de código abierto del mismo autor:
 |-----------|-------------|
 | [DevTools Unlock](https://github.com/webLiang/devtools-unlock) | Restaura DevTools en sitios que bloquean la depuración (p. ej. disable-devtool). |
 | [Header Modify](https://github.com/webLiang/header-modify-extention) | Reescribe las cabeceras de petición del sitio actual, incluidos los iframes. |
-

@@ -101,6 +101,10 @@
 | 123AV | 123av.com |
 | Tangxin Vlog | tangxinvlog.app |
 | Rou.video | rou.video |
+| Huangguo | huangguoai.com |
+| Huangdou H5 | iwgsqufx.cc · roufquunbu.cc · ahievheved.cc · nbsito.top · tideember.cc · momodrift.top · zuzuspot.top · zuzucast.top · glowcanvas.cc · eyeonneb.cc |
+
+Huangdou: افتح أحد روابط المشاهدة H5 من https://hdmgdj.com/ وشغّل الحلقة ثم افتح الإضافة. صفحة العناوين نفسها لا تحتوي على فيديو.
 
 ---
 
@@ -155,4 +159,3 @@
 |---------|-------|
 | [DevTools Unlock](https://github.com/webLiang/devtools-unlock) | استعادة أدوات المطوّر على المواقع التي تمنع التصحيح (مثل disable-devtool). |
 | [Header Modify](https://github.com/webLiang/header-modify-extention) | تعديل ترويسات الطلب للموقع الحالي، بما في ذلك الإطارات المضمّنة (iframes). |
-

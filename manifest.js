@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
+const huangdouDomains = JSON.parse(fs.readFileSync('./src/pages/content/injected/sites/huangdou/domains.json', 'utf8'));
 
 /**
  * After changing, please reload the extension at `chrome://extensions`
@@ -45,7 +46,7 @@ const manifest = {
     },
     {
       run_at: 'document_start',
-      matches: ['https://*.redtube.com/*'],
+      matches: ['https://*.redtube.com/*', ...huangdouDomains.map(domain => `https://*.${domain}/*`)],
       js: ['src/pages/injectedMain/index.js'],
       world: 'MAIN',
     },
