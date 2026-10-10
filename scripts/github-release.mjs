@@ -115,6 +115,13 @@ const THEME_HIGHLIGHTS = {
     ar: 'تذييل النافذة: أزرار صغيرة لوضع نجمة على المستودع والإبلاغ عن مشكلة (تفتح GitHub).',
     hi: 'पॉपअप फ़ुटर में छोटे बटन: रेपो को Star करें और बग रिपोर्ट करें (GitHub खोलते हैं)।',
   },
+  huangdouHuangguo: {
+    en: 'Added support for Huangdou and Huangguo sites.',
+    zh_CN: '新增黄豆 / 黄果站点支持。',
+    es: 'Se añadió soporte para los sitios Huangdou y Huangguo.',
+    ar: 'تمت إضافة دعم لموقعي Huangdou وHuangguo.',
+    hi: 'Huangdou और Huangguo साइटों के लिए समर्थन जोड़ा गया।',
+  },
 };
 
 /** Map i18n message keys to release themes (used with locale diffs vs previous tag). */
@@ -142,6 +149,7 @@ const COMMIT_THEME_RULES = [
   { theme: 'missav123av', test: /missav|123av|surrit|javplayer/i },
   { theme: 'pornhubChannelName', test: /usernameWrap|getPornhubUploaderName|related.?video|channel name|uploader name/i },
   { theme: 'popupGithubCta', test: /popupSupport|star this repo|report a bug|github.*star|给仓库点/i },
+  { theme: 'huangdouHuangguo', test: /huangdou|huangguo|黄豆|黄果/i },
 ];
 
 /** @typedef {{ notesFile?: string, bodyFile?: string, assets: string[], dryRun: boolean, publish: boolean, skipBuild: boolean, commit: boolean, push: boolean, title?: string, commitMessage?: string }} CliOptions */
@@ -340,6 +348,23 @@ function collectChangedMessageKeys(prevTag) {
   return [...new Set([...diff.added, ...diff.changed])];
 }
 
+/**
+ * Map one commit's subject and body to configured release themes.
+ * A match uses THEME_HIGHLIGHTS in every locale instead of the generic bug-fix line.
+ * @param {{ subject: string, body: string }} commit
+ * @returns {string[]}
+ */
+function themesForCommit(commit) {
+  const text = `${commit.subject} ${commit.body}`;
+  const matched = [];
+  for (const rule of COMMIT_THEME_RULES) {
+    if (rule.test.test(text) && !matched.includes(rule.theme)) {
+      matched.push(rule.theme);
+    }
+  }
+  return matched;
+}
+
 /** Detect release themes from locale diffs and commit messages. */
 function detectReleaseThemes(prevTag, commits) {
   const themes = new Set();
@@ -348,10 +373,8 @@ function detectReleaseThemes(prevTag, commits) {
     if (theme) themes.add(theme);
   }
   for (const commit of commits) {
-    const text = `${commit.subject} ${commit.body}`;
-    for (const rule of COMMIT_THEME_RULES) {
-      if (rule.test.test(text)) themes.add(rule.theme);
-    }
+    if (isExcludedCommit(commit.subject)) continue;
+    for (const theme of themesForCommit(commit)) themes.add(theme);
   }
   return [...themes];
 }
@@ -448,6 +471,8 @@ function buildMultilingualSections(prevTag, commits) {
     if (locale === 'en') {
       for (const commit of releaseCommits) {
         if (!isUserFacingCommit(commit.subject)) continue;
+        // Mapped commits already have a curated highlight; skip the raw English subject.
+        if (themesForCommit(commit).length) continue;
         const summary = commitToSummary(commit.subject);
         if (summary && !seen.has(summary)) {
           bullets.push(`- ${summary}`);
