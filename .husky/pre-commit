@@ -1,4 +1,27 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+# Public repo: refuse any author or committer other than the GitHub noreply identity.
+allowed_name="Leon"
+allowed_email="38065991+webLiang@users.noreply.github.com"
+
+check_ident() {
+  label="$1"
+  ident="$2"
+  name="${ident%% <*}"
+  rest="${ident#*<}"
+  email="${rest%%>*}"
+  if [ "$name" != "$allowed_name" ] || [ "$email" != "$allowed_email" ]; then
+    echo "Refusing commit: ${label} is \"${name} <${email}>\"."
+    echo "This public repo only allows ${allowed_name} <${allowed_email}>."
+    echo "Set the local identity (do not change global git config):"
+    echo "  git config --local user.name \"${allowed_name}\""
+    echo "  git config --local user.email \"${allowed_email}\""
+    exit 1
+  fi
+}
+
+check_ident "author" "$(git var GIT_AUTHOR_IDENT)"
+check_ident "committer" "$(git var GIT_COMMITTER_IDENT)"
+
 pnpm dlx lint-staged

@@ -1,0 +1,20 @@
+---
+description: Keep public commits on the GitHub noreply identity
+alwaysApply: true
+---
+
+# Public git identity
+
+This repository is public. Commits, tags, and the `video-download-core` submodule must not publish a personal name, a personal email, or a company email.
+
+- Author and committer name: `Leon`
+- Author and committer email: `38065991+webLiang@users.noreply.github.com`
+- Do not pass `--author`. Do not set `GIT_AUTHOR_EMAIL` or `GIT_COMMITTER_EMAIL`.
+- Do not change global git config. Set the local repo identity only:
+
+```bash
+git config --local user.name "Leon"
+git config --local user.email "38065991+webLiang@users.noreply.github.com"
+```
+
+Use the same identity for `src/pages/background/utils/video-download-core`. The pre-commit hook rejects any other author or committer.
