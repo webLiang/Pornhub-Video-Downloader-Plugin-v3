@@ -4,7 +4,7 @@ import { waitForDomReady } from '../shared/dom';
 import { buildAv123FileName, resolveAv123VideosFromEmbed, waitForJavplayerEmbed } from './resolveVideos';
 
 /**
- * Sniff 123av.com watch pages: javplayer iframe → /stream JSON → wowstream HLS.
+ * Sniff 123av.com watch pages through the current player iframe and its /stream endpoint.
  */
 async function resolveAv123Urls(): Promise<SiteVideoInfo[]> {
   await waitForDomReady();
@@ -17,7 +17,12 @@ async function resolveAv123Urls(): Promise<SiteVideoInfo[]> {
     console.warn('[123av] javplayer embed not found on page');
     return [];
   }
-  return resolveAv123VideosFromEmbed(embed, buildAv123FileName());
+  try {
+    return await resolveAv123VideosFromEmbed(embed, buildAv123FileName());
+  } catch (error) {
+    console.warn('[123av] player resolution failed, retry on the next sniff', error);
+    return [];
+  }
 }
 
 export const getAv123Urls = createCachedGetter(resolveAv123Urls);

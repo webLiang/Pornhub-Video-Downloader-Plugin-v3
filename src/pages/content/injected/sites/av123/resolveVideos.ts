@@ -1,13 +1,8 @@
 import { getPageTitleFallback, sanitizeFileName } from '../shared/dom';
 import type { SiteVideoInfo } from '../types';
-import { fetchTextPreferPage, fetchTextViaExtension } from '../shared/extFetch';
+import { fetchTextViaExtension } from '../shared/extFetch';
 import { variantsToSiteVideos } from '../shared/hlsMaster';
-import {
-  extractJavplayerEmbedFromDocument,
-  JAVPLAYER_DOWNLOAD_HEADERS,
-  parseJavplayerStreamJson,
-  type JavplayerEmbed,
-} from './extractPlayer';
+import { extractJavplayerEmbedFromDocument, parseJavplayerStreamJson, type JavplayerEmbed } from './extractPlayer';
 
 const IFRAME_WAIT_MS = 8000;
 const IFRAME_POLL_MS = 250;
@@ -31,15 +26,14 @@ export function buildAv123FileName(): string {
 }
 
 /**
- * Resolve 123av watch-page HLS via javplayer.cc/stream JSON, then expand the master playlist.
+ * Resolve HLS using the current iframe origin for both the stream API and CDN request headers.
  */
-export async function resolveAv123VideosFromEmbed(
-  embed: JavplayerEmbed,
-  title: string,
-): Promise<SiteVideoInfo[]> {
+export async function resolveAv123VideosFromEmbed(embed: JavplayerEmbed, title: string): Promise<SiteVideoInfo[]> {
+  const playerOrigin = new URL(embed.embedUrl).origin;
+  const downloadHeaders = { Origin: playerOrigin, Referer: `${playerOrigin}/` };
   const streamJson = await fetchTextViaExtension(embed.streamUrl, {
-    Referer: embed.embedUrl || `${embed.streamUrl}`,
-    Origin: JAVPLAYER_DOWNLOAD_HEADERS.Origin,
+    Referer: embed.embedUrl,
+    Origin: playerOrigin,
     Accept: 'application/json,*/*',
   });
   const masterUrl = parseJavplayerStreamJson(streamJson);
@@ -50,13 +44,13 @@ export async function resolveAv123VideosFromEmbed(
 
   let playlistText = '';
   try {
-    playlistText = await fetchTextPreferPage(masterUrl, JAVPLAYER_DOWNLOAD_HEADERS);
+    playlistText = await fetchTextViaExtension(masterUrl, downloadHeaders);
   } catch (error) {
     console.warn('[123av] master playlist fetch failed, using stream URL as-is', error);
   }
 
   const items = variantsToSiteVideos(masterUrl, playlistText, title, {
-    headers: JAVPLAYER_DOWNLOAD_HEADERS,
+    headers: downloadHeaders,
   });
   return items;
 }

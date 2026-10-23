@@ -104,6 +104,8 @@ También se incluyen los subdominios de idioma de un host listado (por ejemplo `
 | Huangguo | huangguoai.com |
 | Huangdou H5 | iwgsqufx.cc · roufquunbu.cc · ahievheved.cc · nbsito.top · tideember.cc · momodrift.top · zuzuspot.top · zuzucast.top · glowcanvas.cc · eyeonneb.cc |
 
+123AV: detecta el dominio actual del reproductor y usa sus cabeceras Origin/Referer para descargar HLS.
+
 Huangdou: abre una ruta H5 desde https://hdmgdj.com/, reproduce el episodio y abre la extensión. La página de direcciones no contiene vídeos.
 
 ---

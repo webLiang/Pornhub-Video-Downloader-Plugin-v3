@@ -104,6 +104,8 @@ Quetta एक आधिकारिक मल्टी-प्लेटफ़ॉ�
 | Huangguo | huangguoai.com |
 | Huangdou H5 | iwgsqufx.cc · roufquunbu.cc · ahievheved.cc · nbsito.top · tideember.cc · momodrift.top · zuzuspot.top · zuzucast.top · glowcanvas.cc · eyeonneb.cc |
 
+123AV: मौजूदा प्लेयर डोमेन अपने आप पहचानता है और HLS डाउनलोड के लिए उसी के Origin/Referer हेडर इस्तेमाल करता है।
+
 Huangdou: https://hdmgdj.com/ से H5 देखने का लिंक खोलें, एपिसोड चलाएँ और फिर एक्सटेंशन खोलें। पता सूची वाले पृष्ठ पर वीडियो नहीं है।
 
 ---

@@ -104,6 +104,8 @@
 | Huangguo | huangguoai.com |
 | Huangdou H5 | iwgsqufx.cc · roufquunbu.cc · ahievheved.cc · nbsito.top · tideember.cc · momodrift.top · zuzuspot.top · zuzucast.top · glowcanvas.cc · eyeonneb.cc |
 
+123AV: يتعرف تلقائيًا على نطاق المشغّل الحالي ويستخدم ترويسات Origin/Referer الخاصة به لتنزيل HLS.
+
 Huangdou: افتح أحد روابط المشاهدة H5 من https://hdmgdj.com/ وشغّل الحلقة ثم افتح الإضافة. صفحة العناوين نفسها لا تحتوي على فيديو.
 
 ---

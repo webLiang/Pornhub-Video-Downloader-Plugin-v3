@@ -1,13 +1,5 @@
-/** javplayer.cc embed used by 123av.com watch pages. */
+/** Legacy player origin, retained for older 123av pages. */
 export const JAVPLAYER_ORIGIN = 'https://javplayer.cc';
-
-/** CDN fetches 403 without the player origin as Referer. */
-export const JAVPLAYER_DOWNLOAD_HEADERS: Record<string, string> = {
-  Origin: JAVPLAYER_ORIGIN,
-  Referer: `${JAVPLAYER_ORIGIN}/`,
-};
-
-const EMBED_ID_RE = /javplayer\.cc\/e\/([A-Za-z0-9]+)/i;
 
 export type JavplayerEmbed = {
   id: string;
@@ -16,18 +8,24 @@ export type JavplayerEmbed = {
 };
 
 /**
- * Parse a javplayer embed id from an iframe src or page HTML.
+ * Parse a player iframe URL without hard-coding the site's rotating embed domain.
  */
 export function parseJavplayerEmbedId(input: string): string | null {
-  const match = input.match(EMBED_ID_RE);
-  return match?.[1] || null;
+  try {
+    const url = new URL(input);
+    if (!/^https?:$/.test(url.protocol)) return null;
+    return url.pathname.match(/^\/e\/([A-Za-z0-9_]+)\/?$/)?.[1] || null;
+  } catch {
+    return null;
+  }
 }
 
 /**
- * Build the JSON stream endpoint observed as GET /stream?id={id}.
+ * Mirror the player's /stream request, preserving embed query parameters and its current origin.
  */
-export function buildJavplayerStreamUrl(id: string, poster?: string): string {
-  const url = new URL(`${JAVPLAYER_ORIGIN}/stream`);
+export function buildJavplayerStreamUrl(id: string, poster?: string, embedUrl = JAVPLAYER_ORIGIN): string {
+  const url = new URL('/stream', embedUrl);
+  new URL(embedUrl).searchParams.forEach((value, key) => url.searchParams.set(key, value));
   url.searchParams.set('id', id);
   if (poster) url.searchParams.set('poster', poster);
   return url.href;
@@ -55,35 +53,31 @@ export function parseJavplayerStreamJson(text: string): string | null {
 }
 
 /**
- * Find the 123av player iframe (class player__frame) or any javplayer.cc embed.
+ * Prefer the site's designated player frame; restrict legacy fallbacks to javplayer embeds.
  */
 export function extractJavplayerEmbedFromDocument(doc: Document = document): JavplayerEmbed | null {
   const iframes = [
-    ...doc.querySelectorAll<HTMLIFrameElement>('iframe.player__frame, iframe[src*="javplayer.cc"]'),
+    ...doc.querySelectorAll<HTMLIFrameElement>('iframe.player__frame'),
+    ...doc.querySelectorAll<HTMLIFrameElement>('iframe[src*="javplayer.cc"]'),
   ];
   for (const iframe of iframes) {
     const src = iframe.src || iframe.getAttribute('src') || '';
     const id = parseJavplayerEmbedId(src);
     if (!id) continue;
-    let poster: string | undefined;
-    try {
-      poster = new URL(src).searchParams.get('poster') || undefined;
-    } catch {
-      poster = undefined;
-    }
     return {
       id,
       embedUrl: src,
-      streamUrl: buildJavplayerStreamUrl(id, poster),
+      streamUrl: buildJavplayerStreamUrl(id, undefined, src),
     };
   }
 
-  const htmlId = parseJavplayerEmbedId(doc.documentElement?.innerHTML || '');
+  const embedUrl = doc.documentElement?.innerHTML.match(/https?:\/\/javplayer\.cc\/e\/[^\s"'<>]+/i)?.[0];
+  if (!embedUrl) return null;
+  const htmlId = parseJavplayerEmbedId(embedUrl);
   if (!htmlId) return null;
-  const embedUrl = `${JAVPLAYER_ORIGIN}/e/${htmlId}`;
   return {
     id: htmlId,
     embedUrl,
-    streamUrl: buildJavplayerStreamUrl(htmlId),
+    streamUrl: buildJavplayerStreamUrl(htmlId, undefined, embedUrl),
   };
 }

@@ -104,6 +104,8 @@ Quetta 同时提供一款官方的多平台视频下载插件，支持 **YouTube
 | 黄果短剧 | huangguoai.com |
 | 黄豆魔改短剧 H5 | iwgsqufx.cc · roufquunbu.cc · ahievheved.cc · nbsito.top · tideember.cc · momodrift.top · zuzuspot.top · zuzucast.top · glowcanvas.cc · eyeonneb.cc |
 
+123AV：自动识别播放页当前使用的播放器域名，HLS 下载使用对应的 Origin/Referer 请求头。
+
 黄豆：从 https://hdmgdj.com/ 进入「在线 H5 观看」线路，开始播放当前集后打开插件。地址发布页本身没有可下载的视频。
 
 ---

@@ -104,6 +104,8 @@ Language subdomains of a listed host are included (for example `cn.pornhub.com`,
 | Huangguo | huangguoai.com |
 | Huangdou H5 | iwgsqufx.cc · roufquunbu.cc · ahievheved.cc · nbsito.top · tideember.cc · momodrift.top · zuzuspot.top · zuzucast.top · glowcanvas.cc · eyeonneb.cc |
 
+123AV: automatically follows the watch page's current player domain and uses its Origin/Referer for HLS downloads.
+
 Huangdou: open an H5 watching route from https://hdmgdj.com/, start the episode, then open the extension. The address publication page itself has no video.
 
 ---
