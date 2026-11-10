@@ -122,6 +122,13 @@ const THEME_HIGHLIGHTS = {
     ar: 'تمت إضافة دعم لموقعي Huangdou وHuangguo.',
     hi: 'Huangdou और Huangguo साइटों के लिए समर्थन जोड़ा गया।',
   },
+  huangguoPlayback: {
+    en: 'Huangguo playback works again on the permanent domain and rotating mirrors such as *.adihsppe.cc. Address-only pages are not video hosts.',
+    zh_CN: '黄果播放地址恢复可用：永久域名和 *.adihsppe.cc 这类轮换镜像都能下载。只发布地址、没有播放器的页面不是视频站。',
+    es: 'La reproducción de Huangguo vuelve a funcionar en el dominio permanente y en espejos rotativos como *.adihsppe.cc. Las páginas que solo publican direcciones no son sitios de vídeo.',
+    ar: 'عاد تشغيل Huangguo على النطاق الدائم والمرايا المتبدلة مثل *.adihsppe.cc. الصفحات التي تنشر العناوين فقط ليست مواقع فيديو.',
+    hi: 'Huangguo प्लेबैक स्थायी डोमेन और *.adihsppe.cc जैसे बदलते मिरर पर फिर से काम करता है। केवल पता दिखाने वाले पेज वीडियो साइट नहीं हैं।',
+  },
 };
 
 /** Map i18n message keys to release themes (used with locale diffs vs previous tag). */
@@ -149,7 +156,8 @@ const COMMIT_THEME_RULES = [
   { theme: 'missav123av', test: /missav|123av|surrit|javplayer/i },
   { theme: 'pornhubChannelName', test: /usernameWrap|getPornhubUploaderName|related.?video|channel name|uploader name/i },
   { theme: 'popupGithubCta', test: /popupSupport|star this repo|report a bug|github.*star|给仓库点/i },
-  { theme: 'huangdouHuangguo', test: /huangdou|huangguo|黄豆|黄果/i },
+  { theme: 'huangguoPlayback', test: /encrypted playback|rotating domains/i },
+  { theme: 'huangdouHuangguo', test: /huangdou|黄豆|黄果|huangguo(?!.*encrypted playback)/i },
 ];
 
 /** @typedef {{ notesFile?: string, bodyFile?: string, assets: string[], dryRun: boolean, publish: boolean, skipBuild: boolean, commit: boolean, push: boolean, title?: string, commitMessage?: string }} CliOptions */
