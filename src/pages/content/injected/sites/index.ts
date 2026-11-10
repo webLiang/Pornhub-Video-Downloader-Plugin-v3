@@ -4,6 +4,7 @@ import { getMissavUrls } from './missav';
 import { getTangxinVlogUrls } from './tangxinvlog';
 import { getRouvideoUrls } from './rouvideo';
 import { getHuangguoUrls } from './huangguo';
+import huangguoDomains from './huangguo/domains.json';
 import { getHuangdouUrls } from './huangdou';
 import huangdouDomains from './huangdou/domains.json';
 
@@ -13,9 +14,7 @@ import huangdouDomains from './huangdou/domains.json';
  * Keys must match curTopDomain (last two hostname labels).
  */
 export const siteHostGetUrls: Record<string, { getUrls: SiteGetUrls }> = {
-  'huangguoai.com': {
-    getUrls: getHuangguoUrls,
-  },
+  ...Object.fromEntries(huangguoDomains.map(domain => [domain, { getUrls: getHuangguoUrls }])),
   ...Object.fromEntries(huangdouDomains.map(domain => [domain, { getUrls: getHuangdouUrls }])),
   'rou.video': {
     getUrls: getRouvideoUrls,

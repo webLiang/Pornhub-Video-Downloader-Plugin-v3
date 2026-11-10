@@ -1,14 +1,22 @@
 import type { SiteVideoInfo } from '../types';
 import { waitForDomReady, sanitizeFileName } from '../shared/dom';
-import { fetchTextPreferPage } from '../shared/extFetch';
+import {
+  HUANGGUO_PLAYBACK_TIMEOUT_MS,
+  HUANGGUO_REQUEST_EVENT,
+  HUANGGUO_RESPONSE_EVENT,
+  isHuangguoMediaId,
+  normalizeHuangguoMediaUrl,
+  sanitizeHuangguoHeaders,
+  type HuangguoPlaybackRequest,
+  type HuangguoPlaybackResult,
+} from './bridge';
 
 interface HuangguoInitialData {
-  id?: string | number;
   title?: string;
   ep?: number;
-  videoSrc?: string;
-  epPlaySrcs?: Record<string, string>;
 }
+
+let playbackRequestSeq = 0;
 
 /** Read the current episode rather than caching the initial SSR episode after navigation. */
 export function getHuangguoEpisode(url: URL, initial: HuangguoInitialData, doc: Document): number {
@@ -20,62 +28,80 @@ export function getHuangguoEpisode(url: URL, initial: HuangguoInitialData, doc: 
       initial.ep ||
       1,
   );
-  return Number.isSafeInteger(episode) && episode > 0 ? episode : 1;
+  return Number.isSafeInteger(episode) && episode > 0 && episode <= 2147483647 ? episode : 1;
 }
 
-/** Accept only real HTTP media URLs while preserving the complete CDN signature. */
-export function getHuangguoMediaUrl(value: unknown): string | null {
-  if (typeof value !== 'string') return null;
-  try {
-    const url = new URL(value);
-    return /^https?:$/.test(url.protocol) && /\.(?:m3u8|mp4)(?:$|[?#])/i.test(url.href) ? url.href : null;
-  } catch {
-    return null;
-  }
-}
-
-/** Refresh the site's signed playback URL on each sniff and use SSR data only on transport failure. */
+/**
+ * Refresh the signed playlist through the page's encrypted playback API.
+ * SSR `videoSrc` is empty on current watch pages and is not a fallback.
+ */
 export async function getHuangguoUrls(): Promise<SiteVideoInfo[]> {
   await waitForDomReady();
   const match = location.pathname.match(/^\/(?:video|detail)\/(\d+)(?:\/ep-\d+)?\/?$/);
-  if (!match) return [];
+  if (!match || !isHuangguoMediaId(match[1], 19)) return [];
   let initial: HuangguoInitialData;
   try {
     initial = JSON.parse(document.getElementById('videoInitialData')?.textContent || '{}');
     if (!initial || typeof initial !== 'object' || Array.isArray(initial)) return [];
-  } catch {
+  } catch (error) {
+    console.warn('[huangguo] initial data parse failed', error);
     return [];
   }
   const pageUrl = location.href;
   const episode = getHuangguoEpisode(new URL(pageUrl), initial, document);
-  let videoUrl: string | null = null;
-  try {
-    const apiUrl = new URL(`/api/videos/${match[1]}/play`, location.origin);
-    apiUrl.searchParams.set('ep', String(episode));
-    const response = JSON.parse(await fetchTextPreferPage(apiUrl.href));
-    if (response.status !== 1 && response.code !== 200) return [];
-    if (response.data?.ep_num != null && Number(response.data.ep_num) !== episode) return [];
-    videoUrl = getHuangguoMediaUrl(response.data?.video_url);
-  } catch {
-    if (String(initial.id) === match[1]) {
-      videoUrl = getHuangguoMediaUrl(
-        initial.epPlaySrcs?.[String(episode)] || (Number(initial.ep || 1) === episode ? initial.videoSrc : undefined),
-      );
-    }
-  }
-  if (!videoUrl || location.href !== pageUrl || getHuangguoEpisode(new URL(pageUrl), initial, document) !== episode)
+  const playback = await requestHuangguoPlayback({
+    requestId: `hg-${(playbackRequestSeq += 1)}`,
+    pageUrl,
+    id: match[1],
+    episode,
+  });
+  const videoUrl = normalizeHuangguoMediaUrl(playback?.videoUrl);
+  if (
+    !videoUrl ||
+    playback?.pageUrl !== pageUrl ||
+    location.href !== pageUrl ||
+    getHuangguoEpisode(new URL(pageUrl), initial, document) !== episode
+  ) {
     return [];
+  }
   const title = sanitizeFileName(
-    typeof initial.title === 'string'
+    typeof initial.title === 'string' && initial.title
       ? initial.title
       : document.querySelector('h1')?.textContent || `黄果短剧 ${match[1]}`,
   );
-  return [
-    {
-      quality: 'default',
-      videoUrl,
-      format: /\.mp4(?:$|[?#])/i.test(videoUrl) ? 'mp4' : 'm3u8',
-      title: `${title} 第${String(episode).padStart(2, '0')}集`,
-    },
-  ];
+  const headers = sanitizeHuangguoHeaders(playback?.headers);
+  const info: SiteVideoInfo = {
+    quality: 'default',
+    videoUrl,
+    format: /\.mp4(?:$|[?#])/i.test(videoUrl) ? 'mp4' : 'm3u8',
+    title: `${title} 第${String(episode).padStart(2, '0')}集`,
+  };
+  if (headers) info.headers = headers;
+  return [info];
+}
+
+/** Ask the MAIN-world bridge and ignore responses that belong to another sniff. */
+function requestHuangguoPlayback(request: HuangguoPlaybackRequest): Promise<HuangguoPlaybackResult | null> {
+  return new Promise(resolve => {
+    const timeout = setTimeout(() => finish(null), HUANGGUO_PLAYBACK_TIMEOUT_MS);
+    /** Stop listening after the matching response or the deadline. */
+    function finish(result: HuangguoPlaybackResult | null): void {
+      clearTimeout(timeout);
+      document.removeEventListener(HUANGGUO_RESPONSE_EVENT, receive);
+      resolve(result);
+    }
+    /** Accept only the JSON payload for this request id. */
+    function receive(event: Event): void {
+      try {
+        const result = JSON.parse((event as CustomEvent<string>).detail) as HuangguoPlaybackResult;
+        if (result?.requestId !== request.requestId) return;
+        finish(result);
+      } catch (error) {
+        console.warn('[huangguo] playback response parse failed', error);
+        finish(null);
+      }
+    }
+    document.addEventListener(HUANGGUO_RESPONSE_EVENT, receive);
+    document.dispatchEvent(new CustomEvent(HUANGGUO_REQUEST_EVENT, { detail: JSON.stringify(request) }));
+  });
 }

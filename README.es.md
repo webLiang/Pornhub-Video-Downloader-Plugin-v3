@@ -101,12 +101,14 @@ También se incluyen los subdominios de idioma de un host listado (por ejemplo `
 | 123AV | 123av.com |
 | Tangxin Vlog | tangxinvlog.app |
 | Rou.video | rou.video |
-| Huangguo | huangguoai.com |
+| Huangguo | huangguoai.com · huangguoai.io · adihsppe.cc |
 | Huangdou H5 | iwgsqufx.cc · roufquunbu.cc · ahievheved.cc · nbsito.top · tideember.cc · momodrift.top · zuzuspot.top · zuzucast.top · glowcanvas.cc · eyeonneb.cc |
 
 123AV: detecta el dominio actual del reproductor y usa sus cabeceras Origin/Referer para descargar HLS.
 
 Huangdou: abre una ruta H5 desde https://hdmgdj.com/, reproduce el episodio y abre la extensión. La página de direcciones no contiene vídeos.
+
+Huangguo: abre una página de reproducción en estos dominios. Los subdominios rotativos como `00b4b.adihsppe.cc` coinciden con `adihsppe.cc`. `hgai12.com`, `huangguoai.pages.dev` y `huang-guo.pages.dev` solo publican direcciones y no tienen vídeo.
 
 ---
 

@@ -101,12 +101,14 @@
 | 123AV | 123av.com |
 | Tangxin Vlog | tangxinvlog.app |
 | Rou.video | rou.video |
-| Huangguo | huangguoai.com |
+| Huangguo | huangguoai.com · huangguoai.io · adihsppe.cc |
 | Huangdou H5 | iwgsqufx.cc · roufquunbu.cc · ahievheved.cc · nbsito.top · tideember.cc · momodrift.top · zuzuspot.top · zuzucast.top · glowcanvas.cc · eyeonneb.cc |
 
 123AV: يتعرف تلقائيًا على نطاق المشغّل الحالي ويستخدم ترويسات Origin/Referer الخاصة به لتنزيل HLS.
 
 Huangdou: افتح أحد روابط المشاهدة H5 من https://hdmgdj.com/ وشغّل الحلقة ثم افتح الإضافة. صفحة العناوين نفسها لا تحتوي على فيديو.
+
+Huangguo: افتح صفحة المشاهدة على هذه النطاقات. النطاقات الفرعية المتبدلة مثل `00b4b.adihsppe.cc` تطابق `adihsppe.cc`. صفحات `hgai12.com` و`huangguoai.pages.dev` و`huang-guo.pages.dev` تنشر العناوين فقط ولا تحتوي على فيديو.
 
 ---
 

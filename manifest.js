@@ -1,6 +1,15 @@
 import fs from 'node:fs';
 const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
 const huangdouDomains = JSON.parse(fs.readFileSync('./src/pages/content/injected/sites/huangdou/domains.json', 'utf8'));
+const huangguoDomains = JSON.parse(fs.readFileSync('./src/pages/content/injected/sites/huangguo/domains.json', 'utf8'));
+
+/**
+ * Apex plus subdomains. `https://*.example.com/*` does not match `https://example.com/*`.
+ * @param {string[]} domains
+ */
+function registrableHostMatches(domains) {
+  return domains.flatMap(domain => [`https://${domain}/*`, `https://*.${domain}/*`]);
+}
 
 /**
  * After changing, please reload the extension at `chrome://extensions`
@@ -46,7 +55,11 @@ const manifest = {
     },
     {
       run_at: 'document_start',
-      matches: ['https://*.redtube.com/*', ...huangdouDomains.map(domain => `https://*.${domain}/*`)],
+      matches: [
+        'https://*.redtube.com/*',
+        ...huangdouDomains.map(domain => `https://*.${domain}/*`),
+        ...registrableHostMatches(huangguoDomains),
+      ],
       js: ['src/pages/injectedMain/index.js'],
       world: 'MAIN',
     },

@@ -101,12 +101,14 @@ Language subdomains of a listed host are included (for example `cn.pornhub.com`,
 | 123AV | 123av.com |
 | Tangxin Vlog | tangxinvlog.app |
 | Rou.video | rou.video |
-| Huangguo | huangguoai.com |
+| Huangguo | huangguoai.com · huangguoai.io · adihsppe.cc |
 | Huangdou H5 | iwgsqufx.cc · roufquunbu.cc · ahievheved.cc · nbsito.top · tideember.cc · momodrift.top · zuzuspot.top · zuzucast.top · glowcanvas.cc · eyeonneb.cc |
 
 123AV: automatically follows the watch page's current player domain and uses its Origin/Referer for HLS downloads.
 
 Huangdou: open an H5 watching route from https://hdmgdj.com/, start the episode, then open the extension. The address publication page itself has no video.
+
+Huangguo: open a watch page on these hosts. Rotating subdomains such as `00b4b.adihsppe.cc` match `adihsppe.cc`. `hgai12.com`, `huangguoai.pages.dev`, and `huang-guo.pages.dev` only publish addresses and have no video.
 
 ---
 
