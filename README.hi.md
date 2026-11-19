@@ -8,7 +8,9 @@
 - **हिन्दी**（वर्तमान）：[README.hi.md](README.hi.md)
 - **العربية**：[README.ar.md](README.ar.md)
 
-Chrome एक्सटेंशन जो Pornhub और अन्य समर्थित साइटों पर **मल्टी-रेज़ोल्यूशन** में वीडियो डाउनलोड करने देता है। यह रिपॉज़िटरी इसलिए मेंटेन की जा रही है क्योंकि [मूल प्रोजेक्ट](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) लंबे समय से अपडेट नहीं है और Manifest V2 डिप्रिकेट हो रहा है।
+Chrome एक्सटेंशन, Pornhub वीडियो डाउनलोड के लिए, और Xvideos, XNXX, xHamster, RedTube, MissAV, 123AV, Tangxin Vlog, Rou.video, Huangguo तथा Huangdou से मल्टी-रेज़ोल्यूशन डाउनलोड के लिए।
+
+[मूल प्रोजेक्ट](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) का रखरखाव रुकने और Manifest V2 के डिप्रिकेट होने के बाद यह रिपॉज़िटरी जारी है।
 
 <h3 align="center">
   <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><b>chrome-extension-boilerplate-ai</b></a> पर आधारित
@@ -36,7 +38,7 @@ Chrome एक्सटेंशन जो Pornhub और अन्य समर�
 - एक्सटेंशन वीडियो पेज में JS inject करके वास्तविक stream URL निकालता है और डाउनलोड लिंक बनाता है।
 
 <p align="center">
-  <img src="./images/ScreenShot_2026-01-30_115236_135.png" alt="एक्सटेंशन स्क्रीनशॉट" width="320" />
+  <img src="./images/ScreenShot_2026-01-30_115236_135.png" alt="Pornhub वीडियो डाउनलोडर का मल्टी-रेज़ोल्यूशन चयन" width="320" />
 </p>
 
 ---
@@ -53,7 +55,7 @@ Chrome एक्सटेंशन जो Pornhub और अन्य समर�
 > **PC वीडियो डाउनलोडर एक्सटेंशन:** **https://www.quetta.net/products/pcextension**
 
 <p align="center">
-  <img src="./images/vC9a0X1ijXbch5Nqw4EvBAPjg.avif" alt="Quetta मोबाइल ब्राउज़र" width="240" />
+  <img src="./images/vC9a0X1ijXbch5Nqw4EvBAPjg.avif" alt="Quetta मोबाइल ब्राउज़र में Pornhub वीडियो डाउनलोडर" width="240" />
 </p>
 
 Quetta एक आधिकारिक मल्टी-प्लेटफ़ॉर्म वीडियो डाउनलोडर एक्सटेंशन भी देता है — **YouTube · Twitter/X · Facebook · Bilibili · TikTok · Instagram · Vimeo** आदि पर काम करता है, और इस प्लगइन का डेस्कटॉप पर बढ़िया साथी है।
@@ -77,7 +79,7 @@ Quetta एक आधिकारिक मल्टी-प्लेटफ़ॉ�
 3. **Load unpacked** पर क्लिक करें और एक्सट्रैक्ट किए हुए फ़ोल्डर को चुनें
 
 <p align="center">
-  <img src="./images/usage.png" alt="Chrome में एक्सटेंशन लोड" width="480" />
+  <img src="./images/usage.png" alt="Chrome में Pornhub वीडियो डाउनलोडर लोड करना" width="480" />
 </p>
 
 ### अन्य Chromium ब्राउज़र (जैसे 360)
@@ -86,9 +88,9 @@ Quetta एक आधिकारिक मल्टी-प्लेटफ़ॉ�
 
 ---
 
-## समर्थित साइटें
+## जिन साइटों से डाउनलोड हो सकता है
 
-लिस्टेड होस्ट के भाषा सबडोमेन भी शामिल हैं (जैसे `cn.pornhub.com`, `de.pornhub.com`, `fr.pornhub.com`, `es.pornhub.com`)। मैच रजिस्ट्रबल डोमेन से होता है, यानी होस्टनेम के आखिरी दो लेबल। अलग से रजिस्टर किए देश/क्षेत्र डोमेन नीचे दिए हैं।
+नीचे दी साइटों के वीडियो डाउनलोड हो सकते हैं। लिस्टेड होस्ट के भाषा सबडोमेन भी शामिल हैं (जैसे `cn.pornhub.com`, `de.pornhub.com`, `fr.pornhub.com`, `es.pornhub.com`)। मैच रजिस्ट्रबल डोमेन से होता है, यानी होस्टनेम के आखिरी दो लेबल। अलग से रजिस्टर किए देश/क्षेत्र डोमेन नीचे दिए हैं।
 
 | साइट | डोमेन |
 |------|------|

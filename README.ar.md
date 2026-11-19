@@ -8,7 +8,9 @@
 - **हिन्दी**：[README.hi.md](README.hi.md)
 - **العربية**（الحالي）：[README.ar.md](README.ar.md)
 
-إضافة Chrome لتنزيل مقاطع الفيديو بدقات متعددة من Pornhub ومواقع أخرى مدعومة. تتم صيانة هذا المستودع لأن [المشروع الأصلي](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) غير مُحدَّث وManifest V2 قيد الإيقاف.
+إضافة Chrome لتنزيل فيديو Pornhub، والتنزيل بدقات متعددة من Xvideos وXNXX وxHamster وRedTube وMissAV و123AV وTangxin Vlog وRou.video وHuangguo وHuangdou.
+
+يستمر هذا المستودع بعد توقف صيانة [المشروع الأصلي](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) وإيقاف Manifest V2.
 
 <h3 align="center">
   مبني على <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><b>chrome-extension-boilerplate-ai</b></a>
@@ -36,7 +38,7 @@
 - تقوم الإضافة بحقن JS داخل صفحة الفيديو لاستخراج رابط البث الحقيقي وتوليد رابط التنزيل.
 
 <p align="center">
-  <img src="./images/ScreenShot_2026-01-30_115236_135.png" alt="لقطة شاشة للإضافة" width="320" />
+  <img src="./images/ScreenShot_2026-01-30_115236_135.png" alt="واجهة اختيار الدقة في أداة تنزيل فيديو Pornhub" width="320" />
 </p>
 
 ---
@@ -53,7 +55,7 @@
 > **إضافة تنزيل الفيديو على الكمبيوتر:** **https://www.quetta.net/products/pcextension**
 
 <p align="center">
-  <img src="./images/vC9a0X1ijXbch5Nqw4EvBAPjg.avif" alt="متصفح Quetta للجوال" width="240" />
+  <img src="./images/vC9a0X1ijXbch5Nqw4EvBAPjg.avif" alt="استخدام أداة تنزيل فيديو Pornhub في متصفح Quetta للجوال" width="240" />
 </p>
 
 تقدّم Quetta أيضًا إضافة رسمية لتنزيل الفيديو متعددة المنصات — تعمل على **YouTube · Twitter/X · Facebook · Bilibili · TikTok · Instagram · Vimeo** والمزيد، وهي رفيق عملي لهذه الإضافة على سطح المكتب.
@@ -77,7 +79,7 @@
 3. اضغط **Load unpacked** واختر مجلد الإضافة بعد فك الضغط
 
 <p align="center">
-  <img src="./images/usage.png" alt="تحميل الإضافة في Chrome" width="480" />
+  <img src="./images/usage.png" alt="تحميل أداة تنزيل فيديو Pornhub في Chrome" width="480" />
 </p>
 
 ### متصفحات Chromium الأخرى
@@ -86,9 +88,9 @@
 
 ---
 
-## المواقع المدعومة
+## مواقع يمكن التنزيل منها
 
-تُدرج أيضًا النطاقات الفرعية اللغوية للمضيف المذكور (مثل `cn.pornhub.com` و`de.pornhub.com` و`fr.pornhub.com` و`es.pornhub.com`). تعتمد المطابقة على النطاق القابل للتسجيل: آخر جزأين من اسم المضيف. النطاقات الخاصة بدول ومسجّلة بشكل مستقل مذكورة أدناه.
+يمكن تنزيل الفيديو من المواقع في الجدول أدناه. تُدرج أيضًا النطاقات الفرعية اللغوية للمضيف المذكور (مثل `cn.pornhub.com` و`de.pornhub.com` و`fr.pornhub.com` و`es.pornhub.com`). تعتمد المطابقة على النطاق القابل للتسجيل: آخر جزأين من اسم المضيف. النطاقات الخاصة بدول ومسجّلة بشكل مستقل مذكورة أدناه.
 
 | الموقع | النطاقات |
 |--------|----------|

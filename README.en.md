@@ -1,4 +1,4 @@
-# Pornhub Video Downloader — Multi-Resolution Download
+# Pornhub Video Download — Multi-Resolution Chrome Extension
 
 **Languages**
 
@@ -8,7 +8,9 @@
 - **हिन्दी**：[README.hi.md](README.hi.md)
 - **العربية**：[README.ar.md](README.ar.md)
 
-Chrome extension for **multi-resolution video download** on Pornhub and other supported sites. This repo is maintained because the [original project](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) is unmaintained and Manifest V2 will be deprecated in 2024.
+Chrome extension for Pornhub video download, with multi-resolution download from Xvideos, XNXX, xHamster, RedTube, MissAV, 123AV, Tangxin Vlog, Rou.video, Huangguo, and Huangdou.
+
+This repo continues after the [original project](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) stopped being maintained and Manifest V2 was deprecated.
 
 <h3 align="center">
   Built on <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><b>chrome-extension-boilerplate-ai</b></a>
@@ -36,7 +38,7 @@ Chrome extension for **multi-resolution video download** on Pornhub and other su
 - The extension injects JS into video pages to obtain stream URLs and extract download links.
 
 <p align="center">
-  <img src="./images/ScreenShot_2026-01-30_115236_135.png" alt="Extension screenshot" width="320" />
+  <img src="./images/ScreenShot_2026-01-30_115236_135.png" alt="Pornhub video downloader multi-resolution picker" width="320" />
 </p>
 
 ---
@@ -53,7 +55,7 @@ To use this extension on **phones or tablets**, you need a browser that supports
 > **PC video downloader extension:** **https://www.quetta.net/products/pcextension**
 
 <p align="center">
-  <img src="./images/vC9a0X1ijXbch5Nqw4EvBAPjg.avif" alt="Quetta mobile browser" width="240" />
+  <img src="./images/vC9a0X1ijXbch5Nqw4EvBAPjg.avif" alt="Using the Pornhub video downloader in the Quetta mobile browser" width="240" />
 </p>
 
 Quetta also ships an official multi-platform video downloader extension — works on **YouTube · Twitter/X · Facebook · Bilibili · TikTok · Instagram · Vimeo** and more, a handy desktop complement to this plugin.
@@ -77,7 +79,7 @@ Quetta also ships an official multi-platform video downloader extension — work
 3. Click **Load unpacked** and select the extracted extension folder.
 
 <p align="center">
-  <img src="./images/usage.png" alt="Chrome load extension" width="480" />
+  <img src="./images/usage.png" alt="Loading the Pornhub video downloader in Chrome" width="480" />
 </p>
 
 ### Other Chromium-based Browsers (e.g. 360, 360 Extreme)
@@ -86,9 +88,9 @@ Quetta also ships an official multi-platform video downloader extension — work
 
 ---
 
-## Supported Sites
+## Sites you can download from
 
-Language subdomains of a listed host are included (for example `cn.pornhub.com`, `de.pornhub.com`, `fr.pornhub.com`, `es.pornhub.com`). Matching uses the registrable domain: the last two hostname labels. Separate country domains that are registered on their own are listed below.
+Videos on the sites below can be downloaded. Language subdomains of a listed host are included (for example `cn.pornhub.com`, `de.pornhub.com`, `fr.pornhub.com`, `es.pornhub.com`). Matching uses the registrable domain: the last two hostname labels. Separate country domains that are registered on their own are listed below.
 
 | Site | Domains |
 |------|---------|

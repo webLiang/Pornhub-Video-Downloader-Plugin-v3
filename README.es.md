@@ -8,7 +8,9 @@
 - **हिन्दी**：[README.hi.md](README.hi.md)
 - **العربية**：[README.ar.md](README.ar.md)
 
-Extensión de Chrome para descargar videos en **múltiples resoluciones** desde Pornhub y otros sitios compatibles. Este repositorio se mantiene porque el [proyecto original](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) no se actualiza y Manifest V2 se deprecará.
+Extensión de Chrome para descargar videos de Pornhub, y también en múltiples resoluciones desde Xvideos, XNXX, xHamster, RedTube, MissAV, 123AV, Tangxin Vlog, Rou.video, Huangguo y Huangdou.
+
+Este repositorio continúa después de que el [proyecto original](https://github.com/zgao264/Pornhub-Video-Downloader-Plugin) dejó de mantenerse y Manifest V2 quedó obsoleto.
 
 <h3 align="center">
   Construido con <a href="https://github.com/webLiang/chrome-extension-boilerplate-ai"><b>chrome-extension-boilerplate-ai</b></a>
@@ -36,7 +38,7 @@ Extensión de Chrome para descargar videos en **múltiples resoluciones** desde 
 - La extensión inyecta JS en la página del video para obtener la URL real del stream y extraer el enlace de descarga.
 
 <p align="center">
-  <img src="./images/ScreenShot_2026-01-30_115236_135.png" alt="Captura de la extensión" width="320" />
+  <img src="./images/ScreenShot_2026-01-30_115236_135.png" alt="Selector de resolución del descargador de videos de Pornhub" width="320" />
 </p>
 
 ---
@@ -53,7 +55,7 @@ Para usar esta extensión en **móvil/tablet**, necesitas un navegador que permi
 > **Extensión PC para descargar video:** **https://www.quetta.net/products/pcextension**
 
 <p align="center">
-  <img src="./images/vC9a0X1ijXbch5Nqw4EvBAPjg.avif" alt="Navegador móvil Quetta" width="240" />
+  <img src="./images/vC9a0X1ijXbch5Nqw4EvBAPjg.avif" alt="Uso del descargador de videos de Pornhub en el navegador móvil Quetta" width="240" />
 </p>
 
 Quetta también ofrece una extensión oficial multiplataforma para descargar video — compatible con **YouTube · Twitter/X · Facebook · Bilibili · TikTok · Instagram · Vimeo** y más, un complemento útil de este plugin en el escritorio.
@@ -77,7 +79,7 @@ Quetta también ofrece una extensión oficial multiplataforma para descargar vid
 3. Haz clic en **Cargar descomprimida** y selecciona la carpeta extraída
 
 <p align="center">
-  <img src="./images/usage.png" alt="Cargar extensión en Chrome" width="480" />
+  <img src="./images/usage.png" alt="Cargar el descargador de videos de Pornhub en Chrome" width="480" />
 </p>
 
 ### Otros navegadores Chromium (p. ej. 360)
@@ -86,9 +88,9 @@ Quetta también ofrece una extensión oficial multiplataforma para descargar vid
 
 ---
 
-## Sitios compatibles
+## Sitios desde los que puedes descargar
 
-También se incluyen los subdominios de idioma de un host listado (por ejemplo `cn.pornhub.com`, `de.pornhub.com`, `fr.pornhub.com`, `es.pornhub.com`). La coincidencia usa el dominio registrable: las dos últimas etiquetas del hostname. Los dominios de país registrados por separado aparecen abajo.
+Se pueden descargar los videos de los sitios de abajo. También se incluyen los subdominios de idioma de un host listado (por ejemplo `cn.pornhub.com`, `de.pornhub.com`, `fr.pornhub.com`, `es.pornhub.com`). La coincidencia usa el dominio registrable: las dos últimas etiquetas del hostname. Los dominios de país registrados por separado aparecen abajo.
 
 | Sitio | Dominios |
 |-------|----------|
