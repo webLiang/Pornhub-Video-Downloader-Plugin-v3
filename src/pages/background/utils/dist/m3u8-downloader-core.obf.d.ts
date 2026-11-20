@@ -7,7 +7,14 @@ interface M3U8DownloaderOptions {
   dataTimeout?: number;
   onProgress?: (data: any) => void;
   onError?: (error: string) => void;
-  onComplete?: (data: { fileName: string; duration: number; totalSegments: number }) => void;
+  onComplete?: (data: {
+    fileName: string;
+    duration: number;
+    totalSegments: number;
+    partial: boolean;
+    missingSegments: number;
+    downloadedSegments: number;
+  }) => void;
 }
 
 interface StartOptions {
@@ -20,6 +27,10 @@ interface StartOptions {
   opfsFileName?: string;
   /** Relative subdirectory under Chrome downloads folder */
   downloadSubdir?: string;
+  /** Alternate rendition playlists used to recover aligned failed segments. */
+  fallbackPlaylistUrls?: string[];
+  maxMissingRatio?: number;
+  maxSegmentAttempts?: number;
 }
 
 declare class M3U8Downloader {
@@ -30,6 +41,7 @@ declare class M3U8Downloader {
   resume(): void;
   togglePause(): void;
   retry(index: number): void;
+  savePartial(): Promise<void>;
 }
 
 export default M3U8Downloader;

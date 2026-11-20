@@ -24,6 +24,14 @@ export type DownloadTask = {
   finishNum: number;
   targetSegment: number;
   errorNum: number;
+  retriesExhausted?: boolean;
+  retryAttempt?: number;
+  maxSegmentAttempts?: number;
+  /** Export may contain gaps; never present it as a complete copy. */
+  partialExport?: boolean;
+  missingSegments?: number;
+  /** Actual prepared output filename, including extension and partial marker. */
+  exportFileName?: string;
 
   // file saving stage progress (mp4 or merged file)
   fileDownloadProgress?: number; // 0-100
@@ -34,11 +42,15 @@ export type DownloadTask = {
 
   // used to attach correct headers for fetch requests in background
   headers?: Record<string, string>;
+  /** Alternate HLS renditions used only when a segment is persistently unavailable. */
+  fallbackUrls?: string[];
 
   /** Deterministic OPFS blob name for this task (set on enqueue) */
   opfsCacheFileName?: string;
   /** MP4 partial OPFS size for Range resume (bytes written before pause) */
   cachedBytes?: number;
+  /** Successfully committed HLS segments; memory-only buffers are excluded. */
+  cachedSegments?: number;
 
   /** Cumulative bytes fetched from network (for speed display) */
   fetchedBytes?: number;
@@ -93,6 +105,7 @@ const downloadQueueStorage: DownloadQueueStorage = {
         quality: task.quality,
         pageUrl: task.pageUrl,
         headers: task.headers,
+        fallbackUrls: task.fallbackUrls,
         status: 'queued',
         createdAt: Date.now(),
         progress: 0,

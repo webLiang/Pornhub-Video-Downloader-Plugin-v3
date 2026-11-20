@@ -152,7 +152,7 @@
 
   "queueTitle": {
     "description": "Queue title",
-    "message": "Download Queue (max 6 at the same time)"
+    "message": "Download queue"
   },
   "queueMetaDownloading": {
     "description": "Queue meta: downloading count",
@@ -229,7 +229,7 @@
   },
   "taskErrorCount": {
     "description": "Error count label",
-    "message": "Errors: $1"
+    "message": "To recover: $1 segments"
   },
   "taskFailedReason": {
     "description": "Failed reason label",
@@ -290,5 +290,129 @@
   "popupSupportBug": {
     "description": "Footer link to open a GitHub issue",
     "message": "Report a bug"
+  },
+  "queueConcurrency": {
+    "description": "queueConcurrency",
+    "message": "Up to 6 at once"
+  },
+  "downloadToleranceLabel": {
+    "description": "downloadToleranceLabel",
+    "message": "Allowed missing segments"
+  },
+  "downloadToleranceHint": {
+    "description": "downloadToleranceHint",
+    "message": "Try each segment up to 4 times, then automatically save if missing segments are within this limit. Applies to new tasks."
+  },
+  "downloadToleranceStrict": {
+    "description": "downloadToleranceStrict",
+    "message": "0% · Complete only"
+  },
+  "taskActionMore": {
+    "description": "taskActionMore",
+    "message": "More actions"
+  },
+  "taskActionCopyPage": {
+    "description": "taskActionCopyPage",
+    "message": "Copy source page URL"
+  },
+  "taskActionCopyResource": {
+    "description": "taskActionCopyResource",
+    "message": "Copy resource URL"
+  },
+  "taskActionSavePartial": {
+    "description": "taskActionSavePartial",
+    "message": "Save downloaded part"
+  },
+  "taskSavePartialHint": {
+    "description": "taskSavePartialHint",
+    "message": "Save and end this task; missing segments cause gaps in playback."
+  },
+  "taskStatusNeedsAttention": {
+    "description": "taskStatusNeedsAttention",
+    "message": "Needs attention"
+  },
+  "taskStatusFailed": {
+    "description": "taskStatusFailed",
+    "message": "Download failed"
+  },
+  "taskProgressLabel": {
+    "description": "taskProgressLabel",
+    "message": "Download progress"
+  },
+  "taskRetryAttempt": {
+    "description": "taskRetryAttempt",
+    "message": "Attempt $1 / $2"
+  },
+  "taskRetriesExhaustedHint": {
+    "description": "taskRetriesExhaustedHint",
+    "message": "Some segments still failed after repeated attempts. Downloaded data is kept; retry or save the downloaded part."
+  },
+  "taskPartialSavingHint": {
+    "description": "taskPartialSavingHint",
+    "message": "Saving a partial video with $1 missing segments."
+  },
+  "toastPartialSaving": {
+    "description": "toastPartialSaving",
+    "message": "Saving the downloaded part"
+  },
+  "toastPartialFailed": {
+    "description": "toastPartialFailed",
+    "message": "Save failed: $1"
+  },
+  "toastLinkCopied": {
+    "description": "toastLinkCopied",
+    "message": "URL copied"
+  },
+  "toastCopyFailed": {
+    "description": "toastCopyFailed",
+    "message": "Couldn't copy. Please try again."
+  },
+  "toastSettingsFailed": {
+    "description": "toastSettingsFailed",
+    "message": "Couldn't save settings. Please try again."
+  },
+  "toastPartialComplete": {
+    "description": "toastPartialComplete",
+    "message": "Partial video saved with $1 missing segments."
+  },
+  "historyPartial": {
+    "description": "historyPartial",
+    "message": "Partial · $1 missing segments"
+  },
+  "popupDownloadSettings": {
+    "description": "popupDownloadSettings",
+    "message": "Download settings"
+  },
+  "popupDefaultFolder": {
+    "description": "popupDefaultFolder",
+    "message": "Default folder"
+  },
+  "popupToleranceSummary": {
+    "description": "popupToleranceSummary",
+    "message": "$1% tolerance"
+  },
+  "popupStrictSummary": {
+    "description": "popupStrictSummary",
+    "message": "Complete only"
+  },
+  "popupFilenameEditHint": {
+    "description": "popupFilenameEditHint",
+    "message": "Click to rename"
+  },
+  "popupChooseQuality": {
+    "description": "popupChooseQuality",
+    "message": "Choose quality"
+  },
+  "popupQualityCount": {
+    "description": "popupQualityCount",
+    "message": "$1 available"
+  },
+  "popupNoResources": {
+    "description": "popupNoResources",
+    "message": "No downloadable video found"
+  },
+  "popupNoResourcesHint": {
+    "description": "popupNoResourcesHint",
+    "message": "Start playback on a supported video page, then reopen the extension."
   }
 }

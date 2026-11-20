@@ -152,7 +152,7 @@
 
   "queueTitle": {
     "description": "Queue title",
-    "message": "Cola de descargas (máx. 6 al mismo tiempo)"
+    "message": "Cola de descargas"
   },
   "queueMetaDownloading": {
     "description": "Queue meta: downloading count",
@@ -229,7 +229,7 @@
   },
   "taskErrorCount": {
     "description": "Error count label",
-    "message": "Errores: $1"
+    "message": "Por recuperar: $1 segmentos"
   },
   "taskFailedReason": {
     "description": "Failed reason label",
@@ -290,6 +290,130 @@
   "popupSupportBug": {
     "description": "Footer link to open a GitHub issue",
     "message": "Reportar un error"
+  },
+  "queueConcurrency": {
+    "description": "queueConcurrency",
+    "message": "Hasta 6 a la vez"
+  },
+  "downloadToleranceLabel": {
+    "description": "downloadToleranceLabel",
+    "message": "Segmentos faltantes permitidos"
+  },
+  "downloadToleranceHint": {
+    "description": "downloadToleranceHint",
+    "message": "Hasta 4 intentos por segmento; se guarda automáticamente si los faltantes no superan este límite. Solo tareas nuevas."
+  },
+  "downloadToleranceStrict": {
+    "description": "downloadToleranceStrict",
+    "message": "0% · Solo completo"
+  },
+  "taskActionMore": {
+    "description": "taskActionMore",
+    "message": "Más opciones"
+  },
+  "taskActionCopyPage": {
+    "description": "taskActionCopyPage",
+    "message": "Copiar URL de la página"
+  },
+  "taskActionCopyResource": {
+    "description": "taskActionCopyResource",
+    "message": "Copiar URL del recurso"
+  },
+  "taskActionSavePartial": {
+    "description": "taskActionSavePartial",
+    "message": "Guardar lo descargado"
+  },
+  "taskSavePartialHint": {
+    "description": "taskSavePartialHint",
+    "message": "Guarda y termina la tarea; los segmentos faltantes causan saltos al reproducir."
+  },
+  "taskStatusNeedsAttention": {
+    "description": "taskStatusNeedsAttention",
+    "message": "Requiere atención"
+  },
+  "taskStatusFailed": {
+    "description": "taskStatusFailed",
+    "message": "Descarga fallida"
+  },
+  "taskProgressLabel": {
+    "description": "taskProgressLabel",
+    "message": "Progreso de descarga"
+  },
+  "taskRetryAttempt": {
+    "description": "taskRetryAttempt",
+    "message": "Intento $1 / $2"
+  },
+  "taskRetriesExhaustedHint": {
+    "description": "taskRetriesExhaustedHint",
+    "message": "Algunos segmentos siguen fallando. Los datos se conservan; reintenta o guarda lo descargado."
+  },
+  "taskPartialSavingHint": {
+    "description": "taskPartialSavingHint",
+    "message": "Guardando vídeo parcial; faltan $1 segmentos."
+  },
+  "toastPartialSaving": {
+    "description": "toastPartialSaving",
+    "message": "Guardando lo descargado"
+  },
+  "toastPartialFailed": {
+    "description": "toastPartialFailed",
+    "message": "Error al guardar: $1"
+  },
+  "toastLinkCopied": {
+    "description": "toastLinkCopied",
+    "message": "URL copiada"
+  },
+  "toastCopyFailed": {
+    "description": "toastCopyFailed",
+    "message": "No se pudo copiar. Reintenta."
+  },
+  "toastSettingsFailed": {
+    "description": "toastSettingsFailed",
+    "message": "No se pudo guardar la configuración."
+  },
+  "toastPartialComplete": {
+    "description": "toastPartialComplete",
+    "message": "Vídeo parcial guardado; faltan $1 segmentos."
+  },
+  "historyPartial": {
+    "description": "historyPartial",
+    "message": "Parcial · faltan $1 segmentos"
+  },
+  "popupDownloadSettings": {
+    "description": "popupDownloadSettings",
+    "message": "Ajustes de descarga"
+  },
+  "popupDefaultFolder": {
+    "description": "popupDefaultFolder",
+    "message": "Carpeta predeterminada"
+  },
+  "popupToleranceSummary": {
+    "description": "popupToleranceSummary",
+    "message": "Tolerancia $1%"
+  },
+  "popupStrictSummary": {
+    "description": "popupStrictSummary",
+    "message": "Solo completo"
+  },
+  "popupFilenameEditHint": {
+    "description": "popupFilenameEditHint",
+    "message": "Haz clic para renombrar"
+  },
+  "popupChooseQuality": {
+    "description": "popupChooseQuality",
+    "message": "Elegir calidad"
+  },
+  "popupQualityCount": {
+    "description": "popupQualityCount",
+    "message": "$1 disponibles"
+  },
+  "popupNoResources": {
+    "description": "popupNoResources",
+    "message": "No se encontró ningún video descargable"
+  },
+  "popupNoResourcesHint": {
+    "description": "popupNoResourcesHint",
+    "message": "Reproduce un video en una página compatible y vuelve a abrir la extensión."
   }
 }
 

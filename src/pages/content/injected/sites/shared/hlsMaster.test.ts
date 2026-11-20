@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseHlsMasterVariants, variantsToSiteVideos } from './hlsMaster';
+import { parseHlsMasterVariants, variantsToSiteVideos, withVariantFallbacks } from './hlsMaster';
 
 const MISSAV_MASTER = `#EXTM3U
 #EXT-X-VERSION:3
@@ -30,8 +30,7 @@ describe('parseHlsMasterVariants', () => {
   });
 
   it('expands 123av wowstream relative media playlist', () => {
-    const master =
-      'https://cache-xx29.wowstream2.cloud/blah4/token/video.m3u8?v=a2';
+    const master = 'https://cache-xx29.wowstream2.cloud/blah4/token/video.m3u8?v=a2';
     expect(parseHlsMasterVariants(AV123_MASTER, master)).toEqual([
       {
         quality: '720p',
@@ -60,13 +59,17 @@ describe('variantsToSiteVideos', () => {
 
   it('attaches optional download headers', () => {
     const headers = { Origin: 'https://javplayer.cc', Referer: 'https://javplayer.cc/' };
-    const items = variantsToSiteVideos(
-      'https://cdn.example/video.m3u8',
-      AV123_MASTER,
-      'title',
-      { headers },
-    );
+    const items = variantsToSiteVideos('https://cdn.example/video.m3u8', AV123_MASTER, 'title', { headers });
     expect(items[0].headers).toEqual(headers);
     expect(items[0].quality).toBe('720p');
+  });
+
+  it('attaches sibling rendition playlists as fallback URLs', () => {
+    const items = withVariantFallbacks(
+      variantsToSiteVideos('https://cdn.example/playlist.m3u8', MISSAV_MASTER, 'title'),
+    );
+
+    expect(items[0].fallbackUrls).toEqual(['https://cdn.example/1080p/video.m3u8']);
+    expect(items[1].fallbackUrls).toEqual(['https://cdn.example/360p/video.m3u8']);
   });
 });

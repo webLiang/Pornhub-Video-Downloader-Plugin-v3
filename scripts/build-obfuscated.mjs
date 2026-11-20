@@ -49,7 +49,7 @@ const OBFUSCATOR_OPTIONS = {
   deadCodeInjectionThreshold: 0.2,
   identifierNamesGenerator: 'hexadecimal',
   renameGlobals: false, // keep export names intact
-  reservedNames: ['^pauseSoft$', '^resume$', '^destroy$', '^getBytesReceived$', '^start$'],
+  reservedNames: ['^pauseSoft$', '^resume$', '^destroy$', '^getBytesReceived$', '^start$', '^savePartial$'],
   rotateStringArray: true,
   selfDefending: false, // Service Worker doesn't support this
   stringArray: true,

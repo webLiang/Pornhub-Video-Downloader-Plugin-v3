@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "engineVersion": "5.0.0",
+  "engineRevision": "sha256:eaa9e8857fe068bba5e46230bc74c357c6c223bd76e67b05002681f5130662fe",
+  "generatedAt": "2026-11-19T11:42:13.043Z",
+  "selection": {
+    "agent": "codex",
+    "grammar": "operations-console",
+    "grammarSource": "built-in:operations-console",
+    "referenceContract": null,
+    "fallback": "operations-console",
+    "adapter": "product-ui",
+    "domain": "productivity",
+    "page": "list",
+    "recipe": "enterprise-workbench",
+    "recipeSelection": "enterprise-workbench",
+    "palette": "cobalt-instrument",
+    "paletteSelection": "cobalt-instrument",
+    "paletteGeneration": {
+      "keyColor": "#FF9900",
+      "mode": "light",
+      "character": "balanced",
+      "harmony": "tonal",
+      "temperature": "neutral"
+    },
+    "tokenCanon": null,
+    "profile": "none"
+  },
+  "bundle": {
+    "kind": "bundle",
+    "path": ".styleseed/effective-rules.md",
+    "sha256": "a78df5ac24e4f1bd607c0c47ead842d9d088cde24a6bc41942c1cd61e88f88ce",
+    "bytes": 28751
+  },
+  "outputs": [
+    {
+      "kind": "bundle",
+      "path": ".styleseed/effective-rules.md",
+      "sha256": "a78df5ac24e4f1bd607c0c47ead842d9d088cde24a6bc41942c1cd61e88f88ce",
+      "bytes": 28751
+    },
+    {
+      "kind": "palette-json",
+      "path": ".styleseed/palette.json",
+      "sha256": "bc16a1bf43f6adcac0ecc5978ddf4223c87287ee8e8147fc86cdecb16311c7e7",
+      "bytes": 6050
+    },
+    {
+      "kind": "palette-css",
+      "path": ".styleseed/palette.css",
+      "sha256": "58a98ff90cbc53efafc4a9887f8ff9d4919bbc7dd6ac8e73603255a3d660d29d",
+      "bytes": 1157
+    }
+  ],
+  "palette": {
+    "json": {
+      "kind": "palette-json",
+      "path": ".styleseed/palette.json",
+      "sha256": "bc16a1bf43f6adcac0ecc5978ddf4223c87287ee8e8147fc86cdecb16311c7e7",
+      "bytes": 6050
+    },
+    "css": {
+      "kind": "palette-css",
+      "path": ".styleseed/palette.css",
+      "sha256": "58a98ff90cbc53efafc4a9887f8ff9d4919bbc7dd6ac8e73603255a3d660d29d",
+      "bytes": 1157
+    }
+  },
+  "sources": [
+    {
+      "id": "agent-execution",
+      "sha256": "7432f369c99d3d0b10a5c96d76b418b7dfbfb83e57a6b25e480f79ee86a1cd81",
+      "bytes": 358
+    },
+    {
+      "id": "core",
+      "sha256": "c266458625238fc647b40eb15a80476ee116d3b8e4fbd9bee71db917f2c7a33d",
+      "bytes": 8400
+    },
+    {
+      "id": "grammar",
+      "sha256": "618cdaf2bc6bd06f161c6c2fb1f356b2613f2bf0cd8e0e0de2575dd3bb16c382",
+      "bytes": 1111
+    },
+    {
+      "id": "adapter",
+      "sha256": "7b5b5c34b0b235dca329e6384ccb94c66ee65a348bbe7142277ae7bbda3c13b0",
+      "bytes": 714
+    },
+    {
+      "id": "domain",
+      "sha256": "10a1d77593a39c2653a7a862f0a7c9d9ca1ff99c234e593cf79f31dd323c5e87",
+      "bytes": 1212
+    },
+    {
+      "id": "page",
+      "sha256": "d347ce54903e7b826556118bf6a771152ad3c897ba897de14ace7b422ba7d564",
+      "bytes": 851
+    },
+    {
+      "id": "recipe",
+      "sha256": "36f843c3ca4500a8944586ca6c974b7add5980e5cfd78a0dc6618468ee66b311",
+      "bytes": 1434
+    },
+    {
+      "id": "palette",
+      "sha256": "594751132fdce8027ec2b51e13775074d04a3639268afd1c298a968513cdda2a",
+      "bytes": 2256
+    },
+    {
+      "id": "lock",
+      "sha256": "868fe6d2b8d947d54a2d205cdb08c0a3d992b51249f4fcb4ed33c77dbe3d3c93",
+      "bytes": 402
+    },
+    {
+      "id": "rules",
+      "sha256": "679071f873b22286d9550e71630605ad2f54d0454f65a49df7bb015a6fd5a9ce",
+      "bytes": 6210
+    },
+    {
+      "id": "craft",
+      "sha256": "cf337a06f68960ee01e99fa734da2955fe67db990e7cda3fb1d2729acd0bd1bd",
+      "bytes": 4870
+    }
+  ]
+}

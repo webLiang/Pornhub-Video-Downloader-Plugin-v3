@@ -10,10 +10,13 @@ import downloadQueueStorage, {
 } from '@src/shared/storages/downloadQueueStorage';
 import downloadSettingsStorage, {
   isUseChannelFolderEnabled,
+  getMaxMissingPercent,
   sanitizeDownloadSubdir,
 } from '@src/shared/storages/downloadSettingsStorage';
 import { sortVideoInfosByQualityDesc } from '@src/shared/utils/videoInfoSort';
 import { ToastContainer, useToast } from '@pages/popup/components/Toast';
+import DownloadTaskCard from '@pages/popup/components/DownloadTaskCard';
+import { isNewerVersion } from './version';
 import {
   getCurrentLocale,
   SUPPORTED_LOCALES,
@@ -30,6 +33,7 @@ type VideoInfo = {
   title: string;
   /** Site-specific Origin/Referer; overrides tab-derived headers when set. */
   headers?: Record<string, string>;
+  fallbackUrls?: string[];
 };
 
 const manifestData = chrome.runtime.getManifest();
@@ -101,6 +105,9 @@ const Popup = () => {
   const [locale, setLocale] = useState<SupportedLocale>(getCurrentLocale());
   const [localSubdir, setLocalSubdir] = useState('');
   const [useChannelFolder, setUseChannelFolder] = useState(true);
+  const [maxMissingPercent, setMaxMissingPercent] = useState(10);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [exportingTasks, setExportingTasks] = useState<string[]>([]);
   const useChannelFolderRef = useRef(true);
   const getPageTitle = () => videoInfos[0]?.title || pageTitle || currentTabTitle || '';
   const [isEditingFileName, setIsEditingFileName] = useState(false);
@@ -111,8 +118,8 @@ const Popup = () => {
   const displayFileName = sanitizeDownloadFileName(rawDisplayName || '', '', useChannelFolder);
 
   /** Persist sanitized subdirectory under Chrome's default downloads folder. */
-  const commitSubdir = async () => {
-    const cleaned = sanitizeDownloadSubdir(localSubdir);
+  const commitSubdir = async (value = localSubdir) => {
+    const cleaned = sanitizeDownloadSubdir(value);
     const saved = await downloadSettingsStorage.setDownloadSubdir(cleaned);
     setLocalSubdir(saved);
     return saved;
@@ -271,6 +278,7 @@ const Popup = () => {
     // Load download subdirectory / channel-folder settings & subscribe
     downloadSettingsStorage.get().then(settings => {
       setLocalSubdir(settings.downloadSubdir ?? '');
+      setMaxMissingPercent(getMaxMissingPercent(settings));
       const keepFolder = isUseChannelFolderEnabled(settings);
       useChannelFolderRef.current = keepFolder;
       setUseChannelFolder(keepFolder);
@@ -282,6 +290,7 @@ const Popup = () => {
       const snap = downloadSettingsStorage.getSnapshot();
       if (!snap) return;
       setLocalSubdir(snap.downloadSubdir ?? '');
+      setMaxMissingPercent(getMaxMissingPercent(snap));
       const keepFolder = isUseChannelFolderEnabled(snap);
       if (keepFolder === useChannelFolderRef.current) return;
       useChannelFolderRef.current = keepFolder;
@@ -294,7 +303,11 @@ const Popup = () => {
     // Background messages (complete, error, etc.)
     const messageListener = (message: any) => {
       if (message.type === 'download-task-complete') {
-        showSuccess(translate('toastDownloadComplete', message.fileName || translate('taskUnknownFile')));
+        if (message.partial) {
+          showWarning(translate('toastPartialComplete', String(message.missingSegments || 0)));
+        } else {
+          showSuccess(translate('toastDownloadComplete', message.fileName || translate('taskUnknownFile')));
+        }
       } else if (message.type === 'download-task-error') {
         showError(translate('toastDownloadFailed', message.error || translate('taskFailedUnknown')));
       }
@@ -373,6 +386,7 @@ const Popup = () => {
           ...buildM3u8Headers(),
           ...(videoInfo.headers || {}),
         },
+        fallbackUrls: videoInfo.fallbackUrls,
       })
       .then(response => {
         if (response && !response.success) {
@@ -387,9 +401,7 @@ const Popup = () => {
       });
   };
 
-  const onCopy = (videoInfo: VideoInfo) => () => {
-    navigator.clipboard.writeText(videoInfo.videoUrl);
-  };
+  const onCopy = (videoInfo: VideoInfo) => () => handleCopyTaskLink(videoInfo.videoUrl);
 
   // // Legacy M3U8 download handlers (removed)
   // const handleStartDownload = () => {
@@ -470,6 +482,29 @@ const Popup = () => {
       });
   };
 
+  const handleSavePartial = async (taskId: string) => {
+    if (exportingTasks.includes(taskId)) return;
+    setExportingTasks(ids => [...ids, taskId]);
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'download-queue-save-partial', taskId });
+      if (!response?.success) throw new Error(response?.error || translate('toastBackgroundNotReachable'));
+      showInfo(translate('toastPartialSaving'));
+    } catch (error: any) {
+      showError(translate('toastPartialFailed', error?.message || translate('taskFailedUnknown')));
+    } finally {
+      setExportingTasks(ids => ids.filter(id => id !== taskId));
+    }
+  };
+
+  const handleCopyTaskLink = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      showSuccess(translate('toastLinkCopied'));
+    } catch {
+      showError(translate('toastCopyFailed'));
+    }
+  };
+
   const handleFileNameFocus = () => {
     setIsEditingFileName(true);
   };
@@ -478,7 +513,9 @@ const Popup = () => {
   const handleFileNameBlur = () => {
     setIsEditingFileName(false);
     const value = fileNameEditableRef.current?.innerText || '';
-    setFileName(sanitizeDownloadFileName(value, '', useChannelFolderRef.current));
+    const cleaned = sanitizeDownloadFileName(value, '', useChannelFolderRef.current);
+    setFileName(cleaned);
+    if (fileNameEditableRef.current) fileNameEditableRef.current.innerText = cleaned;
     hasUserEditedFileNameRef.current = true;
   };
 
@@ -528,322 +565,367 @@ const Popup = () => {
     <div className="App">
       <ToastContainer toasts={toasts} onRemove={removeToast} />
       <div className="popup-scroll">
-      <div className="popup-header-bar">
-        <img src={iconLogo} className="popup-header-logo" alt="logo" />
-        <div className="popup-header-info">
-          <span className="popup-header-title">{translate('popupHeaderTitle')}</span>
-          <span className="popup-header-meta">
-            v{manifestData.version}
-            <span className="popup-header-dot">·</span>
-            <a
-              className="popup-header-author"
-              rel="noreferrer"
-              href="https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3"
-              target="_blank">
-              webLiang
-            </a>
-            {remoteVersion !== '0.0.0' && remoteVersion !== manifestData.version && (
-              <>
-                <span className="popup-header-dot">·</span>
-                <a
-                  className="popup-header-update"
-                  rel="noreferrer"
-                  href="https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3/releases"
-                  target="_blank">
-                  {translate('popupHeaderNewVersion', remoteVersion)}
-                </a>
-              </>
-            )}
-          </span>
-        </div>
-        <select
-          className="popup-lang-select"
-          title="Choose language"
-          value={locale}
-          onChange={event => setCurrentLocale((event.currentTarget as HTMLSelectElement).value as SupportedLocale)}>
-          {SUPPORTED_LOCALES.map(item => (
-            <option key={item} value={item}>
-              {LOCALE_LABELS[item]}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="box">
-        <div className="save-settings">
-          <div className="download-subdir-row">
-            <span className="download-subdir-label">{translate('downloadSubdirLabel')}</span>
-            <input
-              id="ph-download-subdir"
-              type="text"
-              className="download-subdir-input"
-              value={localSubdir}
-              placeholder={translate('downloadSubdirPlaceholder')}
-              onChange={e => setLocalSubdir((e.target as HTMLInputElement).value)}
-              onBlur={commitSubdir}
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  (e.target as HTMLInputElement).blur();
-                }
-              }}
-              spellcheck={false}
-              autoComplete="off"
-            />
+        <div className="popup-header-bar">
+          <img src={iconLogo} className="popup-header-logo" alt="logo" />
+          <div className="popup-header-info">
+            <span className="popup-header-title">{translate('popupHeaderTitle')}</span>
+            <span className="popup-header-meta">
+              v{manifestData.version}
+              <span className="popup-header-dot">·</span>
+              <a
+                className="popup-header-author"
+                rel="noreferrer"
+                href="https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3"
+                target="_blank">
+                webLiang
+              </a>
+              {isNewerVersion(remoteVersion, manifestData.version) && (
+                <>
+                  <span className="popup-header-dot">·</span>
+                  <a
+                    className="popup-header-update"
+                    rel="noreferrer"
+                    href="https://github.com/webLiang/Pornhub-Video-Downloader-Plugin-v3/releases"
+                    target="_blank">
+                    {translate('popupHeaderNewVersion', remoteVersion)}
+                  </a>
+                </>
+              )}
+            </span>
           </div>
-          <div className="channel-folder-row">
-            <div className="channel-folder-copy">
-              <span className="channel-folder-label">{translate('channelFolderLabel')}</span>
-              <span className="channel-folder-hint">{translate('channelFolderHint')}</span>
+          <select
+            className="popup-lang-select"
+            title="Choose language"
+            value={locale}
+            onChange={event => setCurrentLocale((event.currentTarget as HTMLSelectElement).value as SupportedLocale)}>
+            {SUPPORTED_LOCALES.map(item => (
+              <option key={item} value={item}>
+                {LOCALE_LABELS[item]}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="box">
+          {videoInfos?.length > 0 && (
+            <div className="m3u8-filename-row">
+              <div className="filename-heading">
+                <span className="m3u8-filename-label" id="download-filename-label">
+                  {translate('popupFilenameLabel')}
+                </span>
+                <span className="filename-edit-hint">{translate('popupFilenameEditHint')}</span>
+              </div>
+              <div
+                ref={fileNameEditableRef}
+                role="textbox"
+                tabIndex={0}
+                aria-labelledby="download-filename-label"
+                aria-multiline="false"
+                title={displayFileName}
+                className={`m3u8-filename-display${isEditingFileName ? ' editing' : ''}`}
+                contentEditable={true}
+                onFocus={handleFileNameFocus}
+                onBlur={handleFileNameBlur}
+                onKeyDown={event => {
+                  if (event.key === 'Enter' && !event.isComposing) {
+                    event.preventDefault();
+                    event.currentTarget.blur();
+                  }
+                }}
+                data-placeholder={translate('popupFilenamePlaceholder')}
+              />
             </div>
+          )}
+          <div className={`save-settings${settingsOpen ? ' is-open' : ''}`}>
             <button
               type="button"
-              className="toggle-switch"
-              role="switch"
-              aria-checked={useChannelFolder}
-              aria-label={translate('channelFolderLabel')}
-              title={translate('channelFolderHint')}
-              onClick={handleChannelFolderToggle}>
-              <span className="toggle-switch-thumb" />
+              className="settings-summary"
+              aria-label={translate('popupDownloadSettings')}
+              aria-describedby="settings-path-summary settings-tolerance-summary"
+              aria-expanded={settingsOpen}
+              aria-controls="download-settings-panel"
+              onClick={() => setSettingsOpen(open => !open)}>
+              <svg
+                className="settings-symbol"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                aria-hidden="true">
+                <path d="M4 7h7m4 0h5M4 17h3m4 0h9" />
+                <circle cx="13" cy="7" r="2" />
+                <circle cx="9" cy="17" r="2" />
+              </svg>
+              <span className="settings-summary-label">{translate('popupDownloadSettings')}</span>
+              <span
+                id="settings-path-summary"
+                className="settings-summary-path"
+                title={localSubdir || translate('popupDefaultFolder')}>
+                {localSubdir || translate('popupDefaultFolder')}
+              </span>
+              <span id="settings-tolerance-summary" className="settings-summary-tolerance">
+                {maxMissingPercent
+                  ? translate('popupToleranceSummary', String(maxMissingPercent))
+                  : translate('popupStrictSummary')}
+              </span>
+              <svg
+                className="settings-chevron"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                aria-hidden="true">
+                <path d="m7 10 5 5 5-5" />
+              </svg>
             </button>
+            <div id="download-settings-panel" className="settings-panel" hidden={!settingsOpen}>
+              <div className="download-subdir-row">
+                <label className="download-subdir-label" htmlFor="ph-download-subdir">
+                  {translate('downloadSubdirLabel')}
+                </label>
+                <input
+                  id="ph-download-subdir"
+                  type="text"
+                  className="download-subdir-input"
+                  value={localSubdir}
+                  placeholder={translate('downloadSubdirPlaceholder')}
+                  onInput={event => setLocalSubdir(event.currentTarget.value)}
+                  onBlur={event => {
+                    commitSubdir(event.currentTarget.value).catch(() => showError(translate('toastSettingsFailed')));
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      (e.target as HTMLInputElement).blur();
+                    }
+                  }}
+                  // Preact's input types use the DOM attribute name, not React's spellCheck.
+                  // eslint-disable-next-line react/no-unknown-property
+                  spellcheck={false}
+                  autoComplete="off"
+                />
+              </div>
+              <div className="channel-folder-row">
+                <div className="channel-folder-copy">
+                  <span className="channel-folder-label">{translate('channelFolderLabel')}</span>
+                  <span className="channel-folder-hint">{translate('channelFolderHint')}</span>
+                </div>
+                <button
+                  type="button"
+                  className="toggle-switch"
+                  role="switch"
+                  aria-checked={useChannelFolder}
+                  aria-label={translate('channelFolderLabel')}
+                  title={translate('channelFolderHint')}
+                  onClick={handleChannelFolderToggle}>
+                  <span className="toggle-switch-thumb" />
+                </button>
+              </div>
+              <div className="tolerance-setting-row">
+                <div className="channel-folder-copy">
+                  <label className="channel-folder-label" htmlFor="download-missing-tolerance">
+                    {translate('downloadToleranceLabel')}
+                  </label>
+                  <span className="channel-folder-hint" id="download-tolerance-hint">
+                    {translate('downloadToleranceHint')}
+                  </span>
+                </div>
+                <select
+                  id="download-missing-tolerance"
+                  className="tolerance-select"
+                  value={maxMissingPercent}
+                  aria-describedby="download-tolerance-hint"
+                  onChange={async event => {
+                    const value = Number(event.currentTarget.value);
+                    try {
+                      const saved = await downloadSettingsStorage.setMaxMissingPercent(value);
+                      setMaxMissingPercent(saved);
+                    } catch {
+                      showError(translate('toastSettingsFailed'));
+                    }
+                  }}>
+                  {[0, 1, 5, 10].map(value => (
+                    <option key={value} value={value}>
+                      {value ? `${value}%` : translate('downloadToleranceStrict')}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
+          {videoInfos.length > 0 && (
+            <div className="resource-heading">
+              <span>{translate('popupChooseQuality')}</span>
+              <span className="resource-count">{translate('popupQualityCount', String(videoInfos.length))}</span>
+            </div>
+          )}
+          {videoInfos.length === 0 && (
+            <div className="resource-empty" role="status">
+              <p className="resource-empty-title">{translate('popupNoResources')}</p>
+              <p>{translate('popupNoResourcesHint')}</p>
+            </div>
+          )}
+          <ul className="video-resources">
+            {videoInfos?.length > 0 &&
+              videoInfos.map(item => {
+                const blockingTask = findBlockingTaskForUrl(item.videoUrl);
+                const downloadBusy = Boolean(blockingTask);
+                let downloadLabel = translate('popupActionDownload');
+                if (blockingTask) {
+                  if (blockingTask.status === 'downloading') downloadLabel = translate('popupActionDownloading');
+                  else if (blockingTask.status === 'queued') downloadLabel = translate('popupActionQueued');
+                  else if (blockingTask.status === 'paused') downloadLabel = translate('popupActionPaused');
+                }
+                return (
+                  <li key={item.videoUrl} className={`video-resource${downloadBusy ? ' is-busy' : ''}`}>
+                    <div className="video-resource-info">
+                      <span className="video-resource-quality">{item.quality}</span>
+                      <span className="video-resource-format" data-format={item.format}>
+                        {item.format.toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="video-resource-actions">
+                      <button
+                        type="button"
+                        className="resource-download"
+                        aria-label={`${downloadLabel} ${item.quality}`}
+                        disabled={downloadBusy}
+                        title={
+                          downloadBusy ? translate('popupTooltipAlreadyInQueue') : translate('popupTooltipAddToQueue')
+                        }
+                        onClick={onDownload(item)}>
+                        <span className="resource-action-label">{downloadLabel}</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="resource-copy"
+                        aria-label={`${translate('popupActionCopy')} ${item.quality}`}
+                        onClick={onCopy(item)}>
+                        <span className="resource-action-label">{translate('popupActionCopy')}</span>
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+          </ul>
         </div>
-        {videoInfos?.length > 0 && (
-          <div className="m3u8-filename-row">
-            <span className="m3u8-filename-label">{translate('popupFilenameLabel')}:</span>
-            <div
-              ref={fileNameEditableRef}
-              className={`m3u8-filename-display${isEditingFileName ? ' editing' : ''}`}
-              contentEditable={true}
-              onFocus={handleFileNameFocus}
-              onBlur={handleFileNameBlur}
-              data-placeholder={translate('popupFilenamePlaceholder')}
-            />
-          </div>
-        )}
-        <ul>
-          {videoInfos?.length > 0 &&
-            videoInfos.map(item => {
-              const blockingTask = findBlockingTaskForUrl(item.videoUrl);
-              const downloadBusy = Boolean(blockingTask);
-              let downloadLabel = translate('popupActionDownload');
-              if (blockingTask) {
-                if (blockingTask.status === 'downloading') downloadLabel = translate('popupActionDownloading');
-                else if (blockingTask.status === 'queued') downloadLabel = translate('popupActionQueued');
-                else if (blockingTask.status === 'paused') downloadLabel = translate('popupActionPaused');
-              }
-              return (
-                <li key={item.videoUrl}>
-                  <label>
-                    {translate('popupQualityLabel')}：
-                    <span style={{ display: 'inline-block', width: '60px' }}> {item.quality}</span>
-                  </label>
-                  <label>
-                    {translate('popupTypeLabel')}：
-                    <span style={{ display: 'inline-block', width: '40px' }}> {item.format}</span>
-                  </label>
-                  <button
-                    type="button"
-                    className="button down video-row-download"
-                    disabled={downloadBusy}
-                    title={downloadBusy ? translate('popupTooltipAlreadyInQueue') : translate('popupTooltipAddToQueue')}
-                    onClick={onDownload(item)}>
-                    {downloadLabel}
-                  </button>
-                  <button className="button copy" onClick={onCopy(item)}>
-                    {translate('popupActionCopy')}
-                  </button>
-                </li>
-              );
-            })}
-        </ul>
-      </div>
-      {/* Download queue section */}
-      {queueTasks.length > 0 && (
-        <div className="m3u8-download-section" ref={m3u8SectionRef}>
-          <div className="queue-header">
-            <span className="queue-title">
-              {translate('queueTitle')}
+        {/* Download queue section */}
+        {queueTasks.length > 0 && (
+          <div className="m3u8-download-section" ref={m3u8SectionRef}>
+            <div className="queue-header">
+              <div className="queue-heading-group">
+                <span className="queue-title">{translate('queueTitle')}</span>
+                <span className="queue-limit">{translate('queueConcurrency')}</span>
+              </div>
               <span className="queue-meta">
                 {translate('queueMetaDownloading', String(queueTasks.filter(t => t.status === 'downloading').length))} /{' '}
                 {translate('queueMetaQueued', String(queueTasks.filter(t => t.status === 'queued').length))} /{' '}
                 {translate('queueMetaPaused', String(queueTasks.filter(t => t.status === 'paused').length))}
               </span>
-            </span>
-            <div className="queue-actions">
-              <button
-                className="btn-text"
-                onClick={() => chrome.runtime.sendMessage({ type: 'download-queue-clear-queued' })}
-                title={translate('queueTooltipClearQueued')}>
-                {translate('queueActionClearQueued')}
-              </button>
-              <button
-                className="btn-text"
-                onClick={() => chrome.runtime.sendMessage({ type: 'download-queue-clear-errors' })}
-                title={translate('queueTooltipClearErrors')}>
-                {translate('queueActionClearErrors')}
-              </button>
-              <button className="btn-text" onClick={handleOpenFolder} title={translate('queueTooltipOpenFolder')}>
-                {translate('queueActionOpenFolder')}
-              </button>
+              <div className="queue-actions">
+                <button
+                  className="btn-text"
+                  onClick={() => chrome.runtime.sendMessage({ type: 'download-queue-clear-queued' })}
+                  title={translate('queueTooltipClearQueued')}>
+                  {translate('queueActionClearQueued')}
+                </button>
+                <button
+                  className="btn-text"
+                  onClick={() => chrome.runtime.sendMessage({ type: 'download-queue-clear-errors' })}
+                  title={translate('queueTooltipClearErrors')}>
+                  {translate('queueActionClearErrors')}
+                </button>
+                <button className="btn-text" onClick={handleOpenFolder} title={translate('queueTooltipOpenFolder')}>
+                  {translate('queueActionOpenFolder')}
+                </button>
+              </div>
+            </div>
+
+            <div className="queue-list">
+              {(() => {
+                const queuedTasks = queueTasks
+                  .filter(t => t.status === 'queued')
+                  .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+                const queuedIndexMap = new Map<string, number>();
+                queuedTasks.forEach((t, idx) => queuedIndexMap.set(t.id, idx + 1));
+
+                return queueTasks.map(task => {
+                  const queuedIndex = task.status === 'queued' ? queuedIndexMap.get(task.id) || 0 : 0;
+                  return (
+                    <DownloadTaskCard
+                      key={task.id}
+                      task={task}
+                      queuedIndex={queuedIndex}
+                      isExporting={exportingTasks.includes(task.id)}
+                      onPause={handlePauseTask}
+                      onResume={handleResumeTask}
+                      onDelete={handleDeleteTask}
+                      onSavePartial={handleSavePartial}
+                      onCopy={handleCopyTaskLink}
+                    />
+                  );
+                });
+              })()}
             </div>
           </div>
+        )}
 
-          <div className="queue-list">
-            {(() => {
-              const queuedTasks = queueTasks
-                .filter(t => t.status === 'queued')
-                .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
-              const queuedIndexMap = new Map<string, number>();
-              queuedTasks.forEach((t, idx) => queuedIndexMap.set(t.id, idx + 1));
-
-              return queueTasks.map(task => {
-                const queuedIndex = task.status === 'queued' ? queuedIndexMap.get(task.id) || 0 : 0;
-                const queuedSuffix = queuedIndex ? `（#${queuedIndex}）` : '';
-                const progressText = Number.isFinite(task.progress) ? task.progress.toFixed(2) : '0.00';
-                return (
-                  <div key={task.id} className={`m3u8-progress-section task-card status-${task.status}`}>
-                    <div className="m3u8-progress-row">
-                      <div className="m3u8-progress-left">
-                        <span className="m3u8-filename-show" title={task.fileName || translate('taskUnknownFile')}>
-                          {task.fileName || translate('taskUnknownFile')}
-                        </span>
-                        <div className="task-detail-meta">
-                          {task.quality ? <span>{translate('taskQuality', task.quality)}</span> : null}
-                          <span>{translate('taskFormat', task.format)}</span>
-                        </div>
-                        <div className="m3u8-progress-meta-row">
-                          <div
-                            className={`progress-info-primary${
-                              task.status === 'downloading' && !task.isFileDownloading ? ' has-speed' : ''
-                            }`}>
-                            <span>
-                              {task.status === 'queued'
-                                ? translate('taskStatusWaiting', queuedSuffix)
-                                : task.status === 'paused'
-                                  ? translate('taskStatusPaused')
-                                  : translate('taskStatusDownloading')}
-                            </span>
-                            <span className="progress-info-progress">{translate('taskProgress', progressText)}</span>
-                            {task.status === 'downloading' && !task.isFileDownloading && (
-                              <span className="progress-info-speed">
-                                {translate(
-                                  'taskSpeed',
-                                  task.downloadSpeed && task.downloadSpeed !== '—' ? task.downloadSpeed : '—',
-                                )}
-                              </span>
-                            )}
-                          </div>
-                          <div className="m3u8-progress-actions">
-                            {task.status === 'queued' && (
-                              <button className="btn-sm btn-cancel" onClick={() => handleDeleteTask(task.id)}>
-                                {translate('taskActionDelete')}
-                              </button>
-                            )}
-                            {task.status === 'downloading' && (
-                              <>
-                                <button className="btn-sm btn-secondary" onClick={() => handlePauseTask(task.id)}>
-                                  {translate('taskActionPause')}
-                                </button>
-                                <button className="btn-sm btn-cancel" onClick={() => handleDeleteTask(task.id)}>
-                                  {translate('taskActionDelete')}
-                                </button>
-                              </>
-                            )}
-                            {task.status === 'paused' && (
-                              <>
-                                <button className="btn-sm btn-primary" onClick={() => handleResumeTask(task.id)}>
-                                  {translate('taskActionResume')}
-                                </button>
-                                <button className="btn-sm btn-cancel" onClick={() => handleDeleteTask(task.id)}>
-                                  {translate('taskActionDelete')}
-                                </button>
-                              </>
-                            )}
-                            {task.status === 'error' && (
-                              <button className="btn-sm btn-clear" onClick={() => handleDeleteTask(task.id)}>
-                                {translate('taskActionRemove')}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                        {task.errorNum > 0 || task.status === 'error' ? (
-                          <div className="progress-info-secondary">
-                            {task.errorNum > 0 && (
-                              <span className="error-count">{translate('taskErrorCount', String(task.errorNum))}</span>
-                            )}
-                            {task.status === 'error' && (
-                              <span className="error-count">
-                                {translate('taskFailedReason', task.error || translate('taskFailedUnknown'))}
-                              </span>
-                            )}
-                          </div>
-                        ) : null}
-                      </div>
-                    </div>
-
-                    {task.isFileDownloading && task.status === 'downloading' && (
-                      <div className="file-download-indicator simple">
-                        <div className="file-download-spinner"></div>
-                        <span className="file-download-text">{translate('fileSaving')}</span>
-                      </div>
+        {/* Download History */}
+        {downloadHistory.length > 0 && (
+          <div className="download-history">
+            <div className="history-header">
+              <span className="history-title">{translate('historyTitle', String(downloadHistory.length))}</span>
+              <button className="btn-text" onClick={handleClearHistory}>
+                {translate('historyActionClear')}
+              </button>
+            </div>
+            <ul className="history-list">
+              {downloadHistory.map(record => (
+                <li key={record.id} className="history-item">
+                  <div className="history-item-body">
+                    {record.pageUrl ? (
+                      <button
+                        type="button"
+                        className="history-filename history-filename-link"
+                        title={`${translate('historyTooltipOpenPage')}\n${record.pageUrl}`}
+                        onClick={() => handleOpenHistoryPage(record.pageUrl!)}>
+                        {record.fileName}
+                      </button>
+                    ) : (
+                      <span className="history-filename" title={record.fileName}>
+                        {record.fileName}
+                      </span>
                     )}
-                    <div className="progress-bar">
-                      <div className="progress-bar-fill" style={{ width: `${task.progress}%` }} />
-                    </div>
-                  </div>
-                );
-              });
-            })()}
-          </div>
-        </div>
-      )}
-
-      {/* Download History */}
-      {downloadHistory.length > 0 && (
-        <div className="download-history">
-          <div className="history-header">
-            <span className="history-title">{translate('historyTitle', String(downloadHistory.length))}</span>
-            <button className="btn-text" onClick={handleClearHistory}>
-              {translate('historyActionClear')}
-            </button>
-          </div>
-          <ul className="history-list">
-            {downloadHistory.map(record => (
-              <li key={record.id} className="history-item">
-                <div className="history-item-body">
-                  {record.pageUrl ? (
-                    <button
-                      type="button"
-                      className="history-filename history-filename-link"
-                      title={`${translate('historyTooltipOpenPage')}\n${record.pageUrl}`}
-                      onClick={() => handleOpenHistoryPage(record.pageUrl!)}>
-                      {record.fileName}
-                    </button>
-                  ) : (
-                    <span className="history-filename" title={record.fileName}>
-                      {record.fileName}
+                    <span className="history-time">
+                      {new Date(record.completedAt).toLocaleDateString()}
+                      {record.partial && (
+                        <span className="history-partial">
+                          {translate('historyPartial', String(record.missingSegments || 0))}
+                        </span>
+                      )}
                     </span>
-                  )}
-                  <span className="history-time">{new Date(record.completedAt).toLocaleDateString()}</span>
-                </div>
-                <div className="history-actions">
-                  <button
-                    className="btn-icon-sm"
-                    onClick={() => handleOpenHistoryItem(record)}
-                    title={translate('historyTooltipOpenFile')}>
-                    📂
-                  </button>
-                  <button
-                    className="btn-icon-sm"
-                    onClick={() => handleRemoveHistory(record.id)}
-                    title={translate('historyTooltipDeleteRecord')}>
-                    ✕
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+                  </div>
+                  <div className="history-actions">
+                    <button
+                      className="btn-icon-sm"
+                      onClick={() => handleOpenHistoryItem(record)}
+                      title={translate('historyTooltipOpenFile')}>
+                      📂
+                    </button>
+                    <button
+                      className="btn-icon-sm"
+                      onClick={() => handleRemoveHistory(record.id)}
+                      title={translate('historyTooltipDeleteRecord')}>
+                      ✕
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
       {/* Always-visible GitHub star / bug actions; content scrolls above this bar */}
       <div className="popup-support-bar">

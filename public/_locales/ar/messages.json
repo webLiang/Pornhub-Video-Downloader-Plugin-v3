@@ -152,7 +152,7 @@
 
   "queueTitle": {
     "description": "Queue title",
-    "message": "قائمة التنزيل (بحد أقصى 6 في نفس الوقت)"
+    "message": "قائمة التنزيل"
   },
   "queueMetaDownloading": {
     "description": "Queue meta: downloading count",
@@ -229,7 +229,7 @@
   },
   "taskErrorCount": {
     "description": "Error count label",
-    "message": "الأخطاء: $1"
+    "message": "للاسترداد: $1 مقاطع"
   },
   "taskFailedReason": {
     "description": "Failed reason label",
@@ -290,6 +290,130 @@
   "popupSupportBug": {
     "description": "Footer link to open a GitHub issue",
     "message": "الإبلاغ عن مشكلة"
+  },
+  "queueConcurrency": {
+    "description": "queueConcurrency",
+    "message": "حتى 6 بالتزامن"
+  },
+  "downloadToleranceLabel": {
+    "description": "downloadToleranceLabel",
+    "message": "المقاطع المفقودة المسموح بها"
+  },
+  "downloadToleranceHint": {
+    "description": "downloadToleranceHint",
+    "message": "حتى 4 محاولات لكل مقطع، ثم حفظ تلقائي إذا كانت المقاطع المفقودة ضمن الحد. يسري على المهام الجديدة."
+  },
+  "downloadToleranceStrict": {
+    "description": "downloadToleranceStrict",
+    "message": "0% · كامل فقط"
+  },
+  "taskActionMore": {
+    "description": "taskActionMore",
+    "message": "المزيد من الإجراءات"
+  },
+  "taskActionCopyPage": {
+    "description": "taskActionCopyPage",
+    "message": "نسخ رابط الصفحة الأصلية"
+  },
+  "taskActionCopyResource": {
+    "description": "taskActionCopyResource",
+    "message": "نسخ رابط المورد"
+  },
+  "taskActionSavePartial": {
+    "description": "taskActionSavePartial",
+    "message": "حفظ الجزء المنزّل"
+  },
+  "taskSavePartialHint": {
+    "description": "taskSavePartialHint",
+    "message": "يحفظ وينهي المهمة؛ تسبب المقاطع المفقودة قفزات في التشغيل."
+  },
+  "taskStatusNeedsAttention": {
+    "description": "taskStatusNeedsAttention",
+    "message": "يتطلب إجراء"
+  },
+  "taskStatusFailed": {
+    "description": "taskStatusFailed",
+    "message": "فشل التنزيل"
+  },
+  "taskProgressLabel": {
+    "description": "taskProgressLabel",
+    "message": "تقدم التنزيل"
+  },
+  "taskRetryAttempt": {
+    "description": "taskRetryAttempt",
+    "message": "المحاولة $1 / $2"
+  },
+  "taskRetriesExhaustedHint": {
+    "description": "taskRetriesExhaustedHint",
+    "message": "لا تزال بعض المقاطع تفشل. تم الاحتفاظ بالبيانات؛ أعد المحاولة أو احفظ الجزء المنزّل."
+  },
+  "taskPartialSavingHint": {
+    "description": "taskPartialSavingHint",
+    "message": "حفظ فيديو جزئي ينقصه $1 مقاطع."
+  },
+  "toastPartialSaving": {
+    "description": "toastPartialSaving",
+    "message": "جارٍ حفظ الجزء المنزّل"
+  },
+  "toastPartialFailed": {
+    "description": "toastPartialFailed",
+    "message": "فشل الحفظ: $1"
+  },
+  "toastLinkCopied": {
+    "description": "toastLinkCopied",
+    "message": "تم نسخ الرابط"
+  },
+  "toastCopyFailed": {
+    "description": "toastCopyFailed",
+    "message": "تعذر النسخ. حاول مجددًا."
+  },
+  "toastSettingsFailed": {
+    "description": "toastSettingsFailed",
+    "message": "تعذر حفظ الإعدادات."
+  },
+  "toastPartialComplete": {
+    "description": "toastPartialComplete",
+    "message": "تم حفظ فيديو جزئي ينقصه $1 مقاطع."
+  },
+  "historyPartial": {
+    "description": "historyPartial",
+    "message": "جزئي · $1 مقاطع مفقودة"
+  },
+  "popupDownloadSettings": {
+    "description": "popupDownloadSettings",
+    "message": "إعدادات التنزيل"
+  },
+  "popupDefaultFolder": {
+    "description": "popupDefaultFolder",
+    "message": "المجلد الافتراضي"
+  },
+  "popupToleranceSummary": {
+    "description": "popupToleranceSummary",
+    "message": "سماح $1%"
+  },
+  "popupStrictSummary": {
+    "description": "popupStrictSummary",
+    "message": "كامل فقط"
+  },
+  "popupFilenameEditHint": {
+    "description": "popupFilenameEditHint",
+    "message": "انقر لتعديل الاسم"
+  },
+  "popupChooseQuality": {
+    "description": "popupChooseQuality",
+    "message": "اختر الجودة"
+  },
+  "popupQualityCount": {
+    "description": "popupQualityCount",
+    "message": "$1 متاحة"
+  },
+  "popupNoResources": {
+    "description": "popupNoResources",
+    "message": "لم يتم العثور على فيديو قابل للتنزيل"
+  },
+  "popupNoResourcesHint": {
+    "description": "popupNoResourcesHint",
+    "message": "ابدأ التشغيل في صفحة فيديو مدعومة، ثم أعد فتح الإضافة."
   }
 }
 

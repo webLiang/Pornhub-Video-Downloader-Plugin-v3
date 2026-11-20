@@ -11,6 +11,23 @@ body {
 }
 
 .App {
+  --queue-text: #333;
+  --queue-muted: #646b73;
+  --queue-border: #dfe3e8;
+  --queue-surface: #fff;
+  --queue-soft: #f8f9fa;
+  --queue-brand: #8a5100;
+  --queue-brand-soft: #fff6e8;
+  --queue-warning: #8a5100;
+  --queue-danger: #b42318;
+  --queue-focus: #a05c00;
+  --download-action: #f1c40f;
+  --download-bubble-accent: #f39c12;
+  --resource-quality: #3769c5;
+  --support-accent: #995700;
+  --support-star: #ffcc00;
+  --support-star-hover: #f5c000;
+  --support-star-text: #453600;
   position: absolute;
   top: 0;
   bottom: 0;
@@ -20,7 +37,8 @@ body {
   flex-direction: column;
   text-align: center;
   height: 100%;
-  padding: 10px 10px 0;
+  box-sizing: border-box;
+  padding: 10px 12px 0;
   overflow: hidden;
   background-color: #fff;
 }
@@ -28,7 +46,7 @@ body {
 .popup-scroll {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden auto;
   padding-bottom: 8px;
 }
 
@@ -37,21 +55,21 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
-  padding: 8px 8px 14px;
+  gap: 8px;
+  padding: 10px 4px 14px;
   border-top: 1px solid #f0f0f0;
   background-color: #fff;
 }
 
-/* Compact chips: hug label width; ~22px tall so they stay secondary to Download */
+/* Compact support actions with room above the popup's bottom edge. */
 .popup-support-btn {
   flex: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 22px;
-  padding: 0 8px;
-  border-radius: 11px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 12px;
   font-size: 11px;
   font-weight: 600;
   line-height: 1;
@@ -68,30 +86,29 @@ body {
   transform: scale(0.98);
 }
 
-/* Match Download / Copy (#f1c40f); Star is the stronger CTA */
+/* Keep repository support secondary to the download actions. */
 .popup-support-btn-star {
-  background-color: #f1c40f;
-  color: #fff;
-  border: 1px solid #f1c40f;
+  background-color: var(--support-star);
+  color: var(--support-star-text);
+  border: 1px solid var(--support-star);
 }
 
 .popup-support-btn-star:hover {
-  background-color: #e0b40e;
-  border-color: #e0b40e;
-  color: #fff;
+  background-color: var(--support-star-hover);
+  border-color: var(--support-star-hover);
 }
 
-/* Outline uses header accent #f90 so Report sits next to Star without two solid yellows */
+/* Orange outline connects the feedback action to the original brand. */
 .popup-support-btn-bug {
   background-color: #fff;
-  color: #f90;
+  color: var(--support-accent);
   border: 1px solid #f90;
 }
 
 .popup-support-btn-bug:hover {
-  background-color: #fff8ee;
-  color: #e08800;
-  border-color: #e08800;
+  background-color: var(--queue-brand-soft);
+  color: var(--support-accent);
+  border-color: var(--support-accent);
 }
 
 /* Compact header bar */
@@ -196,43 +213,170 @@ body {
   color: #61dafb;
 }
 
-ul {
-  list-style: none;
-  width: 100%;
+.resource-heading {
   display: flex;
-  flex-wrap: wrap;
-  align-content: space-around;
-  padding: 5px;
-}
-
-ul li {
-  width: 100%;
-  height: 40px;
-  display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
+  margin: 12px 2px 4px;
+  color: var(--queue-text);
+  font-size: 12px;
+  font-weight: 600;
 }
 
-/* ul li label {
-  margin-left: -5px;
-} */
-
-ul li span {
-  color: cornflowerblue;
+.resource-count {
+  color: var(--queue-muted);
+  font-size: 11px;
+  font-weight: 400;
 }
 
-/* Video list download button: fixed width to avoid row shift when label changes */
-ul li .button.video-row-download {
-  width: 88px;
-  min-width: 88px;
-  max-width: 88px;
-  padding: 0 6px;
-  box-sizing: border-box;
+.resource-empty {
+  padding: 24px 12px;
+  color: var(--queue-muted);
+  font-size: 12px;
+  line-height: 1.6;
   text-align: center;
+}
+
+.resource-empty p {
+  margin: 4px 0;
+}
+
+.resource-empty .resource-empty-title {
+  color: var(--queue-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.video-resources {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* Keep the button particles inside the list's horizontal bounds. */
+  overflow-x: clip;
+}
+
+.video-resources:empty {
+  display: none;
+}
+
+.video-resources .video-resource {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+  padding: 4px 2px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--queue-border);
+}
+
+.video-resources .video-resource:last-child {
+  border-bottom: 0;
+}
+
+.video-resource-info,
+.video-resource-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.video-resource-info {
+  min-width: 0;
+}
+
+.video-resource-actions {
   flex-shrink: 0;
+}
+
+.video-resources .video-resource-quality {
+  min-width: 52px;
+  text-align: left;
+  color: var(--resource-quality);
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.video-resources .video-resource-format {
+  box-sizing: border-box;
+  width: 44px;
+  flex-shrink: 0;
+  padding: 2px 5px;
+  border: 1px solid var(--queue-border);
+  border-radius: 4px;
+  color: var(--queue-muted);
+  font-size: 10px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.video-resource-format[data-format='mp4'] {
+  background-color: #eaf2ff;
+  border-color: #c7dafb;
+  color: #28549a;
+}
+
+.video-resource-format[data-format='m3u8'] {
+  background-color: #f1eafd;
+  border-color: #dccaf6;
+  color: #65409a;
+}
+
+.resource-download,
+.resource-copy {
+  position: relative;
+  box-sizing: border-box;
+  width: 88px;
+  height: 30px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 4px;
+  padding: 0 6px;
+  background-color: var(--download-action);
+  color: #fff;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform 0.1s ease-in,
+    box-shadow 0.25s ease-in;
+}
+
+.resource-download:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.resource-download:active:not(:disabled),
+.resource-copy:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 25px rgb(243 156 18 / 50%);
+}
+
+.resource-action-label {
+  position: relative;
+  z-index: 1;
+  display: block;
+  color: inherit;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.resource-download:focus-visible,
+.resource-copy:focus-visible,
+.settings-summary:focus-visible,
+.popup-support-btn:focus-visible {
+  outline: 2px solid var(--queue-focus);
+  outline-offset: 2px;
+}
+
+/* The resource list clips particles at its sides, so keep its focus ring inside. */
+.resource-download:focus-visible,
+.resource-copy:focus-visible {
+  outline-offset: -2px;
 }
 
 .button {
@@ -254,7 +398,9 @@ ul li .button.video-row-download {
     box-shadow ease-in 0.25s;
 }
 
-.button::before {
+.button::before,
+.resource-download:not(:disabled)::before,
+.resource-copy::before {
   position: absolute;
   content: '';
   left: -2em;
@@ -265,22 +411,22 @@ ul li .button.video-row-download {
   transition: ease-in-out 0.5s;
   background-repeat: no-repeat;
   background-image:
-    radial-gradient(circle, rgb(243, 156, 18) 20%, transparent 20%),
-    radial-gradient(circle, rgb(241, 196, 15) 20%, transparent 20%),
-    radial-gradient(circle, rgb(241, 196, 15) 20%, transparent 20%),
-    radial-gradient(circle, rgb(241, 196, 15) 20%, transparent 20%),
-    radial-gradient(circle, rgb(241, 196, 15) 20%, transparent 20%),
-    radial-gradient(circle, rgb(241, 196, 15) 20%, transparent 20%),
-    radial-gradient(circle, rgb(241, 196, 15) 20%, transparent 20%),
-    radial-gradient(circle, rgb(241, 196, 15) 20%, transparent 20%),
-    radial-gradient(circle, rgb(241, 196, 15) 20%, transparent 20%),
-    /*  */ radial-gradient(circle, rgb(241, 196, 15) 20%, transparent 20%),
-    radial-gradient(circle, rgb(241, 196, 15) 20%, transparent 20%),
-    radial-gradient(circle, rgb(241, 196, 15) 20%, transparent 20%),
-    radial-gradient(circle, rgb(241, 196, 15) 20%, transparent 20%),
-    radial-gradient(circle, rgb(241, 196, 15) 20%, transparent 20%),
-    radial-gradient(circle, rgb(241, 196, 15) 20%, transparent 20%),
-    radial-gradient(circle, rgb(241, 196, 15) 20%, transparent 20%);
+    radial-gradient(circle, var(--download-bubble-accent) 20%, transparent 20%),
+    radial-gradient(circle, var(--download-action) 20%, transparent 20%),
+    radial-gradient(circle, var(--download-action) 20%, transparent 20%),
+    radial-gradient(circle, var(--download-action) 20%, transparent 20%),
+    radial-gradient(circle, var(--download-action) 20%, transparent 20%),
+    radial-gradient(circle, var(--download-action) 20%, transparent 20%),
+    radial-gradient(circle, var(--download-action) 20%, transparent 20%),
+    radial-gradient(circle, var(--download-action) 20%, transparent 20%),
+    radial-gradient(circle, var(--download-action) 20%, transparent 20%),
+    radial-gradient(circle, var(--download-action) 20%, transparent 20%),
+    radial-gradient(circle, var(--download-action) 20%, transparent 20%),
+    radial-gradient(circle, var(--download-action) 20%, transparent 20%),
+    radial-gradient(circle, var(--download-action) 20%, transparent 20%),
+    radial-gradient(circle, var(--download-action) 20%, transparent 20%),
+    radial-gradient(circle, var(--download-action) 20%, transparent 20%),
+    radial-gradient(circle, var(--download-action) 20%, transparent 20%);
   background-size:
     10% 10%,
     20% 20%,
@@ -320,11 +466,13 @@ ul li .button.video-row-download {
 
 .button:active {
   transform: scale(0.95);
-  background-color: f1c40f;
+  background-color: #f1c40f;
   box-shadow: 0 2px 25px rgba(243, 156, 18, 0.5);
 }
 
-.button:active::before {
+.button:active::before,
+.resource-download:active::before,
+.resource-copy:active::before {
   animation: none;
   background-size: 0;
 }
@@ -419,8 +567,8 @@ dialog {
 
 /* Download queue section */
 .m3u8-download-section {
-  margin: 20px 0;
-  padding: 15px;
+  margin: 12px 0;
+  padding: 12px;
   background-color: #f8f9fa;
   border-radius: 8px;
   border: 1px solid #dee2e6;
@@ -484,37 +632,53 @@ dialog {
 /* ====== Download Queue ====== */
 .queue-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 8px 10px;
-  background: #fff;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
+  gap: 6px 8px;
+  padding: 0 0 4px;
+  text-align: left;
+}
+
+.queue-heading-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+}
+
+.queue-limit {
+  color: var(--queue-muted);
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 .queue-title {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  color: #333;
-  min-width: 0;
+  color: var(--queue-text);
+  white-space: nowrap;
 }
 
 .queue-meta {
+  order: 3;
+  flex-basis: 100%;
   font-size: 11px;
   font-weight: 500;
-  color: #888;
-  white-space: nowrap;
+  color: var(--queue-muted);
+  line-height: 1.5;
 }
 
 .queue-actions {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   flex-shrink: 0;
+}
+
+.queue-actions .btn-text {
+  min-height: 26px;
+  color: var(--queue-muted);
 }
 
 .queue-list {
@@ -529,14 +693,14 @@ dialog {
   padding-top: 0;
   border-top: none;
   padding: 10px 12px 12px;
-  border-radius: 10px;
-  border: 1px solid #e9ecef;
-  background: #fff;
+  border-radius: 8px;
+  border: 1px solid var(--queue-border);
+  background: var(--queue-surface);
+  text-align: left;
 }
 
 .task-card:hover {
   border-color: #dfe3e8;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .task-card.status-queued {
@@ -553,6 +717,164 @@ dialog {
 
 .task-card.status-error {
   border-left: 3px solid #dc3545;
+}
+
+.task-card.needs-attention {
+  border-left-color: var(--queue-warning);
+}
+
+.task-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.task-identity {
+  min-width: 0;
+  flex: 1;
+}
+
+.task-more {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.task-more-trigger {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: var(--queue-soft);
+  border: 1px solid var(--queue-border);
+  color: var(--queue-text);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.task-more-panel {
+  position: absolute;
+  right: 0;
+  top: 32px;
+  z-index: 5;
+  min-width: 170px;
+  padding: 4px;
+  border: 1px solid var(--queue-border);
+  border-radius: 6px;
+  background: var(--queue-surface);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
+}
+
+.task-more-panel button {
+  display: block;
+  width: 100%;
+  min-height: 30px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--queue-text);
+  text-align: left;
+  white-space: nowrap;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.task-more-panel button:hover {
+  background: var(--queue-soft);
+}
+
+.task-more-panel .task-menu-delete {
+  color: var(--queue-danger);
+  border-top: 1px solid var(--queue-border);
+  border-radius: 0;
+  margin-top: 4px;
+}
+
+.task-more-panel button:disabled,
+.task-card button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.task-progress-summary,
+.task-transfer-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: 11px;
+  color: var(--queue-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.task-progress-summary {
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.task-status,
+.task-progress-value {
+  font-weight: 600;
+  color: var(--queue-text);
+}
+
+.needs-attention .task-status,
+.task-failed-count {
+  color: var(--queue-warning);
+}
+
+.task-transfer-meta {
+  margin-top: 6px;
+  min-height: 16px;
+}
+
+.task-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.task-action-row .btn-sm {
+  min-height: 28px;
+  font-size: 12px;
+}
+
+.btn-sm.btn-save-partial {
+  border: 1px solid currentColor;
+  background: var(--queue-brand-soft);
+  color: var(--queue-brand);
+  font-weight: 600;
+}
+
+.btn-sm.btn-save-partial:hover {
+  background: var(--queue-surface);
+}
+
+.task-partial-hint,
+.task-recovery-note {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--queue-muted);
+  overflow-wrap: anywhere;
+}
+
+.task-recovery-note {
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: var(--queue-brand-soft);
+  color: var(--queue-warning);
+}
+
+.task-card button:focus-visible,
+.queue-header button:focus-visible,
+.tolerance-select:focus-visible {
+  outline: 2px solid var(--queue-focus);
+  outline-offset: 2px;
 }
 
 /* Progress row: filename on top, meta row (status + actions) below */
@@ -639,11 +961,12 @@ dialog {
 
 .task-detail-meta {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0 12px;
+  gap: 2px 8px;
   font-size: 11px;
-  color: #888;
+  color: var(--queue-muted);
+  margin-top: 4px;
 }
 
 .task-detail-meta > span {
@@ -1056,7 +1379,8 @@ dialog {
   border: 1px solid #eef1f4;
   border-radius: 8px;
   background: #fafbfc;
-  height: auto !important;
+  flex-shrink: 0;
+  min-width: 0;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
@@ -1106,6 +1430,11 @@ dialog {
   color: #9ca3af !important;
 }
 
+.history-partial {
+  margin-left: 8px;
+  color: var(--queue-warning);
+}
+
 .history-actions {
   display: flex;
   gap: 4px;
@@ -1114,39 +1443,117 @@ dialog {
 
 .m3u8-filename-row {
   width: 100%;
-  margin: 4px 0 2px;
-  padding: 4px 8px 6px;
+  margin: 8px 0;
+  padding: 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
 
+.filename-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.filename-edit-hint {
+  font-size: 11px;
+  color: var(--queue-muted);
+}
+
 .save-settings {
   width: 100%;
-  margin: 4px 0 6px;
-  padding: 6px 8px 8px;
+  margin: 8px 0;
+  padding: 0;
   box-sizing: border-box;
-  border: 1px solid #eee;
+  border: 1px solid var(--queue-border);
   border-radius: 8px;
-  background: #fafafa;
+  background: var(--queue-soft);
   text-align: left;
+}
+
+.settings-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  text-align: left;
+  background: transparent;
+  color: var(--queue-muted);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.settings-summary:hover {
+  background: var(--queue-surface);
+}
+
+.settings-summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--queue-text);
+  white-space: nowrap;
+}
+
+.settings-symbol,
+.settings-chevron,
+.settings-summary-tolerance {
+  flex-shrink: 0;
+}
+
+.settings-summary-path {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-summary-tolerance {
+  white-space: nowrap;
+}
+
+.is-open .settings-chevron {
+  transform: rotate(180deg);
+}
+
+.settings-panel {
+  padding: 0 12px 12px;
+}
+
+.settings-panel[hidden] {
+  display: none;
+}
+
+.settings-panel .channel-folder-hint {
+  color: var(--queue-muted);
 }
 
 .download-subdir-row {
   width: 100%;
   margin: 0;
-  padding: 2px 0 4px;
+  padding: 12px 0 4px;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  border-top: 1px solid var(--queue-border);
 }
 
 .download-subdir-label {
   font-size: 12px;
   color: #555;
-  margin-bottom: 4px;
+  margin-bottom: 0;
 }
 
 .download-subdir-input {
@@ -1175,6 +1582,57 @@ dialog {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.tolerance-setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--queue-border);
+}
+
+.tolerance-setting-row .channel-folder-hint {
+  color: var(--queue-muted);
+}
+
+.tolerance-select {
+  min-height: 28px;
+  max-width: 150px;
+  padding: 4px 6px;
+  flex-shrink: 0;
+  border: 1px solid var(--queue-border);
+  border-radius: 4px;
+  background: var(--queue-surface);
+  color: var(--queue-text);
+  font-size: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .task-card *,
+  .queue-header *,
+  .tolerance-setting-row *,
+  .resource-download,
+  .resource-copy,
+  .resource-download::before,
+  .resource-copy::before,
+  .popup-support-btn {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .resource-download::before,
+  .resource-copy::before {
+    display: none;
+  }
+
+  .resource-download:active:not(:disabled),
+  .resource-copy:active,
+  .popup-support-btn:active {
+    transform: none;
+  }
 }
 
 .channel-folder-copy {
@@ -1239,16 +1697,16 @@ dialog {
 
 .m3u8-filename-label {
   font-size: 12px;
-  color: #555;
-  margin-bottom: 4px;
+  color: var(--queue-text);
+  font-weight: 600;
 }
 
 .m3u8-filename-display {
   width: 100%;
-  min-height: 28px;
-  padding: 6px 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: 1px solid var(--queue-border);
+  border-radius: 6px;
   font-size: 13px;
   text-align: left;
   box-sizing: border-box;
@@ -1263,6 +1721,10 @@ dialog {
   white-space: normal;
   overflow: visible;
   text-overflow: clip;
+  max-height: 78px;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  border-color: var(--queue-focus);
 }
 
 .m3u8-filename-display:focus-visible {

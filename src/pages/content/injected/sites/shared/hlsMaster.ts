@@ -51,9 +51,7 @@ export function variantsToSiteVideos(
   extra?: Pick<SiteVideoInfo, 'headers'>,
 ): SiteVideoInfo[] {
   const variants = parseHlsMasterVariants(text, masterUrl);
-  const items = variants.length
-    ? variants
-    : [{ quality: 'default', url: masterUrl }];
+  const items = variants.length ? variants : [{ quality: 'default', url: masterUrl }];
 
   return items.map(item => ({
     quality: item.quality,
@@ -61,5 +59,16 @@ export function variantsToSiteVideos(
     format: 'm3u8',
     title,
     ...(extra?.headers ? { headers: extra.headers } : {}),
+  }));
+}
+
+/** Attach sibling rendition playlists as segment-level recovery sources. */
+export function withVariantFallbacks(items: SiteVideoInfo[]): SiteVideoInfo[] {
+  if (items.length < 2) return items;
+  return items.map(item => ({
+    ...item,
+    fallbackUrls: items
+      .filter(candidate => candidate.videoUrl !== item.videoUrl && candidate.format === 'm3u8')
+      .map(candidate => candidate.videoUrl),
   }));
 }

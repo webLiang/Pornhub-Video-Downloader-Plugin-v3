@@ -152,7 +152,7 @@
 
   "queueTitle": {
     "description": "Queue title",
-    "message": "डाउनलोड कतार (एक साथ अधिकतम 6)"
+    "message": "डाउनलोड कतार"
   },
   "queueMetaDownloading": {
     "description": "Queue meta: downloading count",
@@ -229,7 +229,7 @@
   },
   "taskErrorCount": {
     "description": "Error count label",
-    "message": "त्रुटियाँ: $1"
+    "message": "पुनः प्राप्त करने हैं: $1 खंड"
   },
   "taskFailedReason": {
     "description": "Failed reason label",
@@ -290,6 +290,130 @@
   "popupSupportBug": {
     "description": "Footer link to open a GitHub issue",
     "message": "बग रिपोर्ट करें"
+  },
+  "queueConcurrency": {
+    "description": "queueConcurrency",
+    "message": "एक साथ अधिकतम 6"
+  },
+  "downloadToleranceLabel": {
+    "description": "downloadToleranceLabel",
+    "message": "अनुमत अनुपलब्ध खंड"
+  },
+  "downloadToleranceHint": {
+    "description": "downloadToleranceHint",
+    "message": "हर खंड के लिए अधिकतम 4 प्रयास; अनुपलब्ध खंड सीमा के भीतर होने पर अपने आप सहेजें। नए कार्यों पर लागू।"
+  },
+  "downloadToleranceStrict": {
+    "description": "downloadToleranceStrict",
+    "message": "0% · केवल पूर्ण"
+  },
+  "taskActionMore": {
+    "description": "taskActionMore",
+    "message": "अधिक विकल्प"
+  },
+  "taskActionCopyPage": {
+    "description": "taskActionCopyPage",
+    "message": "मूल पेज का URL कॉपी करें"
+  },
+  "taskActionCopyResource": {
+    "description": "taskActionCopyResource",
+    "message": "संसाधन URL कॉपी करें"
+  },
+  "taskActionSavePartial": {
+    "description": "taskActionSavePartial",
+    "message": "डाउनलोड किया भाग सहेजें"
+  },
+  "taskSavePartialHint": {
+    "description": "taskSavePartialHint",
+    "message": "सहेजें और कार्य समाप्त करें; अनुपलब्ध खंडों से प्लेबैक में अंतराल होंगे।"
+  },
+  "taskStatusNeedsAttention": {
+    "description": "taskStatusNeedsAttention",
+    "message": "कार्रवाई आवश्यक"
+  },
+  "taskStatusFailed": {
+    "description": "taskStatusFailed",
+    "message": "डाउनलोड विफल"
+  },
+  "taskProgressLabel": {
+    "description": "taskProgressLabel",
+    "message": "डाउनलोड प्रगति"
+  },
+  "taskRetryAttempt": {
+    "description": "taskRetryAttempt",
+    "message": "प्रयास $1 / $2"
+  },
+  "taskRetriesExhaustedHint": {
+    "description": "taskRetriesExhaustedHint",
+    "message": "कई प्रयासों के बाद भी कुछ खंड विफल हैं। डेटा सुरक्षित है; पुनः प्रयास करें या डाउनलोड किया भाग सहेजें।"
+  },
+  "taskPartialSavingHint": {
+    "description": "taskPartialSavingHint",
+    "message": "$1 अनुपलब्ध खंडों वाला आंशिक वीडियो सहेजा जा रहा है।"
+  },
+  "toastPartialSaving": {
+    "description": "toastPartialSaving",
+    "message": "डाउनलोड किया भाग सहेजा जा रहा है"
+  },
+  "toastPartialFailed": {
+    "description": "toastPartialFailed",
+    "message": "सहेजना विफल: $1"
+  },
+  "toastLinkCopied": {
+    "description": "toastLinkCopied",
+    "message": "URL कॉपी हुआ"
+  },
+  "toastCopyFailed": {
+    "description": "toastCopyFailed",
+    "message": "कॉपी नहीं हुआ। पुनः प्रयास करें।"
+  },
+  "toastSettingsFailed": {
+    "description": "toastSettingsFailed",
+    "message": "सेटिंग सहेजी नहीं जा सकी।"
+  },
+  "toastPartialComplete": {
+    "description": "toastPartialComplete",
+    "message": "आंशिक वीडियो सहेजा गया; $1 खंड अनुपलब्ध हैं।"
+  },
+  "historyPartial": {
+    "description": "historyPartial",
+    "message": "आंशिक · $1 खंड अनुपलब्ध"
+  },
+  "popupDownloadSettings": {
+    "description": "popupDownloadSettings",
+    "message": "डाउनलोड सेटिंग"
+  },
+  "popupDefaultFolder": {
+    "description": "popupDefaultFolder",
+    "message": "डिफ़ॉल्ट फ़ोल्डर"
+  },
+  "popupToleranceSummary": {
+    "description": "popupToleranceSummary",
+    "message": "$1% छूट"
+  },
+  "popupStrictSummary": {
+    "description": "popupStrictSummary",
+    "message": "केवल पूर्ण"
+  },
+  "popupFilenameEditHint": {
+    "description": "popupFilenameEditHint",
+    "message": "नाम बदलने के लिए क्लिक करें"
+  },
+  "popupChooseQuality": {
+    "description": "popupChooseQuality",
+    "message": "गुणवत्ता चुनें"
+  },
+  "popupQualityCount": {
+    "description": "popupQualityCount",
+    "message": "$1 उपलब्ध"
+  },
+  "popupNoResources": {
+    "description": "popupNoResources",
+    "message": "डाउनलोड योग्य वीडियो नहीं मिला"
+  },
+  "popupNoResourcesHint": {
+    "description": "popupNoResourcesHint",
+    "message": "समर्थित वीडियो पेज पर प्लेबैक शुरू करें, फिर एक्सटेंशन दोबारा खोलें।"
   }
 }
 

@@ -3,14 +3,23 @@ import reloadOnUpdate from 'virtual:reload-on-update-in-background-script';
 import 'webextension-polyfill';
 import M3U8Downloader from './utils/dist/m3u8-downloader-core.obf';
 import MP4Downloader from './utils/dist/mp4-downloader.obf';
-import { opfsFileExists, removeOpfsFileByName } from './utils/video-download-core/opfs-task-cache';
+import {
+  detectOpfsContainer,
+  getOpfsExportFormat,
+  opfsFileExists,
+  removeOpfsFileByName,
+} from './utils/video-download-core/opfs-task-cache';
 import m3u8DownloadStorage from '@src/shared/storages/m3u8DownloadStorage';
 import downloadHistoryStorage from '@src/shared/storages/downloadHistoryStorage';
 import downloadQueueStorage, {
   type DownloadTask,
   type DownloadTaskFormat,
 } from '@src/shared/storages/downloadQueueStorage';
-import { getDownloadSubdir, withDownloadSubdir } from '@src/shared/storages/downloadSettingsStorage';
+import downloadSettingsStorage, {
+  getDownloadSubdir,
+  getMaxMissingPercent,
+  withDownloadSubdir,
+} from '@src/shared/storages/downloadSettingsStorage';
 import { DownloadSpeedTracker } from '@src/shared/utils/formatDownloadSpeed';
 import { buildSanitizedDownloadFilenameWithExtension } from '@src/shared/utils/sanitizeDownloadFilename';
 import {
@@ -37,8 +46,12 @@ function resolveTaskPageUrl(task: DownloadTask): string | undefined {
 }
 
 /** Persist a completed download in history, including source page when available. */
-function addHistoryRecord(task: DownloadTask, finalName: string): void {
-  void downloadHistoryStorage.addRecord(finalName, task.url, resolveTaskPageUrl(task));
+function addHistoryRecord(task: DownloadTask, finalName: string, result?: any): void {
+  void downloadHistoryStorage.addRecord(finalName, task.url, resolveTaskPageUrl(task), {
+    partial: result?.partial ?? task.partialExport,
+    missingSegments: result?.missingSegments ?? task.missingSegments,
+    totalSegments: result?.totalSegments ?? task.targetSegment,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -52,6 +65,8 @@ type ActiveRunner = { kind: 'm3u8'; instance: any } | { kind: 'mp4'; instance: M
 const activeRunners = new Map<string, ActiveRunner>();
 /** Paused tasks keep downloader instances until resume or delete */
 const pausedRunners = new Map<string, ActiveRunner>();
+const partialSaves = new Set<string>();
+const taskOperations = new Map<string, Promise<void>>();
 /** SW-restart recovery for tasks stuck in Save As / chrome.downloads write phase */
 const awaitingSaveRecoveries = new Map<string, { listener: (delta: chrome.downloads.DownloadDelta) => void }>();
 let scheduling = false;
@@ -80,6 +95,18 @@ function buildProgressPatch(input: ProgressPatchInput): Partial<DownloadTask> {
   };
 }
 
+/** Serialize pause/resume/save/delete transitions so stale operations cannot resurrect a deleted task. */
+function runTaskOperation(message: any, sendResponse: (response?: any) => void, handler: typeof handleQueuePause) {
+  const id = String(message.taskId || '');
+  const operation = (taskOperations.get(id) || Promise.resolve())
+    .catch(() => {})
+    .then(() => handler(message, sendResponse));
+  taskOperations.set(id, operation);
+  void operation.finally(() => {
+    if (taskOperations.get(id) === operation) taskOperations.delete(id);
+  });
+}
+
 // Read current download state
 async function getDownloadState() {
   return await m3u8DownloadStorage.get();
@@ -94,19 +121,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     handleQueueEnqueue(message, sendResponse);
     return true;
   } else if (message.type === 'download-queue-cancel' || message.type === 'download-queue-delete') {
-    handleQueueDelete(message, sendResponse);
+    runTaskOperation(message, sendResponse, handleQueueDelete);
     return true;
   } else if (message.type === 'download-queue-pause') {
-    handleQueuePause(message, sendResponse);
+    runTaskOperation(message, sendResponse, handleQueuePause);
     return true;
   } else if (message.type === 'download-queue-resume') {
-    handleQueueResume(message, sendResponse);
+    runTaskOperation(message, sendResponse, handleQueueResume);
+    return true;
+  } else if (message.type === 'download-queue-save-partial') {
+    runTaskOperation(message, sendResponse, handleQueueSavePartial);
     return true;
   } else if (message.type === 'download-queue-clear-queued') {
     downloadQueueStorage.clearQueued().then(() => sendResponse({ success: true }));
     return true;
   } else if (message.type === 'download-queue-clear-errors') {
-    downloadQueueStorage.clearErrors().then(() => sendResponse({ success: true }));
+    void downloadQueueStorage.get().then(async state => {
+      for (const task of state.tasks.filter(t => t.status === 'error')) await deleteTaskAndPurge(task.id);
+      sendResponse({ success: true });
+    });
     return true;
   } else if (message.type === 'download-queue-snapshot') {
     downloadQueueStorage.get().then(state => sendResponse({ success: true, state }));
@@ -263,6 +296,7 @@ function clearAwaitingSaveRecovery(taskId: string): void {
 
 async function deleteTaskAndPurge(taskId: string) {
   clearAwaitingSaveRecovery(taskId);
+  partialSaves.delete(taskId);
   const runner = activeRunners.get(taskId) || pausedRunners.get(taskId);
   if (runner) {
     try {
@@ -294,6 +328,12 @@ async function handleQueueEnqueue(message: any, sendResponse: (response?: any) =
     const fileName = (message.fileName || '').trim() || 'video';
     const headers = message.headers;
     const quality = typeof message.quality === 'string' ? message.quality.trim() : undefined;
+    const fallbackUrls = Array.isArray(message.fallbackUrls)
+      ? message.fallbackUrls
+          .filter((value: unknown): value is string => typeof value === 'string')
+          .map((value: string) => value.trim())
+          .filter((value: string) => value && value !== url)
+      : undefined;
     const pageUrl =
       (typeof message.pageUrl === 'string' ? message.pageUrl.trim() : undefined) ||
       (typeof headers?.Referer === 'string' ? headers.Referer.trim() : undefined);
@@ -303,7 +343,15 @@ async function handleQueueEnqueue(message: any, sendResponse: (response?: any) =
       return;
     }
 
-    const id = await downloadQueueStorage.enqueue({ url, fileName, format, quality, pageUrl, headers });
+    const id = await downloadQueueStorage.enqueue({
+      url,
+      fileName,
+      format,
+      quality,
+      pageUrl,
+      headers,
+      fallbackUrls,
+    });
     schedule();
     sendResponse({ success: true, id });
   } catch (e: any) {
@@ -326,10 +374,15 @@ async function handleQueueDelete(message: any, sendResponse: (response?: any) =>
 }
 
 async function handleQueuePause(message: any, sendResponse: (response?: any) => void) {
+  const taskId = message.taskId;
   try {
-    const taskId = message.taskId;
     if (!taskId) {
       sendResponse({ success: false, error: 'taskId is required' });
+      return;
+    }
+    const task = (await downloadQueueStorage.get()).tasks.find(t => t.id === taskId);
+    if (!task || isAwaitingSave(task) || partialSaves.has(taskId)) {
+      sendResponse({ success: false, error: 'Task is already saving' });
       return;
     }
     const runner = activeRunners.get(taskId);
@@ -358,6 +411,20 @@ async function handleQueuePause(message: any, sendResponse: (response?: any) => 
     sendResponse({ success: true });
     schedule();
   } catch (e: any) {
+    const runner = activeRunners.get(taskId);
+    if (runner?.kind === 'm3u8') {
+      activeRunners.delete(taskId);
+      pausedRunners.set(taskId, runner);
+      await downloadQueueStorage.updateTask(taskId, {
+        status: 'paused',
+        error: e?.message || 'Failed to commit paused download',
+        isFileDownloading: false,
+        chromeDownloadId: undefined,
+        downloadSpeed: undefined,
+      });
+      downloadSpeedTracker.clear(taskId);
+      schedule();
+    }
     sendResponse({ success: false, error: e?.message || 'pause failed' });
   }
 }
@@ -375,13 +442,26 @@ async function handleQueueResume(message: any, sendResponse: (response?: any) =>
       sendResponse({ success: false, error: 'Task is not paused' });
       return;
     }
+    if (task.partialExport) {
+      sendResponse({ success: false, error: 'Partial export is prepared; save it again instead of resuming' });
+      return;
+    }
+    if (isAwaitingSave(task) || partialSaves.has(taskId)) {
+      sendResponse({ success: false, error: 'Task is already saving' });
+      return;
+    }
     const runner = pausedRunners.get(taskId);
     if (!runner) {
       sendResponse({ success: false, error: 'Resume unavailable (reload clears in-memory runners)' });
       return;
     }
     pausedRunners.delete(taskId);
-    await downloadQueueStorage.updateTask(taskId, { status: 'downloading', error: undefined });
+    await downloadQueueStorage.updateTask(taskId, {
+      status: 'downloading',
+      error: undefined,
+      retriesExhausted: false,
+      retryAttempt: 0,
+    });
     activeRunners.set(taskId, runner);
 
     if (runner.kind === 'm3u8') {
@@ -453,6 +533,63 @@ async function handleQueueResume(message: any, sendResponse: (response?: any) =>
   }
 }
 
+/** Stop this HLS task and save all successfully fetched segments, including buffered segments after gaps. */
+async function handleQueueSavePartial(message: any, sendResponse: (response?: any) => void) {
+  const taskId = message.taskId;
+  try {
+    const task = (await downloadQueueStorage.get()).tasks.find(t => t.id === taskId);
+    if (!task || task.format !== 'm3u8' || !task.finishNum || isAwaitingSave(task) || partialSaves.has(taskId)) {
+      sendResponse({ success: false, error: 'No available segments to save, or task is already saving' });
+      return;
+    }
+    const runner = activeRunners.get(taskId) || pausedRunners.get(taskId);
+    partialSaves.add(taskId);
+    if (runner?.kind === 'm3u8') {
+      pausedRunners.delete(taskId);
+      activeRunners.set(taskId, runner);
+      await downloadQueueStorage.updateTask(taskId, {
+        status: 'downloading',
+        error: undefined,
+        downloadSpeed: undefined,
+      });
+      // The export may wait on the browser's save dialog; report acceptance immediately.
+      void runner.instance.savePartial().catch(async (error: any) => {
+        partialSaves.delete(taskId);
+        if (activeRunners.get(taskId) !== runner) return;
+        activeRunners.delete(taskId);
+        pausedRunners.set(taskId, runner);
+        await downloadQueueStorage.updateTask(taskId, {
+          status: 'paused',
+          error: error?.message || 'Failed to save downloaded segments',
+          isFileDownloading: false,
+          chromeDownloadId: undefined,
+        });
+        schedule();
+      });
+    } else if (task.opfsCacheFileName && (await opfsFileExists(task.opfsCacheFileName))) {
+      // A service worker restart loses in-memory buffers; export only the committed cache.
+      const cachedSegments = task.cachedSegments ?? 0;
+      if (!cachedSegments) throw new Error('Cached segment count unavailable; restart this task to download again');
+      const { extension } = getOpfsExportFormat(await detectOpfsContainer(task.opfsCacheFileName), task.format);
+      const base = (task.fileName || 'video').replace(/\.(?:mp4|ts|m3u8)$/i, '');
+      const exportTask: DownloadTask = {
+        ...task,
+        partialExport: true,
+        missingSegments: Math.max(0, task.targetSegment - cachedSegments),
+        exportFileName: task.exportFileName || `${base}-partial.${extension}`,
+      };
+      await downloadQueueStorage.updateTask(taskId, exportTask);
+      void reExportFromOpfs(exportTask).finally(() => partialSaves.delete(taskId));
+    } else {
+      throw new Error('Download cache unavailable; restart this task to download again');
+    }
+    sendResponse({ success: true });
+  } catch (error: any) {
+    partialSaves.delete(taskId);
+    sendResponse({ success: false, error: error?.message || 'Failed to save downloaded segments' });
+  }
+}
+
 /**
  * Resolve chrome.downloads id for an awaiting-save task (stored id, else in_progress filename match).
  */
@@ -480,11 +617,19 @@ async function finishAwaitingSaveTask(task: DownloadTask): Promise<void> {
   if (task.opfsCacheFileName) {
     await removeOpfsFileByName(task.opfsCacheFileName);
   }
-  const finalName = task.fileName || 'video';
+  const finalName = task.exportFileName || task.fileName || 'video';
   addHistoryRecord(task, finalName);
   await downloadQueueStorage.removeTask(task.id);
   downloadSpeedTracker.clear(task.id);
-  chrome.runtime.sendMessage({ type: 'download-task-complete', taskId: task.id, fileName: finalName }).catch(() => {});
+  chrome.runtime
+    .sendMessage({
+      type: 'download-task-complete',
+      taskId: task.id,
+      fileName: finalName,
+      partial: task.partialExport,
+      missingSegments: task.missingSegments,
+    })
+    .catch(() => {});
   schedule();
 }
 
@@ -575,12 +720,10 @@ async function reExportFromOpfs(task: DownloadTask): Promise<void> {
     return;
   }
 
-  // chrome.downloads recovery uses mp4/ts only (webm treated as mp4 container name)
-  const ext: 'mp4' | 'ts' = task.format === 'm3u8' ? 'ts' : 'mp4';
-  const mimeType = ext === 'ts' ? 'video/MP2T' : 'video/mp4';
+  const { extension: ext, mimeType } = getOpfsExportFormat(await detectOpfsContainer(opfsName), task.format);
   const downloadSubdir = await getDownloadSubdir();
   const downloadFileName = withDownloadSubdir(
-    buildSanitizedDownloadFilenameWithExtension(task.fileName || 'video', ext),
+    buildSanitizedDownloadFilenameWithExtension(task.exportFileName || task.fileName || 'video', ext),
     downloadSubdir,
   );
 
@@ -779,24 +922,36 @@ async function startTask(task: DownloadTask) {
 }
 
 async function startM3u8Task(task: DownloadTask) {
-  const downloadSubdir = await getDownloadSubdir();
+  const [downloadSubdir, settings] = await Promise.all([getDownloadSubdir(), downloadSettingsStorage.get()]);
+  let latestProgress: Partial<DownloadTask> = {};
+  const isCurrentRunner = () =>
+    activeRunners.get(task.id)?.instance === downloader || pausedRunners.get(task.id)?.instance === downloader;
   const downloader = new M3U8Downloader({
-    maxConcurrent: 10,
+    maxConcurrent: /^https:\/\/surrit\.com\//i.test(task.url) ? 4 : 10,
     retryInterval: 2000,
     timeout: 15000,
     dataTimeout: 600000,
     onProgress: (data: any) => {
+      if (!isCurrentRunner()) return;
       const patch: Partial<DownloadTask> = {
         progress: data.progress,
         finishNum: data.finishNum,
         errorNum: data.errorNum,
         targetSegment: data.targetSegment,
         fileDownloadProgress: data.fileDownloadProgress,
-        isFileDownloading: data.isFileDownloading,
+        isFileDownloading: data.isFileDownloading || partialSaves.has(task.id),
+        retriesExhausted: data.retriesExhausted,
+        retryAttempt: data.retryAttempt,
+        maxSegmentAttempts: data.maxSegmentAttempts,
       };
+      if (typeof data.partial === 'boolean') patch.partialExport = data.partial;
+      if (typeof data.missingSegments === 'number') patch.missingSegments = data.missingSegments;
+      if (typeof data.cachedSegments === 'number') patch.cachedSegments = data.cachedSegments;
+      if (data.fileName) patch.exportFileName = data.fileName;
       if (typeof data.chromeDownloadId === 'number') {
         patch.chromeDownloadId = data.chromeDownloadId;
       }
+      latestProgress = { ...latestProgress, ...patch };
       downloadQueueStorage.updateTask(
         task.id,
         buildProgressPatch({
@@ -808,37 +963,48 @@ async function startM3u8Task(task: DownloadTask) {
       );
     },
     onError: (error: string) => {
+      if (!isCurrentRunner()) return;
       clearAwaitingSaveRecovery(task.id);
-      downloadQueueStorage.updateTask(task.id, {
-        status: 'error',
-        error,
-        isFileDownloading: false,
-        chromeDownloadId: undefined,
-      });
-      try {
-        downloader.destroy();
-      } catch {
-        // ignore
-      }
+      partialSaves.delete(task.id);
+      const runner = activeRunners.get(task.id) || pausedRunners.get(task.id);
       activeRunners.delete(task.id);
+      if (runner) pausedRunners.set(task.id, runner);
+      void downloadQueueStorage
+        .updateTask(task.id, {
+          status: latestProgress.finishNum ? 'paused' : 'error',
+          error,
+          isFileDownloading: false,
+          chromeDownloadId: undefined,
+          downloadSpeed: undefined,
+        })
+        .then(schedule);
+      downloadSpeedTracker.clear(task.id);
       chrome.runtime.sendMessage({ type: 'download-task-error', taskId: task.id, error }).catch(() => {});
-      schedule();
     },
     onComplete: (data: any) => {
+      if (!isCurrentRunner()) return;
       clearAwaitingSaveRecovery(task.id);
+      partialSaves.delete(task.id);
       const finalName = data.fileName || task.fileName || 'video';
-      addHistoryRecord(task, finalName);
-      downloadQueueStorage.removeTask(task.id);
+      addHistoryRecord({ ...task, ...latestProgress }, finalName, data);
+      void downloadQueueStorage.removeTask(task.id).then(schedule);
       try {
         downloader.destroy();
       } catch {
         // ignore
       }
       activeRunners.delete(task.id);
+      pausedRunners.delete(task.id);
+      downloadSpeedTracker.clear(task.id);
       chrome.runtime
-        .sendMessage({ type: 'download-task-complete', taskId: task.id, fileName: finalName })
+        .sendMessage({
+          type: 'download-task-complete',
+          taskId: task.id,
+          fileName: finalName,
+          partial: data.partial,
+          missingSegments: data.missingSegments,
+        })
         .catch(() => {});
-      schedule();
     },
   });
 
@@ -850,6 +1016,9 @@ async function startM3u8Task(task: DownloadTask) {
     headers: task.headers || undefined,
     opfsFileName: task.opfsCacheFileName,
     downloadSubdir,
+    fallbackPlaylistUrls: task.fallbackUrls,
+    maxMissingRatio: getMaxMissingPercent(settings) / 100,
+    maxSegmentAttempts: 4,
   });
 }
 

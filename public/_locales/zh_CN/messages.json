@@ -152,7 +152,7 @@
 
   "queueTitle": {
     "description": "Queue title",
-    "message": "下载队列（同时最多 6 个）"
+    "message": "下载队列"
   },
   "queueMetaDownloading": {
     "description": "Queue meta: downloading count",
@@ -229,7 +229,7 @@
   },
   "taskErrorCount": {
     "description": "Error count label",
-    "message": "错误：$1"
+    "message": "待恢复：$1 片"
   },
   "taskFailedReason": {
     "description": "Failed reason label",
@@ -290,6 +290,130 @@
   "popupSupportBug": {
     "description": "Footer link to open a GitHub issue",
     "message": "反馈问题"
+  },
+  "queueConcurrency": {
+    "description": "queueConcurrency",
+    "message": "最多同时 6 个"
+  },
+  "downloadToleranceLabel": {
+    "description": "downloadToleranceLabel",
+    "message": "允许缺失片段"
+  },
+  "downloadToleranceHint": {
+    "description": "downloadToleranceHint",
+    "message": "每片最多尝试 4 次，缺失不超过此比例时自动保存部分视频。新任务生效。"
+  },
+  "downloadToleranceStrict": {
+    "description": "downloadToleranceStrict",
+    "message": "0% · 完整下载"
+  },
+  "taskActionMore": {
+    "description": "taskActionMore",
+    "message": "更多操作"
+  },
+  "taskActionCopyPage": {
+    "description": "taskActionCopyPage",
+    "message": "复制原页面地址"
+  },
+  "taskActionCopyResource": {
+    "description": "taskActionCopyResource",
+    "message": "复制资源地址"
+  },
+  "taskActionSavePartial": {
+    "description": "taskActionSavePartial",
+    "message": "保存已下载部分"
+  },
+  "taskSavePartialHint": {
+    "description": "taskSavePartialHint",
+    "message": "保存并结束任务；缺失片段会造成播放跳跃。"
+  },
+  "taskStatusNeedsAttention": {
+    "description": "taskStatusNeedsAttention",
+    "message": "等待处理"
+  },
+  "taskStatusFailed": {
+    "description": "taskStatusFailed",
+    "message": "下载失败"
+  },
+  "taskProgressLabel": {
+    "description": "taskProgressLabel",
+    "message": "下载进度"
+  },
+  "taskRetryAttempt": {
+    "description": "taskRetryAttempt",
+    "message": "尝试 $1 / $2"
+  },
+  "taskRetriesExhaustedHint": {
+    "description": "taskRetriesExhaustedHint",
+    "message": "部分片段多次尝试仍失败。已保留下载内容，可继续重试或保存已下载部分。"
+  },
+  "taskPartialSavingHint": {
+    "description": "taskPartialSavingHint",
+    "message": "正在保存部分视频，缺失 $1 片。"
+  },
+  "toastPartialSaving": {
+    "description": "toastPartialSaving",
+    "message": "正在保存已下载部分"
+  },
+  "toastPartialFailed": {
+    "description": "toastPartialFailed",
+    "message": "保存失败：$1"
+  },
+  "toastLinkCopied": {
+    "description": "toastLinkCopied",
+    "message": "地址已复制"
+  },
+  "toastCopyFailed": {
+    "description": "toastCopyFailed",
+    "message": "复制失败，请重试"
+  },
+  "toastSettingsFailed": {
+    "description": "toastSettingsFailed",
+    "message": "设置保存失败，请重试"
+  },
+  "toastPartialComplete": {
+    "description": "toastPartialComplete",
+    "message": "已保存部分视频，缺失 $1 片。"
+  },
+  "historyPartial": {
+    "description": "historyPartial",
+    "message": "部分视频 · 缺失 $1 片"
+  },
+  "popupDownloadSettings": {
+    "description": "popupDownloadSettings",
+    "message": "下载设置"
+  },
+  "popupDefaultFolder": {
+    "description": "popupDefaultFolder",
+    "message": "默认下载目录"
+  },
+  "popupToleranceSummary": {
+    "description": "popupToleranceSummary",
+    "message": "容错 $1%"
+  },
+  "popupStrictSummary": {
+    "description": "popupStrictSummary",
+    "message": "完整下载"
+  },
+  "popupFilenameEditHint": {
+    "description": "popupFilenameEditHint",
+    "message": "点击名称可编辑"
+  },
+  "popupChooseQuality": {
+    "description": "popupChooseQuality",
+    "message": "选择清晰度"
+  },
+  "popupQualityCount": {
+    "description": "popupQualityCount",
+    "message": "$1 个可选"
+  },
+  "popupNoResources": {
+    "description": "popupNoResources",
+    "message": "未发现可下载的视频"
+  },
+  "popupNoResourcesHint": {
+    "description": "popupNoResourcesHint",
+    "message": "在支持的视频页面开始播放，然后重新打开插件。"
   }
 }
 

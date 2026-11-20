@@ -13,12 +13,21 @@ export type DownloadSettings = {
    * When false, join segments with `-` so the file stays in one folder.
    */
   useChannelFolder: boolean;
+  /** Maximum missing HLS segment percentage accepted after retries (0 means strict). */
+  maxMissingPercent: number;
 };
 
 const DEFAULTS: DownloadSettings = {
   downloadSubdir: '',
   useChannelFolder: true,
+  maxMissingPercent: 10,
 };
+
+/** Older installations use the default; invalid values cannot expand tolerance past 10%. */
+export function getMaxMissingPercent(settings: Partial<DownloadSettings> | null | undefined): number {
+  const value = settings?.maxMissingPercent;
+  return typeof value === 'number' && Number.isFinite(value) ? Math.min(10, Math.max(0, value)) : 10;
+}
 
 /**
  * Read useChannelFolder with a true default so older stored objects without the field stay nested.
@@ -79,6 +88,7 @@ type DownloadSettingsStorage = BaseStorage<DownloadSettings> & {
   setDownloadSubdir: (value: string) => Promise<string>;
   /** Persist whether auto filenames keep `channel/title` as a nested folder. */
   setUseChannelFolder: (value: boolean) => Promise<boolean>;
+  setMaxMissingPercent: (value: number) => Promise<number>;
 };
 
 const storage = createStorage<DownloadSettings>('download-settings', DEFAULTS, {
@@ -98,6 +108,12 @@ const downloadSettingsStorage: DownloadSettingsStorage = {
   setUseChannelFolder: async (value: boolean) => {
     const next = Boolean(value);
     await storage.set(prev => ({ ...DEFAULTS, ...prev, useChannelFolder: next }));
+    return next;
+  },
+
+  setMaxMissingPercent: async value => {
+    const next = getMaxMissingPercent({ maxMissingPercent: value });
+    await storage.set(prev => ({ ...DEFAULTS, ...prev, maxMissingPercent: next }));
     return next;
   },
 };

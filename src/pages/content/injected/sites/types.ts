@@ -9,6 +9,8 @@ export interface SiteVideoInfo {
    * Merged on top of popup headers built from the tab URL.
    */
   headers?: Record<string, string>;
+  /** Alternate rendition playlists that may supply an aligned missing HLS segment. */
+  fallbackUrls?: string[];
 }
 
 export type SiteGetUrls = () => Promise<SiteVideoInfo[]>;

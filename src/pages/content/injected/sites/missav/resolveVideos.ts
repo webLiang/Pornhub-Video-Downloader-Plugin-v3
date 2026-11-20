@@ -1,7 +1,7 @@
 import { getPageTitleFallback, sanitizeFileName } from '../shared/dom';
 import type { SiteVideoInfo } from '../types';
 import { fetchTextPreferPage } from '../shared/extFetch';
-import { variantsToSiteVideos } from '../shared/hlsMaster';
+import { variantsToSiteVideos, withVariantFallbacks } from '../shared/hlsMaster';
 import {
   buildSurritQualityUrls,
   extractPackedQualityLabels,
@@ -27,7 +27,7 @@ export async function resolveMissavVideosFromHtml(html: string, title: string): 
   try {
     const text = await fetchTextPreferPage(masterUrl);
     const items = variantsToSiteVideos(masterUrl, text, title);
-    if (items.length) return items;
+    if (items.length) return withVariantFallbacks(items);
   } catch (error) {
     console.warn('[missav] master playlist fetch failed, using packed qualities', error);
   }
@@ -35,12 +35,14 @@ export async function resolveMissavVideosFromHtml(html: string, title: string): 
   const uuid = uuidFromSurritPlaylistUrl(masterUrl);
   const qualities = extractPackedQualityLabels(html);
   if (uuid && qualities.length) {
-    return buildSurritQualityUrls(uuid, qualities).map((videoUrl, index) => ({
-      quality: qualities[index],
-      videoUrl,
-      format: 'm3u8' as const,
-      title,
-    }));
+    return withVariantFallbacks(
+      buildSurritQualityUrls(uuid, qualities).map((videoUrl, index) => ({
+        quality: qualities[index],
+        videoUrl,
+        format: 'm3u8' as const,
+        title,
+      })),
+    );
   }
 
   return [
